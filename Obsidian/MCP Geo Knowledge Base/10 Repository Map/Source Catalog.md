@@ -29,6 +29,8 @@ source_paths:
   - "RELEASE_NOTES/0.5.0.md"
   - "RELEASE_NOTES/0.6.0.md"
   - "RELEASE_NOTES/0.7.0.md"
+  - "RELEASE_NOTES/0.8.0.md"
+  - "RELEASE_NOTES/0.8.1.md"
   - "SKILL.md"
   - "data/benchmarking/stakeholder_eval/benchmark_pack_v1.json"
   - "data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt"
@@ -132,6 +134,7 @@ source_paths:
   - "docs/examples.md"
   - "docs/getting_started.md"
   - "docs/golden_prompts_mcp_geo.md"
+  - "docs/llm_wiki_postmortem_workflow.md"
   - "docs/map_delivery_support_matrix.md"
   - "docs/map_embedding_best_practices.md"
   - "docs/map_handling_review.md"
@@ -190,6 +193,7 @@ source_paths:
   - "docs/mcp_geo_prism_bundle/sections/07-6-research-testing-evidence-and-release-operations.tex"
   - "docs/mcp_geo_prism_bundle/sections/08-7-appendix-a-infographic-prompts.tex"
   - "docs/mcp_geo_prism_bundle/sections/09-8-appendix-b-citation-method-and-baseline-replacement-audit.tex"
+  - "docs/ons_geo_source_resolution.md"
   - "docs/payload-redacted-example.json"
   - "docs/public_sector_ai_community/00_delivery_plan.md"
   - "docs/public_sector_ai_community/01_overview_for_novices.md"
@@ -251,6 +255,32 @@ source_paths:
   - "docs/reports/assets/wheelchair_access_maps_triptych_2026-03-07.png"
   - "docs/reports/assets/wheelchair_route_comparison_2026-03-07.png"
   - "docs/reports/boundary_variant_coverage_gap_2026-02-23.md"
+  - "docs/reports/client_interop_unattended/.gitignore"
+  - "docs/reports/client_interop_unattended/README.md"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12.json"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12.md"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12_analysis.md"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.claude_cli.readiness.json"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.codex_cli.readiness.json"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.gemini_cli.readiness.json"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.json"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.md"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.vscode_ide.readiness.json"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_readiness_probe_v2.claude_cli.readiness.json"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_readiness_probe_v2.codex_cli.readiness.json"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_readiness_probe_v2.gemini_cli.readiness.json"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_readiness_probe_v2.json"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_readiness_probe_v2.md"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_readiness_probe_v2.vscode_ide.readiness.json"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v16_useful_wait.json"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v16_useful_wait.md"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v16_useful_wait.vscode_ide.readiness.json"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v17_no_primer.json"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v17_no_primer.md"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v17_no_primer.vscode_ide.readiness.json"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_full_v18_no_primer.json"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_full_v18_no_primer.md"
+  - "docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_full_v18_no_primer.vscode_ide.readiness.json"
   - "docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.json"
   - "docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.md"
   - "docs/reports/compact_windows_acceptance_baseline_run_2026-03-01.md"
@@ -261,6 +291,7 @@ source_paths:
   - "docs/reports/exmouth_wheelchair_access_map_2026-03-07.html"
   - "docs/reports/exmouth_wheelchair_access_map_2026-03-07.md"
   - "docs/reports/gRPC Native Transport for MCP.png"
+  - "docs/reports/landis_leacs_access_probe_2026-05-13.md"
   - "docs/reports/landis_phase_2_surfacing_plan_2026-04-04.md"
   - "docs/reports/landis_portal_inventory_2026-04-04.md"
   - "docs/reports/landis_release_surface_reconciliation_2026-04-05.md"
@@ -300,6 +331,7 @@ source_paths:
   - "docs/reports/os_catalog_live_run_2026-02-08.md"
   - "docs/reports/os_catalog_repo_usage_and_delivery_plan_2026-02-12.md"
   - "docs/reports/os_endpoint_family_probe_2026-02-13.json"
+  - "docs/reports/os_ngd_spring_2026_release_impact.md"
   - "docs/reports/owasp_mcp_server_validation_2026-03-13.md"
   - "docs/reports/peatland-case-study/adoption-path.md"
   - "docs/reports/peatland-case-study/annotated-bibliography.md"
@@ -364,7 +396,6 @@ source_paths:
   - "docs/vendor/openai/mcp_transport_streamable_http.md"
   - "docs/vendor/openai/repos/openai-apps-sdk-examples"
   - "docs/vscode.md"
-  - "mcp.json"
   - "playground/app.py"
   - "playground/index.html"
   - "playground/package-lock.json"
@@ -454,11 +485,15 @@ source_paths:
   - "research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/09-failure-taxonomy.tex"
   - "research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/10-demo-script.tex"
   - "research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/11-requirements.tex"
+  - "research/landis-data-source/LandIS MVP Implementation PLAN.md"
   - "research/landis-data-source/LandIS as AI-accessible soil data infrastructure_ evidence, use cases, and an MCP access strategy.md"
   - "research/landis-data-source/landis_archive_triage_2026-04-05.json"
   - "research/landis-data-source/landis_full_release_manifest_2026-04-05.json"
+  - "research/landis-data-source/landis_leacs_access_probe_2026-05-13.json"
   - "research/landis-data-source/landis_portal_inventory_2026-04-04.json"
   - "research/landis-data-source/landis_release_reconciliation_2026-04-05.json"
+  - "research/llm_wiki_vs_rag/LLM Wiki, Enhanced RAG and the Right Knowledge Architecture for MCP-Geo.md"
+  - "research/llm_wiki_vs_rag/README.md"
   - "research/map_delivery_research_2026-02/00_journal.md"
   - "research/map_delivery_research_2026-02/01_personas_and_user_journeys.md"
   - "research/map_delivery_research_2026-02/02_map_delivery_options_longlist.md"
@@ -568,9 +603,13 @@ source_paths:
   - "research/os_dataset_selection/OS Data Hub API Ecosystem.png"
   - "research/os_dataset_selection/OS_Data_Hub_Architecting_Great_Britain.pdf"
   - "research/os_dataset_selection/Technical Integration Specification_ Ordnance Survey API Ecosystem.docx"
+  - "research/os_dataset_selection/cv3_1hb_roadlinks.html"
   - "research/os_dataset_selection/initial_design_codex.md"
+  - "resources/__init__.py"
   - "resources/address_classification_codes.json"
+  - "resources/addressbase_epoch_schedule.json"
   - "resources/admin_boundaries.json"
+  - "resources/area_summary_workflows.json"
   - "resources/boundaries_wards.json"
   - "resources/boundary_pack_sources.json"
   - "resources/boundary_packs_index.json"
@@ -595,6 +634,8 @@ source_paths:
   - "resources/prompts/evaluation_prompts.json"
   - "resources/protected_landscapes_england.json"
   - "scripts/__init__.py"
+  - "scripts/addressbase_build_xref.py"
+  - "scripts/benchmark_env.py"
   - "scripts/boundary_autofix.py"
   - "scripts/boundary_cache_ingest.py"
   - "scripts/boundary_cache_schema.sql"
@@ -605,9 +646,11 @@ source_paths:
   - "scripts/build_obsidian_kb.py"
   - "scripts/check_claude_startup_scope.sh"
   - "scripts/check_codex_startup_scope.sh"
+  - "scripts/check_gemini_startup_scope.sh"
   - "scripts/check_lmr_host4.py"
   - "scripts/check_non_runtime_quality.sh"
   - "scripts/check_shared_benchmark_cache.sh"
+  - "scripts/check_spec_drift.py"
   - "scripts/claude-mcp-local"
   - "scripts/claude_serve_map.py"
   - "scripts/codex-mcp-local"
@@ -616,6 +659,7 @@ source_paths:
   - "scripts/devcontainer_post_start.sh"
   - "scripts/docx_hygiene.py"
   - "scripts/export_spec_package.sh"
+  - "scripts/gemini-mcp-local"
   - "scripts/generate_mcp_geo_analytical_index.py"
   - "scripts/generate_mcp_geo_functionality_showcase.py"
   - "scripts/generate_owasp_mcp_tool_manifest.py"
@@ -632,6 +676,7 @@ source_paths:
   - "scripts/landis_schema.sql"
   - "scripts/latest_reports.py"
   - "scripts/live_missing_tools_probe.py"
+  - "scripts/llm_wiki_postmortem_inventory.py"
   - "scripts/map_trials/export_notebook_scenario_pack.py"
   - "scripts/map_trials/host_simulation_profiles.py"
   - "scripts/map_trials/map_quality_checks.py"
@@ -648,10 +693,13 @@ source_paths:
   - "scripts/ons_catalog_refresh.py"
   - "scripts/ons_catalog_validate.py"
   - "scripts/ons_geo_cache_refresh.py"
+  - "scripts/ons_geo_live_validate.py"
   - "scripts/os-mcp"
   - "scripts/os_catalog_refresh.py"
   - "scripts/os_mcp.py"
   - "scripts/pack_cache_refresh.py"
+  - "scripts/prepare-for-demo"
+  - "scripts/prepare_for_demo.py"
   - "scripts/pytest-local"
   - "scripts/rate_limit_assessor.py"
   - "scripts/replicate_claude_tutorial.py"
@@ -674,6 +722,7 @@ source_paths:
   - "scripts/trace_report.py"
   - "scripts/trace_session.py"
   - "scripts/trace_utils.py"
+  - "scripts/unattended_client_eval.py"
   - "scripts/validate-owasp-mcp-local"
   - "scripts/validate_obsidian_kb.py"
   - "scripts/validate_owasp_mcp_server.py"
@@ -701,6 +750,7 @@ source_paths:
   - "server/audit/schemas/source_access.schema.json"
   - "server/audit/source_register.py"
   - "server/boundary_cache.py"
+  - "server/boundary_run_paths.py"
   - "server/circuit_breaker.py"
   - "server/config.py"
   - "server/dataset_cache.py"
@@ -716,6 +766,7 @@ source_paths:
   - "server/mcp/http_transport.py"
   - "server/mcp/playground.py"
   - "server/mcp/prompts.py"
+  - "server/mcp/rc2026.py"
   - "server/mcp/resource_access.py"
   - "server/mcp/resource_catalog.py"
   - "server/mcp/resource_handoff.py"
@@ -724,6 +775,8 @@ source_paths:
   - "server/mcp/tools.py"
   - "server/observability.py"
   - "server/ons_geo_cache.py"
+  - "server/ons_geo_catalog.py"
+  - "server/ons_geo_freshness.py"
   - "server/owasp_mcp_validation.py"
   - "server/protocol.py"
   - "server/route_graph.py"
@@ -822,11 +875,23 @@ source_paths:
   - "tests/fixtures/council_tax/sw1a1aa_results.html"
   - "tests/fixtures/council_tax/yo17hp_results.html"
   - "tests/fixtures/council_tax_band_gold.json"
+  - "tests/fixtures/council_tax_uprn_abp_example.json"
+  - "tests/fixtures/ons_geo/chd_sample.csv"
+  - "tests/fixtures/ons_geo/nspl_legacy.csv"
+  - "tests/fixtures/ons_geo/nsul_sample.csv"
+  - "tests/fixtures/ons_geo/onspd_arcgis_metadata.json"
+  - "tests/fixtures/ons_geo/onspd_arcgis_page_1.json"
+  - "tests/fixtures/ons_geo/onspd_modern.csv"
+  - "tests/fixtures/ons_geo/onsud_sample.csv"
+  - "tests/fixtures/ons_geo/portal_package_show.json"
+  - "tests/fixtures/ons_geo/portal_release_page.html"
+  - "tests/fixtures/ons_geo/rgc_current_sample.csv"
   - "tests/fixtures/psr_peat_floor_question.json"
   - "tests/helpers.py"
   - "tests/outputs/CV312JF-oa-example.html"
   - "tests/outputs/northolt.html"
   - "tests/test_accessors.py"
+  - "tests/test_addressbase_build_xref.py"
   - "tests/test_admin_lookup.py"
   - "tests/test_admin_lookup_cache.py"
   - "tests/test_admin_lookup_extended.py"
@@ -835,10 +900,16 @@ source_paths:
   - "tests/test_audit_api.py"
   - "tests/test_audit_normalise.py"
   - "tests/test_audit_pack_builder.py"
+  - "tests/test_benchmark_env.py"
+  - "tests/test_boundary_autofix.py"
   - "tests/test_boundary_cache.py"
   - "tests/test_boundary_pipeline_variant_policy.py"
+  - "tests/test_boundary_run_paths.py"
   - "tests/test_check_codex_startup_scope.py"
+  - "tests/test_check_gemini_startup_scope.py"
   - "tests/test_check_lmr_host4.py"
+  - "tests/test_check_shared_benchmark_cache.py"
+  - "tests/test_check_spec_drift.py"
   - "tests/test_circuit_breaker.py"
   - "tests/test_client_capabilities.py"
   - "tests/test_codex_long_horizon_summary.py"
@@ -846,6 +917,7 @@ source_paths:
   - "tests/test_config_secret_file.py"
   - "tests/test_council_tax_band.py"
   - "tests/test_council_tax_gold_eval.py"
+  - "tests/test_council_tax_uprn_query.py"
   - "tests/test_coverage_guardrails.py"
   - "tests/test_cross_platform_container_policy.py"
   - "tests/test_dataset_cache.py"
@@ -859,6 +931,7 @@ source_paths:
   - "tests/test_evaluation_expected_errors.py"
   - "tests/test_evaluation_harness_full.py"
   - "tests/test_evaluation_harness_live_api.py"
+  - "tests/test_gemini_mcp_local.py"
   - "tests/test_generate_mcp_geo_analytical_index.py"
   - "tests/test_generate_mcp_geo_functionality_showcase.py"
   - "tests/test_golden_scenarios.py"
@@ -879,6 +952,7 @@ source_paths:
   - "tests/test_map_trials_summary.py"
   - "tests/test_map_trials_verify.py"
   - "tests/test_maps_proxy.py"
+  - "tests/test_mcp_2026_rc.py"
   - "tests/test_mcp_client_if_none_match.py"
   - "tests/test_mcp_client_resources_get.py"
   - "tests/test_mcp_docker_local.py"
@@ -903,6 +977,9 @@ source_paths:
   - "tests/test_ons_geo.py"
   - "tests/test_ons_geo_cache.py"
   - "tests/test_ons_geo_cache_refresh.py"
+  - "tests/test_ons_geo_catalog.py"
+  - "tests/test_ons_geo_freshness.py"
+  - "tests/test_ons_geo_live_validate.py"
   - "tests/test_ons_new_tools.py"
   - "tests/test_ons_search_fallback.py"
   - "tests/test_ons_select.py"
@@ -917,12 +994,15 @@ source_paths:
   - "tests/test_os_features_helpers.py"
   - "tests/test_os_invalid_inputs.py"
   - "tests/test_os_landscape.py"
+  - "tests/test_os_map_helpers_extra.py"
   - "tests/test_os_map_tools.py"
+  - "tests/test_os_maps_helpers.py"
   - "tests/test_os_mcp_descriptor.py"
   - "tests/test_os_mcp_internals.py"
   - "tests/test_os_mcp_route_query.py"
   - "tests/test_os_names_success.py"
   - "tests/test_os_new_capability_tools.py"
+  - "tests/test_os_ngd_spring_2026_live.py"
   - "tests/test_os_no_api_key.py"
   - "tests/test_os_offline_tools.py"
   - "tests/test_os_peat.py"
@@ -942,6 +1022,7 @@ source_paths:
   - "tests/test_playground.py"
   - "tests/test_playground_events.py"
   - "tests/test_postcode_tool.py"
+  - "tests/test_prepare_for_demo.py"
   - "tests/test_prompts.py"
   - "tests/test_protocol_versions.py"
   - "tests/test_psr_peat_e2e.py"
@@ -987,6 +1068,7 @@ source_paths:
   - "tests/test_trace_session.py"
   - "tests/test_trace_utils.py"
   - "tests/test_typing_utils.py"
+  - "tests/test_unattended_client_eval.py"
   - "tests/test_unknown_tool.py"
   - "tests/test_validation.py"
   - "tools/__init__.py"
@@ -1036,6 +1118,8 @@ source_paths:
   - "tools/registry.py"
   - "tools/types.py"
   - "tools/typing_utils.py"
+  - "troubleshooting/ABP/after-revision-trace-claude-report.md"
+  - "troubleshooting/ABP/after-revision-trace-claude.md"
   - "troubleshooting/Deep Analysis Report- Peat Survey Failure Chain (Forest of Bowland).docx"
   - "troubleshooting/Fifth Harold Wood, after updates.docx"
   - "troubleshooting/Fifth harold_wood_walk_the_streets.html"
@@ -1045,7 +1129,10 @@ source_paths:
   - "troubleshooting/Fourth Harold Wood, after updates.docx"
   - "troubleshooting/Fourth Harold Wood, after updates.md"
   - "troubleshooting/Landis/check_real_sites.md"
+  - "troubleshooting/Landis/draw_roads_on_map.md"
+  - "troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md"
   - "troubleshooting/Landis/failure_data_availability.md"
+  - "troubleshooting/Landis/mapping_landis_results.md"
   - "troubleshooting/MCP-Geo view of Harold Wood Essex.docx"
   - "troubleshooting/MCP-Geo view of Harold Wood Essex.md"
   - "troubleshooting/Meeth North Devon/Meeth, North Devon report.docx"
@@ -1073,6 +1160,9 @@ source_paths:
   - "troubleshooting/harold-wood-essex-deep-analysis-2026-03-14.md"
   - "troubleshooting/harold-wood-essex-trace-evidence-2026-03-14.md"
   - "troubleshooting/mcp-apps-widget-host-bug-report.md"
+  - "troubleshooting/mcp-cowork/cowork-sanity-and-failure-report-2026-04-28.md"
+  - "troubleshooting/mcp-cowork/mcp-cowork-fail2.md"
+  - "troubleshooting/mcp-cowork/mcp-cowork-failures.md"
   - "troubleshooting/mcp-geo-trace.md"
   - "troubleshooting/mcp-initialise-post-optimisation.jsonc"
   - "troubleshooting/mcp-initialise.json"
@@ -1082,8 +1172,10 @@ source_paths:
   - "troubleshooting/peatland-bowland-floor-question-deep-analysis-2026-02-19.md"
   - "troubleshooting/third-harold-wood-after-updates-analysis-2026-03-15.md"
   - "troubleshooting/validating-nomis-trace-evidence-2026-03-03.md"
+  - "ui/__init__.py"
   - "ui/boundary_explorer.html"
   - "ui/feature_inspector.html"
+  - "ui/fora_york_house_map.html"
   - "ui/geography_selector.html"
   - "ui/route_planner.html"
   - "ui/shared/compact_contract.css"
@@ -1096,50 +1188,50 @@ source_paths:
   - "ui/vendor/maplibre-gl.css"
   - "ui/vendor/maplibre-gl.js"
   - "ui/vendor/shp.min.js"
-source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/.github/workflows/ci.yml"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/AGENTS.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/CHANGELOG.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/CONTEXT.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/GEMINI.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/Gemini-Code-Review.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/PROGRESS.MD"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/README.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.1.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.10.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.11.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.12.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.2.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.3.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.4.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.5.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.6.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.7.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.8.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.9.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.3.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.3.1.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.3.2.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.4.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.5.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.6.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.7.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/SKILL.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/benchmark_pack_v1.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_01_vulnerable_households.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_02_address_batch.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/.github/workflows/ci.yml"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/AGENTS.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/CHANGELOG.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/CONTEXT.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/GEMINI.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/Gemini-Code-Review.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/PROGRESS.MD"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/README.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.1.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.10.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.11.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.12.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.2.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.3.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.4.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.5.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.6.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.7.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.8.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.9.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.3.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.3.1.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.3.2.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.4.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.5.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.6.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.7.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.8.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.8.1.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/SKILL.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/benchmark_pack_v1.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt"
 source_hashes:
-  .github/workflows/ci.yml: "sha256:f6034ee7-a1bfa23f-85ef7d26-e49db85c-1e5cd1c5-388664c8-3bedee5c-02af4060"
-  AGENTS.md: "sha256:6a1a5b80-1f795ef4-3d36948d-16d041ef-e437fea0-06cdefad-da59c0f0-3e17de30"
-  CHANGELOG.md: "sha256:252eed1f-fb15f22a-3e8565c7-6b106cd0-8ff2b9ee-5283fcb5-b57b1589-9c309984"
-  CONTEXT.md: "sha256:7491e909-2b856e35-9845b0e1-b1810012-38af25c8-c53f46e6-03d769d6-e84157de"
+  .github/workflows/ci.yml: "sha256:d5729288-59efff5f-f6ec29df-3217ee98-790b11a9-6b38ee8e-901d12b5-28e9d451"
+  AGENTS.md: "sha256:48bfd2dd-ca8e9bf2-91c51fb0-550894d3-a351736c-61502efc-b8591312-eb1e46c9"
+  CHANGELOG.md: "sha256:7609427d-3636dc27-ba969ca5-4ed0c777-8469c7a8-5fb9d2db-63dad5eb-34168c23"
+  CONTEXT.md: "sha256:320e381f-5f7471c2-97d5ed69-8c72003e-d5f4c724-3426eb51-ca99076b-eede3adb"
   GEMINI.md: "sha256:d36bb40f-904fc33b-15e34bff-a06b1f73-383e9ac2-15c10cd2-33c6d10c-fd971368"
   Gemini-Code-Review.md: "sha256:65d676b2-ef0cc74f-bad244ac-3c28d05a-bd5c9934-2c8766d6-f3fc7f69-eefe28ff"
-  PROGRESS.MD: "sha256:36e56707-408a87b1-1d7424ba-f7865265-90fb6b64-77910634-ed261080-5fa6bafd"
-  README.md: "sha256:93a5372d-b1622a15-6b0349dc-a4755814-ec389283-39420228-77e83a54-a5de7f5b"
+  PROGRESS.MD: "sha256:cb45234f-a9a2e553-76fab9f1-837fe7ab-f8cfdc22-083df4d5-88ada35f-40ecefaa"
+  README.md: "sha256:943edd53-b3373afe-2034243a-51b10a89-d19c701c-6e4101db-b322cb37-0e389788"
   RELEASE_NOTES/0.2.1.md: "sha256:ad7fae04-5fa333cc-c431d7e6-6a790a48-85da7032-4d2cf2c8-2ba90af5-b54aedf6"
   RELEASE_NOTES/0.2.10.md: "sha256:10a1b4ac-dc2be5ba-18142c63-8986e311-5a64227f-14681141-2db6cf3f-ddfb1d18"
   RELEASE_NOTES/0.2.11.md: "sha256:abedb7ff-8bf00de3-94653863-e60d6e25-ba866dab-785f246e-51555121-a9842073"
@@ -1159,35 +1251,35 @@ source_hashes:
   RELEASE_NOTES/0.5.0.md: "sha256:165a9034-59772d49-1696e2f7-f6b68961-748fc2c9-35952e20-d308829f-d35d577f"
   RELEASE_NOTES/0.6.0.md: "sha256:15acee0d-2241e5cc-aeeac3cb-804839e9-d3db920c-61221a77-70726fe6-3f1d2bf9"
   RELEASE_NOTES/0.7.0.md: "sha256:1e5723a1-ea654d4f-abe38931-449c006a-a1e3c17c-060b5bfd-2238711c-52c74be5"
+  RELEASE_NOTES/0.8.0.md: "sha256:831956d7-83840a17-cd402d0f-1994e79e-de7c29ff-3ba00e38-3e443278-54f22500"
+  RELEASE_NOTES/0.8.1.md: "sha256:40a14b52-2a189b65-40628826-2221912d-598d1f43-c56ef705-04d9f633-874a793c"
   SKILL.md: "sha256:239dda35-60c21b51-63e281e4-d828463c-ce02a583-75481335-5ed54dc1-fd42be87"
   data/benchmarking/stakeholder_eval/benchmark_pack_v1.json: "sha256:25a3a2b0-a1a2c527-7f403dc7-f3ca04ee-af025a97-c1f928c7-45b9562d-aa4a0899"
   data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt: "sha256:049b6282-185b37ca-39f55776-1b8f8061-2b88b4c3-202b4d6c-578c5ac3-7d0a8d99"
-  data/benchmarking/stakeholder_eval/fixtures/scenario_01_vulnerable_households.csv: "sha256:c3c4ca8f-ccf98d1d-49aab504-5d2fdf3c-08034f8e-04ba0908-b9709913-d99148d1"
-  data/benchmarking/stakeholder_eval/fixtures/scenario_02_address_batch.csv: "sha256:b3709946-8f802551-f845be6f-2bef3c99-26c3955a-496faf8a-cf321263-ae6849a5"
-generated_at: "2026-04-06T14:09:00Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-04-06T14:09:00Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Source Catalog
 
 ## Evidence Scope
 
 - Categories: `code_runtime`, `docs_research`, `external_context`, `skills_maintenance`, `standards_ecosystem`, `storyline_control`
-- Source file count: 1094
+- Source file count: 1186
 
 ## Source Inventory
 
 | Path | Summary | First Seen | Last Commit | Related Tests |
 | --- | --- | --- | --- | --- |
-| `.github/workflows/ci.yml` | name: CI | 2026-03-10 | 2026-03-24 | - |
-| `AGENTS.md` | This document defines how agents (and humans) should work within the `mcp-geo` repository. It replaces a template from a | 2025-09-15 | 2026-03-24 | `tests/test_codex_long_horizon_summary.py`, `tests/test_obsidian_kb.py` |
-| `CHANGELOG.md` | All notable changes to this project will be documented in this file. - Added a repo-wide generated Obsidian knowledge ba | 2025-08-20 | 2026-04-06 | `tests/test_obsidian_kb.py` |
-| `CONTEXT.md` | Last updated: 2026-04-06 Owner: @chris-page-gov This file is the durable, repo-scoped context for Codex across environme | 2026-02-02 | 2026-04-06 | `tests/evaluation/live_capture.py`, `tests/test_obsidian_kb.py` |
-| `GEMINI.md` | This document provides essential context and instructions for AI agents (like Gemini) interacting with the MCP Geo Serve | 2026-03-24 | 2026-03-24 | - |
+| `.github/workflows/ci.yml` | name: CI | 2026-03-10 | 2026-04-28 | - |
+| `AGENTS.md` | This document defines how agents (and humans) should work within the `mcp-geo` repository. It replaces a template from a | 2025-09-15 | 2026-04-22 | `tests/test_codex_long_horizon_summary.py`, `tests/test_obsidian_kb.py` |
+| `CHANGELOG.md` | All notable changes to this project will be documented in this file. - Fixed published package contents so installed whe | 2025-08-20 | 2026-04-23 | `tests/test_obsidian_kb.py` |
+| `CONTEXT.md` | Last updated: 2026-06-01 Owner: @chris-page-gov This file is the durable, repo-scoped context for Codex across environme | 2026-02-02 | 2026-06-01 | `tests/evaluation/live_capture.py`, `tests/test_obsidian_kb.py` |
+| `GEMINI.md` | This document provides essential context and instructions for AI agents (like Gemini) interacting with the MCP Geo Serve | 2026-03-24 | 2026-03-24 | `tests/test_check_gemini_startup_scope.py`, `tests/test_check_shared_benchmark_cache.py` |
 | `Gemini-Code-Review.md` | This report provides a comprehensive code review of the **MCP Geo Server** repository, an advanced Model Context Protoco | 2026-03-24 | 2026-03-24 | - |
-| `PROGRESS.MD` | This file tracks how the implementation compares to the original proposal and later documentation as the MCP specificati | 2026-01-24 | 2026-04-06 | - |
-| `README.md` | A research Model Context Protocol (MCP) server for geospatial (Ordnance Survey) and statistical (Office of National Stat | 2025-08-20 | 2026-04-06 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
+| `PROGRESS.MD` | This file tracks how the implementation compares to the original proposal and later documentation as the MCP specificati | 2026-01-24 | 2026-06-01 | - |
+| `README.md` | A research Model Context Protocol (MCP) server for geospatial (Ordnance Survey) and statistical (Office of National Stat | 2025-08-20 | 2026-06-01 | `tests/test_check_spec_drift.py`, `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
 | `RELEASE_NOTES/0.2.1.md` | Focus: MCP STDIO adapter resource parity (ETag + describe) and developer client ergonomics. - STDIO `resources/read` now | 2025-09-17 | 2026-01-24 | - |
 | `RELEASE_NOTES/0.2.10.md` | - Spec package documentation plus Codex context guidance. - OSM-backed static map render endpoint and data resources (bo | 2026-02-05 | 2026-02-05 | - |
 | `RELEASE_NOTES/0.2.11.md` | - Admin lookup level filtering, match modes, and live fallback for cache search. - NOMIS query error detection for non-J | 2026-02-06 | 2026-02-06 | - |
@@ -1207,6 +1299,8 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `RELEASE_NOTES/0.5.0.md` | Date: 2026-03-04 This repository is a personal development project. It is not production code and is not approved by War | 2026-03-04 | 2026-03-04 | - |
 | `RELEASE_NOTES/0.6.0.md` | Date: 2026-03-08 `0.6.0` packages the validated Map Lab merge set and the latest reporting and benchmarking work on top  | 2026-03-08 | 2026-03-08 | - |
 | `RELEASE_NOTES/0.7.0.md` | Date: 2026-03-16 `0.7.0` packages the post-`0.6.0` platform hardening work across routing, security, MCP resource delive | 2026-03-16 | 2026-03-16 | - |
+| `RELEASE_NOTES/0.8.0.md` | Date: 2026-04-23 `0.8.0` pins the current MCP-Geo strategy baseline before a possible larger direction change. It packag | 2026-04-23 | 2026-04-23 | - |
+| `RELEASE_NOTES/0.8.1.md` | Date: 2026-04-23 `0.8.1` is a patch release for the `0.8.0` stable strategy baseline. It fixes the published package con | 2026-04-23 | 2026-04-23 | - |
 | `SKILL.md` | This document describes how to use the MCP Geo server for UK geospatial, ONS, and NOMIS statistics workflows. It is inte | 2026-01-20 | 2026-03-14 | `tests/test_obsidian_kb.py` |
 | `data/benchmarking/stakeholder_eval/benchmark_pack_v1.json` | JSON object keys: commonHeader, commonReturnFields, generatedOn, rubric, scenarios, title, version | 2026-03-09 | 2026-03-11 | `tests/test_resource_catalog.py`, `tests/test_stakeholder_benchmark_pack.py` |
 | `data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt` | POLYGON((-0.946200 53.321400,-0.946200 53.318800,-0.943000 53.318800,-0.943000 53.321400,-0.946200 53.321400)) | 2026-03-09 | 2026-03-09 | - |
@@ -1266,7 +1360,7 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `data/report_inputs/mcp_geo_functionality_showcase_examples.json` | JSON object keys: audience, cases, subtitle, title | 2026-03-07 | 2026-03-07 | - |
 | `docs/Boundaries.json` | JSON object keys: boundary_families, catalogue_sources, completion_definition, generated_at_utc, legacy_field_mappings,  | 2026-01-30 | 2026-03-15 | `tests/test_admin_lookup_live_internals.py` |
 | `docs/Boundaries.md` | ONS Geography (Open Geography Portal). These are usually published as downloadable boundary packages (GeoPackage / Shape | 2026-01-30 | 2026-02-01 | `tests/test_admin_lookup_live_internals.py` |
-| `docs/Build.md` | This guide describes how to install, run, and validate the current MCP Geo server in this repository. It replaces the or | 2025-08-20 | 2026-03-24 | `tests/evaluation/questions.py`, `tests/test_codex_long_horizon_summary.py`, `tests/test_os_features_collections.py`, `tests/test_os_map_tools.py` |
+| `docs/Build.md` | This guide describes how to install, run, and validate the current MCP Geo server in this repository. It replaces the or | 2025-08-20 | 2026-04-23 | `tests/evaluation/questions.py`, `tests/test_codex_long_horizon_summary.py`, `tests/test_os_features_collections.py`, `tests/test_os_map_tools.py` |
 | `docs/ChatGPT_setup_chat.md` | Use this setup when connecting MCP Geo from ChatGPT or similar MCP hosts. Set startup discovery to the curated `starter` | 2026-01-21 | 2026-02-14 | - |
 | `docs/Claude Conversations on MCP-Geo.docx` | Binary artifact | 2026-03-03 | 2026-03-16 | - |
 | `docs/Claude Conversations on MCP-Geo.md` | [Fixed MCP-Geo connection, asked again: [16](#fixed-mcp-geo-connection-asked-again)](#fixed-mcp-geo-connection-asked-aga | 2026-03-03 | 2026-03-03 | - |
@@ -1290,8 +1384,8 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `docs/MasterMap from Claude.jpg` | Binary artifact | 2026-01-21 | 2026-01-21 | - |
 | `docs/MasterMap from Claude.png` | Binary artifact | 2026-01-21 | 2026-01-21 | - |
 | `docs/Working with MCP Servers.docx` | Binary artifact | 2026-01-23 | 2026-03-16 | - |
-| `docs/benchmarking/codex_vs_claude_host_benchmark.md` | This runbook adds Codex as a first-class MCP host benchmark target for `mcp-geo` alongside Claude Desktop. For any cross | 2026-03-06 | 2026-04-05 | - |
-| `docs/benchmarking/codex_vs_claude_host_scenarios_v1.json` | JSON object keys: description, id, scenarios, title, version | 2026-03-06 | 2026-03-06 | - |
+| `docs/benchmarking/codex_vs_claude_host_benchmark.md` | This runbook adds Codex as a first-class MCP host benchmark target for `mcp-geo` alongside Claude Desktop. The default h | 2026-03-06 | 2026-04-14 | - |
+| `docs/benchmarking/codex_vs_claude_host_scenarios_v1.json` | JSON object keys: description, id, scenarios, title, version | 2026-03-06 | 2026-04-13 | - |
 | `docs/boundaries_completion_checklist.json` | JSON object keys: checklist_version, family_checks, final_status_values, global_checks, required_run_artifacts, scope, s | 2026-01-30 | 2026-02-23 | - |
 | `docs/boundary_cache.md` | This server can use a local PostGIS cache for administrative boundary geometry. The cache lets `admin_lookup.*` return f | 2026-01-30 | 2026-02-09 | `tests/test_admin_lookup_cache.py`, `tests/test_admin_lookup_extended.py`, `tests/test_boundary_cache.py`, `tests/test_resource_catalog.py` |
 | `docs/build_initial_version.md` | I want to use Codex to create the MCP server described in the documents [Mapping Ordnance Survey & ONS APIs to the Model | 2025-08-20 | 2026-01-24 | - |
@@ -1299,7 +1393,7 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `docs/client_trace_strategy.md` | This strategy captures enough signal to answer questions like: - "Is the client using tool search or only the always-loa | 2026-01-21 | 2026-03-06 | - |
 | `docs/codex_usage_examples.md` | Generated: `2026-03-01` This document captures practical examples of how Codex has been used on the `mcp-geo` repository | 2026-03-01 | 2026-03-01 | - |
 | `docs/decision_support_audit_pack.md` | Codex should start DSAP work by reading `AGENTS.md`, `CONTEXT.md`, `PROGRESS.MD`, and `docs/client_trace_strategy.md`. T | 2026-03-10 | 2026-03-10 | - |
-| `docs/design/figma/README.md` | This folder contains a Figma-importable wireframe file designed for the strictest cross-host inline budget. - Base frame | 2026-03-01 | 2026-03-01 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
+| `docs/design/figma/README.md` | This folder contains a Figma-importable wireframe file designed for the strictest cross-host inline budget. - Base frame | 2026-03-01 | 2026-03-01 | `tests/test_check_spec_drift.py`, `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
 | `docs/design/figma/compact_ui_proposals.html` | MCP Geo Compact UI Proposals | 2026-03-01 | 2026-03-01 | - |
 | `docs/design/figma/compact_ui_proposals_native.html` | MCP Geo Compact UI Proposals (Native) | 2026-03-01 | 2026-03-01 | - |
 | `docs/design/figma/mcp_apps_small_window_wireframes.svg` | Binary artifact | 2026-03-01 | 2026-03-01 | - |
@@ -1308,16 +1402,17 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `docs/document_hygiene.md` | This repo keeps some `.docx` files as working artifacts and publishable outputs. Those files need explicit hygiene contr | 2026-03-16 | 2026-03-16 | - |
 | `docs/evaluation.md` | This document describes the evaluation framework for the MCP Geo server. The framework is built around a question suite, | 2026-01-20 | 2026-04-05 | `tests/evaluation/__init__.py`, `tests/evaluation/audit_logger.py`, `tests/evaluation/harness.py`, `tests/evaluation/questions.py` |
 | `docs/examples.md` | Start map workflows with `os_maps.render`; do not require widgets for baseline success. ```json POST /tools/call { "tool | 2025-09-16 | 2026-02-22 | - |
-| `docs/getting_started.md` | This guide is for users who want to explore what data is available and how to interact with it using MCP clients or the  | 2026-01-24 | 2026-04-06 | `tests/test_mcp_client_if_none_match.py`, `tests/test_mcp_client_resources_get.py`, `tests/test_resources_ui_skills.py`, `tests/test_stdio_adapter_branches.py` |
+| `docs/getting_started.md` | This guide is for users who want to explore what data is available and how to interact with it using MCP clients or the  | 2026-01-24 | 2026-06-01 | `tests/test_mcp_client_if_none_match.py`, `tests/test_mcp_client_resources_get.py`, `tests/test_resources_ui_skills.py`, `tests/test_stdio_adapter_branches.py` |
 | `docs/golden_prompts_mcp_geo.md` | **Facts (read first):** - These prompts are designed to verify **MCP tool discovery**, **tool use**, **error handling**, | 2025-08-20 | 2026-01-20 | - |
+| `docs/llm_wiki_postmortem_workflow.md` | This workflow makes the MCP-Geo conversation postmortem repeatable across repos. It follows the pattern used for the `ai | 2026-05-14 | 2026-05-14 | - |
 | `docs/map_delivery_support_matrix.md` | Last verified: 2026-02-21 This matrix defines the map-delivery behavior MCP Geo operators should expect by host/browser  | 2026-02-14 | 2026-02-22 | - |
 | `docs/map_embedding_best_practices.md` | This guide defines host-safe map embedding patterns for MCP/AI runtimes with mixed UI capability. Always start with: 1.  | 2026-02-14 | 2026-02-14 | - |
 | `docs/map_handling_review.md` | Date: 2026-01-28 Branch: `sota-mcp` Scope: UI resource map handling + playground host + map proxy + map-related docs. -  | 2026-01-28 | 2026-01-28 | - |
 | `docs/map_scenario_packs.md` | Map scenario packs convert notebook-authored scenarios into MCP resources with provenance metadata. ```bash python scrip | 2026-02-14 | 2026-02-14 | `tests/test_resource_catalog.py` |
 | `docs/maps-vector-vts-resources-styles.json` | JSON object keys: glyphs, layers, sources, sprite, version | 2026-01-27 | 2026-01-27 | - |
-| `docs/mcp_apps_alignment.md` | This note summarizes how the repo aligns with the finalized MCP Apps spec and removes legacy OpenAI Apps (skybridge) com | 2026-01-24 | 2026-02-14 | - |
+| `docs/mcp_apps_alignment.md` | This note summarizes how the repo aligns with the finalized MCP Apps spec and removes legacy OpenAI Apps (skybridge) com | 2026-01-24 | 2026-06-01 | - |
 | `docs/mcp_geo_a452_high_street_intelligence_1.md` | **Source:** [Warwickshire County Council News](https://www.warwickshire.gov.uk/news/article/7391/a452-high-street-leamin | 2026-03-03 | 2026-03-03 | - |
-| `docs/mcp_geo_prism_bundle/README.md` | This bundle is generated from `docs/reports/mcp_geo_analytical_index_2026-03-11.md` and pinned to commit `fe862910da246c | 2026-03-11 | 2026-03-11 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
+| `docs/mcp_geo_prism_bundle/README.md` | This bundle is generated from `docs/reports/mcp_geo_analytical_index_2026-03-11.md` and pinned to commit `fe862910da246c | 2026-03-11 | 2026-03-11 | `tests/test_check_spec_drift.py`, `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
 | `docs/mcp_geo_prism_bundle/figures/f01_repo_at_a_glance.png` | Binary artifact | 2026-03-11 | 2026-03-11 | - |
 | `docs/mcp_geo_prism_bundle/figures/f02_reader_pathways.png` | Binary artifact | 2026-03-11 | 2026-03-11 | - |
 | `docs/mcp_geo_prism_bundle/figures/f03_runtime_request_flow.png` | Binary artifact | 2026-03-11 | 2026-03-11 | - |
@@ -1368,6 +1463,7 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `docs/mcp_geo_prism_bundle/sections/07-6-research-testing-evidence-and-release-operations.tex` | \section{6. Research, Testing, Evidence, and Release | 2026-03-11 | 2026-03-11 | - |
 | `docs/mcp_geo_prism_bundle/sections/08-7-appendix-a-infographic-prompts.tex` | \section{7. Appendix A. Infographic | 2026-03-11 | 2026-03-11 | - |
 | `docs/mcp_geo_prism_bundle/sections/09-8-appendix-b-citation-method-and-baseline-replacement-audit.tex` | \section{8. Appendix B. Citation Method and Baseline Replacement | 2026-03-11 | 2026-03-11 | - |
+| `docs/ons_geo_source_resolution.md` | This note explains how `mcp-geo` resolves ONS geography products, what the main abbreviations mean, and why "latest pack | 2026-04-09 | 2026-04-12 | - |
 | `docs/payload-redacted-example.json` | JSON object keys: glyphs, layers, sources, sprite, version | 2026-01-27 | 2026-01-27 | - |
 | `docs/public_sector_ai_community/00_delivery_plan.md` | Produce a complete documentation package for the UK Public Sector AI Community that is readable by novices and apprentic | 2026-03-04 | 2026-03-04 | - |
 | `docs/public_sector_ai_community/01_overview_for_novices.md` | This project helps AI assistants answer UK public-sector questions by connecting them to trusted tools and datasets. Ins | 2026-03-04 | 2026-03-04 | - |
@@ -1384,8 +1480,8 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `docs/public_sector_ai_community/12_data_expansion_rbac_abac_and_governance.md` | Current implementation emphasis is broad read-only access and deterministic troubleshooting for low-to-moderate sensitiv | 2026-03-04 | 2026-03-04 | - |
 | `docs/public_sector_ai_community/13_future_direction_for_mcp_in_uk_public_sector.md` | From repository and standards tracking evidence, current direction includes: - movement toward stable multi-version MCP  | 2026-03-04 | 2026-03-04 | - |
 | `docs/public_sector_ai_community/14_evidence_and_report_index.md` | This index maps major claims in this documentation set to repository evidence artifacts. - `CONTEXT.md` - `PROGRESS.MD`  | 2026-03-04 | 2026-03-11 | - |
-| `docs/public_sector_ai_community/README.md` | This documentation set explains what was discovered and delivered in `mcp-geo`, in language suitable for: - novice users | 2026-03-04 | 2026-03-04 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
-| `docs/public_sector_ai_community/prism/README.md` | - `main.tex` - `references.bib` - `sections/*.tex` ```bash cd docs/public_sector_ai_community/prism pdflatex main.tex bi | 2026-03-04 | 2026-03-04 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
+| `docs/public_sector_ai_community/README.md` | This documentation set explains what was discovered and delivered in `mcp-geo`, in language suitable for: - novice users | 2026-03-04 | 2026-03-04 | `tests/test_check_spec_drift.py`, `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
+| `docs/public_sector_ai_community/prism/README.md` | - `main.tex` - `references.bib` - `sections/*.tex` ```bash cd docs/public_sector_ai_community/prism pdflatex main.tex bi | 2026-03-04 | 2026-03-04 | `tests/test_check_spec_drift.py`, `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
 | `docs/public_sector_ai_community/prism/main.pdf` | Binary artifact | 2026-03-04 | 2026-03-04 | - |
 | `docs/public_sector_ai_community/prism/main.tex` | \documentclass[11pt,a4paper]{report} | 2026-03-04 | 2026-03-04 | - |
 | `docs/public_sector_ai_community/prism/references.bib` | @misc{readme_main, | 2026-03-04 | 2026-03-04 | - |
@@ -1411,7 +1507,7 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `docs/reports/MCP-Geo Stakeholder Mapping and Value Propositions.pdf` | Binary artifact | 2026-03-10 | 2026-03-10 | - |
 | `docs/reports/MCP-Geo_Strategic_Briefing.pdf` | Binary artifact | 2026-02-08 | 2026-03-10 | - |
 | `docs/reports/MCP-Geo_evaluation_questions.md` | Generated: 2026-03-10 This pack turns the Phase 3 prompt bank into a run-ready benchmark for stakeholder evaluation. Sce | 2026-03-09 | 2026-03-11 | `tests/test_stakeholder_benchmark_pack.py` |
-| `docs/reports/README.md` | This folder contains human-readable run reports and investigation summaries. - 2026-03-11: [MCP-Geo Analytical Index](mc | 2026-02-07 | 2026-04-05 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
+| `docs/reports/README.md` | This folder contains human-readable run reports and investigation summaries. - 2026-03-11: [MCP-Geo Analytical Index](mc | 2026-02-07 | 2026-04-14 | `tests/test_check_spec_drift.py`, `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
 | `docs/reports/Succinct information pack by GPT-5.4.docx` | Binary artifact | 2026-03-11 | 2026-03-16 | - |
 | `docs/reports/UPRN Data Cards.docx` | Binary artifact | 2026-02-25 | 2026-03-16 | - |
 | `docs/reports/Working with Codex redacted.docx` | Binary artifact | 2026-03-16 | 2026-03-16 | - |
@@ -1429,6 +1525,32 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `docs/reports/assets/wheelchair_access_maps_triptych_2026-03-07.png` | Binary artifact | 2026-03-07 | 2026-03-07 | - |
 | `docs/reports/assets/wheelchair_route_comparison_2026-03-07.png` | Binary artifact | 2026-03-07 | 2026-03-07 | - |
 | `docs/reports/boundary_variant_coverage_gap_2026-02-23.md` | This report tracks boundary-variant availability hardening from baseline gap to strict full-coverage resolution. Evidenc | 2026-02-23 | 2026-02-23 | - |
+| `docs/reports/client_interop_unattended/.gitignore` | Generated unattended benchmark outputs live in this subfolder. | 2026-04-14 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/README.md` | This subfolder contains unattended multi-client evaluation outputs and related analysis for the host benchmarking harnes | 2026-04-14 | 2026-04-14 | `tests/test_check_spec_drift.py`, `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12.json` | JSON object keys: attempts, generatedAt, scenarioPack, tracks | 2026-04-12 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12.md` | Generated: 2026-04-12T20:43:39Z Scenario pack: codex_vs_claude_host_v1 | Track | Attempts | Scored | Average | Statuses  | 2026-04-12 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12_analysis.md` | Date: 2026-04-12 Primary evidence pack: - `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04 | 2026-04-12 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.claude_cli.readiness.json` | JSON object keys: attemptCount, attempts, blocker, blockerCategory, configVisibility, finalAttemptKind, firstAttemptOutc | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.codex_cli.readiness.json` | JSON object keys: attemptCount, attempts, blocker, blockerCategory, configVisibility, finalAttemptKind, firstAttemptOutc | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.gemini_cli.readiness.json` | JSON object keys: attemptCount, attempts, blocker, blockerCategory, configVisibility, finalAttemptKind, firstAttemptOutc | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.json` | JSON object keys: attempts, capability, generatedAt, readiness, scenarioPack, tracks | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.md` | Generated: 2026-04-13T12:42:37Z Scenario pack: codex_vs_claude_host_v1 | Track | Outcome | First Attempt | Final Attempt | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.vscode_ide.readiness.json` | JSON object keys: attemptCount, attempts, blocker, blockerCategory, configVisibility, finalAttemptKind, firstAttemptOutc | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_readiness_probe_v2.claude_cli.readiness.json` | JSON object keys: attemptCount, attempts, blocker, blockerCategory, configVisibility, finalAttemptKind, firstAttemptOutc | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_readiness_probe_v2.codex_cli.readiness.json` | JSON object keys: attemptCount, attempts, blocker, blockerCategory, configVisibility, finalAttemptKind, firstAttemptOutc | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_readiness_probe_v2.gemini_cli.readiness.json` | JSON object keys: attemptCount, attempts, blocker, blockerCategory, configVisibility, finalAttemptKind, firstAttemptOutc | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_readiness_probe_v2.json` | JSON object keys: attempts, capability, generatedAt, readiness, scenarioPack, tracks | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_readiness_probe_v2.md` | Generated: 2026-04-13T08:46:27Z Scenario pack: codex_vs_claude_host_v1 | Track | Outcome | First Attempt | Final Attempt | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_readiness_probe_v2.vscode_ide.readiness.json` | JSON object keys: attemptCount, attempts, blocker, blockerCategory, configVisibility, finalAttemptKind, firstAttemptOutc | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v16_useful_wait.json` | JSON object keys: attempts, capability, generatedAt, readiness, scenarioPack, tracks | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v16_useful_wait.md` | Generated: 2026-04-13T12:01:04Z Scenario pack: codex_vs_claude_host_v1 | Track | Outcome | First Attempt | Final Attempt | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v16_useful_wait.vscode_ide.readiness.json` | JSON object keys: attemptCount, attempts, blocker, blockerCategory, configVisibility, finalAttemptKind, firstAttemptOutc | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v17_no_primer.json` | JSON object keys: attempts, capability, generatedAt, readiness, scenarioPack, tracks | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v17_no_primer.md` | Generated: 2026-04-13T12:06:13Z Scenario pack: codex_vs_claude_host_v1 | Track | Outcome | First Attempt | Final Attempt | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v17_no_primer.vscode_ide.readiness.json` | JSON object keys: attemptCount, attempts, blocker, blockerCategory, configVisibility, finalAttemptKind, firstAttemptOutc | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_full_v18_no_primer.json` | JSON object keys: attempts, capability, generatedAt, readiness, scenarioPack, tracks | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_full_v18_no_primer.md` | Generated: 2026-04-13T12:13:45Z Scenario pack: codex_vs_claude_host_v1 | Track | Outcome | First Attempt | Final Attempt | 2026-04-13 | 2026-04-14 | - |
+| `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_full_v18_no_primer.vscode_ide.readiness.json` | JSON object keys: attemptCount, attempts, blocker, blockerCategory, configVisibility, finalAttemptKind, firstAttemptOutc | 2026-04-13 | 2026-04-14 | - |
 | `docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.json` | JSON object keys: generatedAt, scenarioPack, sessions, tracks | 2026-03-06 | 2026-03-06 | - |
 | `docs/reports/codex_vs_claude_host_benchmark_2026-03-06_smoke.md` | Generated: 2026-03-06T07:59:33Z Scenario pack: codex_vs_claude_host_v1 | Track | Sessions | Scenario Coverage | Overall  | 2026-03-06 | 2026-03-06 | - |
 | `docs/reports/compact_windows_acceptance_baseline_run_2026-03-01.md` | Apply the strict acceptance gate defined in: - `docs/reports/compact_windows_unattended_implementation_and_test_plan_202 | 2026-03-01 | 2026-03-01 | - |
@@ -1436,9 +1558,10 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `docs/reports/compact_windows_unattended_implementation_and_test_plan_2026-03-01.md` | Deliver all six MCP-Apps UIs with deterministic behavior in compact host windows, and gate changes with a strict unatten | 2026-03-01 | 2026-03-01 | - |
 | `docs/reports/docx_hygiene_audit_2026-03-16.json` | JSON object keys: records, summary | 2026-03-16 | 2026-03-16 | - |
 | `docs/reports/docx_hygiene_audit_2026-03-16.md` | - Public DOCX files scanned: `24` - Lockfiles: `0` - Missing `.md`: `12` - Missing `.pdf`: `17` - Missing both: `9` - Un | 2026-03-16 | 2026-03-16 | - |
-| `docs/reports/exmouth_wheelchair_access_map_2026-03-07.html` | Exmouth town-centre wheelchair access map | 2026-03-07 | 2026-03-07 | - |
+| `docs/reports/exmouth_wheelchair_access_map_2026-03-07.html` | Exmouth town-centre wheelchair access map | 2026-03-07 | 2026-04-09 | - |
 | `docs/reports/exmouth_wheelchair_access_map_2026-03-07.md` | Generated artefacts: - HTML map: `docs/reports/exmouth_wheelchair_access_map_2026-03-07.html` - JSON export: `data/expor | 2026-03-07 | 2026-03-07 | - |
 | `docs/reports/gRPC Native Transport for MCP.png` | Binary artifact | 2026-02-25 | 2026-02-25 | - |
+| `docs/reports/landis_leacs_access_probe_2026-05-13.md` | This probe checked whether the LandIS LEACS data needed for wider pipe-risk coverage can be downloaded from the availabl | 2026-05-13 | 2026-05-13 | - |
 | `docs/reports/landis_phase_2_surfacing_plan_2026-04-04.md` | Date: 2026-04-04 Updated: 2026-04-05 Turn the completed authenticated LandIS archive into a deliberate phase-2 MCP surfa | 2026-04-04 | 2026-04-05 | - |
 | `docs/reports/landis_portal_inventory_2026-04-04.md` | Generated: `2026-04-04T19:38:31.702172+00:00` This inventory was generated from an authenticated LandIS portal session i | 2026-04-04 | 2026-04-04 | - |
 | `docs/reports/landis_release_surface_reconciliation_2026-04-05.md` | Date: 2026-04-05 Check whether the completed authenticated LandIS portal mirror is the full released LandIS data surface | 2026-04-05 | 2026-04-05 | - |
@@ -1478,6 +1601,7 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `docs/reports/os_catalog_live_run_2026-02-08.md` | This run fixes the 2026-02-07 timeouts by using a smaller bbox for NGD per-collection `items` probes. - Date: 2026-02-08 | 2026-02-08 | 2026-02-08 | - |
 | `docs/reports/os_catalog_repo_usage_and_delivery_plan_2026-02-12.md` | This report reviews `/Users/crpage/repos/mcp-geo/resources/os_catalog.json`, identifies what is currently used in the re | 2026-02-13 | 2026-02-13 | - |
 | `docs/reports/os_endpoint_family_probe_2026-02-13.json` | JSON object keys: apiKeyConfigured, generatedAt, probeCount, results | 2026-02-13 | 2026-02-13 | - |
+| `docs/reports/os_ngd_spring_2026_release_impact.md` | Date: 2026-04-22 - [OS NGD product page](https://www.ordnancesurvey.co.uk/products/os-ngd) - [OS NGD What's New](https:/ | 2026-04-22 | 2026-04-22 | - |
 | `docs/reports/owasp_mcp_server_validation_2026-03-13.md` | - Project: `mcp-geo` - Profile: `prod-strict` - Verdict: `compliant` - Score: `100.0` - Source baseline: `A Practical Gu | 2026-03-13 | 2026-03-13 | - |
 | `docs/reports/peatland-case-study/adoption-path.md` | This model is built to be usable by non-technical leaders. It assumes **capabilities are governed services** (with defin | 2026-02-21 | 2026-02-21 | - |
 | `docs/reports/peatland-case-study/annotated-bibliography.md` | 1. **Model Context Protocol Specification (2025-11-25)** – Defines MCP as an open protocol for integrating LLM applicati | 2026-02-21 | 2026-02-21 | - |
@@ -1491,12 +1615,12 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `docs/reports/repo_extent_complexity_report_card_2026-02-25.md` | Generated: `2026-02-25T06:34:25.969900Z` Reporting scope used for the card: `workspace` Lookback window: `180` days This | 2026-02-25 | 2026-02-25 | - |
 | `docs/reports/road_stat_usrn_integration_task_brief_2026-03-16.md` | This brief defines the first `mcp-geo` implementation for USRN-level street-data access using the published Road Stat AP | 2026-03-16 | 2026-03-16 | - |
 | `docs/reports/safe_by_design_review_2026-02-21.md` | Date: 2026-02-21 Reviewer: Codex (GPT-5) Scope: - Repository code review for safe-by-design, governance, and assurance c | 2026-02-21 | 2026-02-21 | - |
-| `docs/reports/sidmouth_wheelchair_access_map_2026-03-07.html` | Sidmouth town-centre wheelchair access map | 2026-03-07 | 2026-03-07 | - |
+| `docs/reports/sidmouth_wheelchair_access_map_2026-03-07.html` | Sidmouth town-centre wheelchair access map | 2026-03-07 | 2026-04-09 | - |
 | `docs/reports/sidmouth_wheelchair_access_map_2026-03-07.md` | Generated artefacts: - HTML map: `docs/reports/sidmouth_wheelchair_access_map_2026-03-07.html` - JSON export: `data/expo | 2026-03-07 | 2026-03-07 | - |
 | `docs/reports/stanley_house_clampet_lane_context_case_2026-03-07.md` | Preserve a user-led example in the public repository so it can be cited and reused as a stable MCP-Geo case study. The o | 2026-03-07 | 2026-03-07 | - |
 | `docs/reports/teignmouth_exmouth_sidmouth_access_comparison_2026-03-07.md` | This note explains why Exmouth and Sidmouth are useful nearby comparison towns for the Teignmouth wheelchair-access work | 2026-03-07 | 2026-03-07 | `tests/test_generate_mcp_geo_functionality_showcase.py` |
 | `docs/reports/teignmouth_peninsula_building_profile_brief_2026-03-06.md` | Define a reproducible south-of-railway area of interest for the Teignmouth peninsula, identify the MCP-Geo data that can | 2026-03-07 | 2026-03-07 | `tests/test_generate_mcp_geo_functionality_showcase.py` |
-| `docs/reports/teignmouth_wheelchair_access_map_2026-03-07.html` | Teignmouth town-centre wheelchair access map | 2026-03-07 | 2026-03-07 | - |
+| `docs/reports/teignmouth_wheelchair_access_map_2026-03-07.html` | Teignmouth town-centre wheelchair access map | 2026-03-07 | 2026-04-09 | - |
 | `docs/reports/teignmouth_wheelchair_access_map_2026-03-07.md` | Generated artefacts: - HTML map: `docs/reports/teignmouth_wheelchair_access_map_2026-03-07.html` - JSON export: `data/ex | 2026-03-07 | 2026-03-07 | - |
 | `docs/reports/uprn-data-cards.md` | UPRN Data Cards (Venue Samples) 55-57 Rivington Street, London, EC2A 3QA Generated from uprn_debug outputs (schema 1.2.0 | 2026-02-25 | 2026-02-25 | - |
 | `docs/review_codex_in_container.md` | That’s a sensible move — running the **Codex VS Code extension inside the DevContainer** is the cleanest way to give it  | 2026-01-24 | 2026-01-24 | - |
@@ -1513,40 +1637,39 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `docs/spec_package/07_security_privacy.md` | - OS and ONS credentials can be injected via `*_FILE` environment variables. - Remote `/mcp` can require HS256 JWT beare | 2026-02-02 | 2026-03-24 | - |
 | `docs/spec_package/08_observability_ops.md` | - Structured logs via `loguru`. - Correlation IDs included in error payloads when available. - Prometheus endpoint at `/ | 2026-02-02 | 2026-03-24 | - |
 | `docs/spec_package/09_testing_quality.md` | - Pytest with >=90% coverage gate. - Success, validation, and upstream error paths covered. - STDIO adapter behaviors te | 2026-02-02 | 2026-03-10 | - |
-| `docs/spec_package/10_mcp_apps_ui.md` | MCP Geo exposes UI resources that can be opened by MCP clients that support `text/html;profile=mcp-app` resources. - `ui | 2026-02-02 | 2026-03-10 | - |
+| `docs/spec_package/10_mcp_apps_ui.md` | MCP Geo exposes UI resources that can be opened by MCP clients that support `text/html;profile=mcp-app` resources. - `ui | 2026-02-02 | 2026-05-13 | - |
 | `docs/spec_package/11_walkthroughs.md` | 1. Call `os_places.by_postcode` with a UK postcode. 2. Use the returned lat/lon and call `admin_lookup.containing_areas` | 2026-02-02 | 2026-03-10 | - |
-| `docs/spec_package/12_backlog_and_plan.md` | - **Map render tool**: `os_maps.render` now returns a static map proxy URL (OSM tile proxy). - **Resources catalog**: ex | 2026-02-02 | 2026-03-10 | - |
+| `docs/spec_package/12_backlog_and_plan.md` | - **Map render tool**: `os_maps.render` now returns a static map proxy URL (OSM tile proxy). - **Resources catalog**: ex | 2026-02-02 | 2026-06-01 | - |
 | `docs/spec_package/13_sequence_diagrams.md` | This section provides sequence diagrams for the critical end-to-end flows. Diagrams are expressed in Mermaid so they can | 2026-02-02 | 2026-03-10 | - |
 | `docs/spec_package/14_tool_operability.feature` | Feature: MCP Geo Live Tool Operability | 2026-02-22 | 2026-02-22 | - |
 | `docs/spec_package/14_tool_operability_coverage.md` | This chapter defines measurable coverage for live tool operability using a Gherkin requirement set (`14_tool_operability | 2026-02-22 | 2026-02-22 | - |
-| `docs/spec_package/README.md` | This package documents the current MCP Geo prototype as a reasoned, end-to-end specification. It is designed for test re | 2026-02-02 | 2026-02-22 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
+| `docs/spec_package/README.md` | This package documents the current MCP Geo prototype as a reasoned, end-to-end specification. It is designed for test re | 2026-02-02 | 2026-02-22 | `tests/test_check_spec_drift.py`, `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
 | `docs/spec_package/export.md` | This package is authored in Markdown. You can export it into a more presentable format (DOCX or PDF) using Pandoc. The r | 2026-02-02 | 2026-02-02 | `tests/evaluation/questions.py`, `tests/test_evaluation_harness_full.py`, `tests/test_live_missing_tools_probe.py`, `tests/test_map_trials_export_notebook_scenario_pack.py` |
 | `docs/spec_package/images/.gitkeep` |  | 2025-09-16 | 2026-02-02 | - |
 | `docs/spec_package/screenshots.md` | This package references screenshots that should be captured during testing. Existing images are included where available | 2026-02-02 | 2026-02-02 | `tests/test_map_trials_verify.py` |
-| `docs/spec_tracking.md` | This file tracks preview or evolving specs/features that this repo depends on. Process: - Add an entry when a preview sp | 2026-01-21 | 2026-03-08 | - |
+| `docs/spec_tracking.md` | This file tracks preview or evolving specs/features that this repo depends on. Process: - Add an entry when a preview sp | 2026-01-21 | 2026-06-01 | - |
 | `docs/tool_catalog.md` | Auto-generated list of current tools, their descriptions, versions, and JSON Schemas. | Tool | Version | Description | | | 2025-11-03 | 2026-03-10 | - |
-| `docs/troubleshooting.md` | This guide lists common error codes emitted by the MCP Geo server and suggested remediation steps. Need OS credentials o | 2025-11-03 | 2026-03-24 | `tests/test_docx_hygiene.py` |
-| `docs/tutorial.md` | This tutorial is an evaluation-style walkthrough for the **mcp-geo** MCP server. It is inspired by the legacy evaluation | 2026-01-20 | 2026-03-15 | - |
-| `docs/vendor/README.md` | We keep large HTML snapshots **out of git** to avoid bloating repo history. Use the fetch and post-process scripts to re | 2026-01-21 | 2026-03-08 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
-| `docs/vendor/agentskills` | Tracked directory or submodule entry. | 2026-02-07 | 2026-03-01 | - |
-| `docs/vendor/mcp/README.md` | This folder is intended to hold **offline** copies of the MCP specification and key dev-tool docs. - [MCP specification  | 2026-01-21 | 2026-01-21 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
-| `docs/vendor/mcp/repos/ext-apps` | Tracked directory or submodule entry. | 2026-01-21 | 2026-03-01 | - |
-| `docs/vendor/mcp/repos/ext-auth` | Tracked directory or submodule entry. | 2026-03-01 | 2026-03-01 | - |
-| `docs/vendor/mcp/repos/inspector` | Tracked directory or submodule entry. | 2026-01-21 | 2026-03-01 | - |
-| `docs/vendor/mcp/repos/modelcontextprotocol` | Tracked directory or submodule entry. | 2026-01-21 | 2026-03-01 | - |
-| `docs/vendor/openai/README.md` | Deprecated as of 2026-03-08. For current OpenAI/Codex/API/App SDK documentation, use the shared `openaiDeveloperDocs` MC | 2026-01-21 | 2026-03-08 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
+| `docs/troubleshooting.md` | This guide lists common error codes emitted by the MCP Geo server and suggested remediation steps. Need OS credentials o | 2025-11-03 | 2026-05-13 | `tests/test_docx_hygiene.py` |
+| `docs/tutorial.md` | This tutorial is an evaluation-style walkthrough for the **mcp-geo** MCP server. It is inspired by the legacy evaluation | 2026-01-20 | 2026-04-09 | - |
+| `docs/vendor/README.md` | We keep large HTML snapshots **out of git** to avoid bloating repo history. Use the fetch and post-process scripts to re | 2026-01-21 | 2026-03-08 | `tests/test_check_spec_drift.py`, `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
+| `docs/vendor/agentskills` | Tracked directory or submodule entry. | 2026-02-07 | 2026-06-01 | - |
+| `docs/vendor/mcp/README.md` | This folder is intended to hold **offline** copies of the MCP specification and key dev-tool docs. - [MCP specification  | 2026-01-21 | 2026-06-01 | `tests/test_check_spec_drift.py`, `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
+| `docs/vendor/mcp/repos/ext-apps` | Tracked directory or submodule entry. | 2026-01-21 | 2026-06-01 | - |
+| `docs/vendor/mcp/repos/ext-auth` | Tracked directory or submodule entry. | 2026-03-01 | 2026-06-01 | - |
+| `docs/vendor/mcp/repos/inspector` | Tracked directory or submodule entry. | 2026-01-21 | 2026-06-01 | - |
+| `docs/vendor/mcp/repos/modelcontextprotocol` | Tracked directory or submodule entry. | 2026-01-21 | 2026-06-01 | - |
+| `docs/vendor/openai/README.md` | Deprecated as of 2026-03-08. For current OpenAI/Codex/API/App SDK documentation, use the shared `openaiDeveloperDocs` MC | 2026-01-21 | 2026-03-08 | `tests/test_check_spec_drift.py`, `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
 | `docs/vendor/openai/apps_sdk_mcp_apps_ui.md` | Use the shared `openaiDeveloperDocs` MCP server (`https://developers.openai.com/mcp`) for current OpenAI developer docs. | 2026-01-21 | 2026-03-08 | - |
 | `docs/vendor/openai/chatgpt_connectors_developer_mode.md` | Search the shared `openaiDeveloperDocs` MCP server (`https://developers.openai.com/mcp`) first for current OpenAI develo | 2026-01-21 | 2026-03-08 | - |
 | `docs/vendor/openai/mcp_inspector.md` | This placeholder is no longer maintained. Use the current MCP Inspector docs from the canonical upstream sources rather  | 2026-01-21 | 2026-03-08 | - |
 | `docs/vendor/openai/mcp_platform_docs.md` | Use the shared `openaiDeveloperDocs` MCP server (`https://developers.openai.com/mcp`) or the setup guide at `https://dev | 2026-01-24 | 2026-03-08 | - |
 | `docs/vendor/openai/mcp_transport_streamable_http.md` | Use the current normative MCP transport docs rather than this placeholder. For OpenAI developer guidance, start with the | 2026-01-21 | 2026-03-08 | - |
-| `docs/vendor/openai/repos/openai-apps-sdk-examples` | Tracked directory or submodule entry. | 2026-01-21 | 2026-01-21 | - |
-| `docs/vscode.md` | This repo includes a VS Code workspace MCP configuration at `.vscode/mcp.json`. - VS Code with MCP support enabled (MCP  | 2026-02-09 | 2026-03-08 | `tests/test_check_lmr_host4.py` |
-| `mcp.json` | JSON object keys: $schema, mcpServers | 2025-08-20 | 2026-03-08 | `tests/audit_test_utils.py`, `tests/evaluation/harness.py`, `tests/evaluation/questions.py`, `tests/test_audit_normalise.py` |
+| `docs/vendor/openai/repos/openai-apps-sdk-examples` | Tracked directory or submodule entry. | 2026-01-21 | 2026-06-01 | - |
+| `docs/vscode.md` | This repo includes a VS Code workspace MCP configuration at `.vscode/mcp.json`. - VS Code with MCP support enabled (MCP  | 2026-02-09 | 2026-04-12 | `tests/test_check_lmr_host4.py`, `tests/test_host_benchmark.py`, `tests/test_unattended_client_eval.py` |
 | `playground/app.py` | Legacy FastAPI stub for the playground UI. The active playground is the Svelte + Vite app under `playground/`. Run `npm  | 2025-08-20 | 2026-01-28 | `tests/conftest.py`, `tests/evaluation/audit_logger.py`, `tests/evaluation/harness.py`, `tests/evaluation/live_capture.py` |
 | `playground/index.html` | MCP Geo Playground | 2026-01-25 | 2026-01-28 | - |
-| `playground/package-lock.json` | JSON object keys: lockfileVersion, name, packages, requires, version | 2026-01-25 | 2026-03-16 | - |
-| `playground/package.json` | JSON object keys: dependencies, devDependencies, engines, name, overrides, private, scripts, type | 2026-01-25 | 2026-03-11 | `tests/__init__.py`, `tests/test_docx_hygiene.py`, `tests/test_evaluation_harness_full.py`, `tests/test_os_downloads_tools.py` |
+| `playground/package-lock.json` | JSON object keys: lockfileVersion, name, packages, requires, version | 2026-01-25 | 2026-04-10 | - |
+| `playground/package.json` | JSON object keys: dependencies, devDependencies, engines, name, overrides, private, scripts, type | 2026-01-25 | 2026-04-10 | `tests/__init__.py`, `tests/test_docx_hygiene.py`, `tests/test_evaluation_harness_full.py`, `tests/test_ons_geo_cache_refresh.py` |
 | `playground/playwright.compact-matrix.config.js` | import { defineConfig, devices } from "@playwright/test"; | 2026-03-01 | 2026-03-01 | - |
 | `playground/playwright.compact.config.js` | import { defineConfig, devices } from "@playwright/test"; | 2026-03-01 | 2026-03-01 | - |
 | `playground/playwright.config.js` | import { defineConfig } from "@playwright/test"; | 2026-01-25 | 2026-02-11 | - |
@@ -1571,7 +1694,7 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `playground/tests/boundary_explorer_local_layers.spec.js` | import { test, expect } from "@playwright/test"; | 2026-02-11 | 2026-03-12 | - |
 | `playground/tests/boundary_explorer_option_matrix.spec.js` | import { test, expect } from "@playwright/test"; | 2026-03-01 | 2026-03-01 | - |
 | `playground/tests/bridge_security.spec.js` | import { expect, test } from "@playwright/test"; | 2026-03-11 | 2026-03-11 | - |
-| `playground/tests/compact_windows/README.md` | This directory is the dedicated unattended test harness for compact-host MCP UI behavior. Current status: - CW-7 complet | 2026-03-01 | 2026-03-03 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
+| `playground/tests/compact_windows/README.md` | This directory is the dedicated unattended test harness for compact-host MCP UI behavior. Current status: - CW-7 complet | 2026-03-01 | 2026-03-03 | `tests/test_check_spec_drift.py`, `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
 | `playground/tests/compact_windows/compact_matrix.spec.js` | import { test, expect } from "@playwright/test"; | 2026-03-01 | 2026-03-03 | - |
 | `playground/tests/compact_windows/smoke.spec.js` | import { test, expect } from "@playwright/test"; | 2026-03-01 | 2026-03-12 | - |
 | `playground/tests/compact_windows/support/compact_assertions.js` | import { expect } from "@playwright/test"; | 2026-03-02 | 2026-03-03 | - |
@@ -1607,7 +1730,7 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `playground/trials/tests/map_story_gallery.spec.js` | import { test, expect } from "@playwright/test"; | 2026-02-17 | 2026-02-22 | - |
 | `playground/trials/tests/support/host_simulation.js` | import fs from "fs"; | 2026-02-14 | 2026-02-22 | - |
 | `playground/vite.config.js` | import { svelte } from "@sveltejs/vite-plugin-svelte"; | 2026-01-25 | 2026-03-14 | - |
-| `pyproject.toml` | [build-system] | 2025-08-20 | 2026-04-04 | - |
+| `pyproject.toml` | [build-system] | 2025-08-20 | 2026-04-23 | - |
 | `pytest.ini` | [pytest] | 2025-09-16 | 2026-02-07 | - |
 | `research/Deep Research Report/20260225 - From_Apps_to_Answers.pptx` | Binary artifact | 2026-02-17 | 2026-02-25 | - |
 | `research/Deep Research Report/20260225-slides-that-have-demo-scripts.md` | This file adds live demo scripts you can run alongside: `research/Deep Research Report/Apps_to_Answers_MCP_Government_Al | 2026-02-25 | 2026-02-25 | - |
@@ -1632,11 +1755,15 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/09-failure-taxonomy.tex` | \section{Failure taxonomy: MCP-Geo peatland survey incident} | 2026-02-21 | 2026-02-21 | - |
 | `research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/10-demo-script.tex` | \section{Demo script: MCP-Geo as the “middle layer” from apps to answers} | 2026-02-21 | 2026-02-21 | - |
 | `research/From Apps to Answers - Connecting Public Sector Data to AI with MCP/sections/11-requirements.tex` | \section{Requirements for an MCP “middle layer” in public-sector settings (derived from the case)} | 2026-02-21 | 2026-02-21 | - |
+| `research/landis-data-source/LandIS MVP Implementation PLAN.md` | - Rebase or merge `codex/landis` onto current `main` first, because this branch diverged at `8d93cec` and `main` is now  | 2026-04-08 | 2026-04-08 | - |
 | `research/landis-data-source/LandIS as AI-accessible soil data infrastructure_ evidence, use cases, and an MCP access strategy.md` | LandIS is presented by its operators as a large, national-scale soil and land information system for England and Wales,  | 2026-04-04 | 2026-04-04 | - |
 | `research/landis-data-source/landis_archive_triage_2026-04-05.json` | JSON object keys: fullReleaseArchiveDir, generatedAt, portalArchiveDir, portalItems, summary, supplementaryDataGovPackag | 2026-04-05 | 2026-04-05 | - |
 | `research/landis-data-source/landis_full_release_manifest_2026-04-05.json` | JSON object keys: dataGovPackages, destination, generatedAt, portalComponent, publicItems, repoPublicReconciliationGener | 2026-04-05 | 2026-04-05 | - |
+| `research/landis-data-source/landis_leacs_access_probe_2026-05-13.json` | JSON object keys: archivedPublicReleaseEvidence, conclusion, futureDecisionRules, generatedAt, localWarehouseState, oper | 2026-05-13 | 2026-05-13 | - |
 | `research/landis-data-source/landis_portal_inventory_2026-04-04.json` | JSON object keys: generatedAt, items, source, summary | 2026-04-04 | 2026-04-04 | - |
 | `research/landis-data-source/landis_release_reconciliation_2026-04-05.json` | JSON object keys: archiveManifestPath, entries, generatedAt, portalInventoryPath, portalSummary, scopeNote | 2026-04-05 | 2026-04-05 | - |
+| `research/llm_wiki_vs_rag/LLM Wiki, Enhanced RAG and the Right Knowledge Architecture for MCP-Geo.md` | The strongest reading of the evidence is that Karpathy-style LLM Wiki systems are **not a universal replacement for RAG* | 2026-04-28 | 2026-04-28 | - |
+| `research/llm_wiki_vs_rag/README.md` | Date opened: 2026-04-23 Status: Proposed Owner: TBD Investigate whether Karpathy-style **LLM Wiki** knowledge bases are  | 2026-04-28 | 2026-04-28 | `tests/test_check_spec_drift.py`, `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
 | `research/map_delivery_research_2026-02/00_journal.md` | - Created branch: `codex/map-delivery-research-trials`. - Reviewed existing map stack (`ui/geography_selector.html`, `ui | 2026-02-13 | 2026-02-13 | - |
 | `research/map_delivery_research_2026-02/01_personas_and_user_journeys.md` | This persona set follows practical user-research conventions: - Identify user segments by goals, context, and constraint | 2026-02-13 | 2026-02-13 | - |
 | `research/map_delivery_research_2026-02/02_map_delivery_options_longlist.md` | 1. Static image URL (`/maps/static/osm`) from tool response. 2. Tool-generated static descriptor + client-side map rende | 2026-02-13 | 2026-02-13 | - |
@@ -1644,7 +1771,7 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `research/map_delivery_research_2026-02/04_trial_results.md` | - Run command: `./scripts/run_map_delivery_trials.sh` - Result: `8 passed`, `4 skipped` - Visual verifier: `pass` (`tria | 2026-02-13 | 2026-02-13 | - |
 | `research/map_delivery_research_2026-02/05_external_scan_os_and_community.md` | - [OS APIs getting started](https://docs.os.uk/getting-started/apis) - [OS Maps API getting started](https://docs.os.uk/ | 2026-02-13 | 2026-02-13 | - |
 | `research/map_delivery_research_2026-02/06_recommendations_and_report.md` | `mcp-geo` should adopt a **layered map delivery model** that defaults to compatibility-first outputs and progressively u | 2026-02-13 | 2026-02-13 | - |
-| `research/map_delivery_research_2026-02/README.md` | This research pack investigates how `mcp-geo` can deliver map outputs reliably across: - AI MCP clients - web browsers - | 2026-02-13 | 2026-02-17 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
+| `research/map_delivery_research_2026-02/README.md` | This research pack investigates how `mcp-geo` can deliver map outputs reliably across: - AI MCP clients - web browsers - | 2026-02-13 | 2026-02-17 | `tests/test_check_spec_drift.py`, `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
 | `research/map_delivery_research_2026-02/evidence/screenshots/Slide images.zip` | Binary artifact | 2026-02-08 | 2026-02-17 | - |
 | `research/map_delivery_research_2026-02/evidence/screenshots/chromium-desktop-story-1-coventry-boundary-change-map-panel.png` | Binary artifact | 2026-02-17 | 2026-02-22 | - |
 | `research/map_delivery_research_2026-02/evidence/screenshots/chromium-desktop-story-1-coventry-boundary-change.png` | Binary artifact | 2026-02-17 | 2026-02-22 | - |
@@ -1708,7 +1835,7 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `research/map_delivery_research_2026-02/evidence/screenshots/webkit-mobile-trial-1-static-osm.png` | Binary artifact | 2026-02-22 | 2026-02-22 | - |
 | `research/map_delivery_research_2026-02/evidence/screenshots/webkit-mobile-trial-2-os-maps-render.png` | Binary artifact | 2026-02-22 | 2026-02-22 | - |
 | `research/map_delivery_research_2026-02/evidence/screenshots/webkit-mobile-trial-5-host-simulation.png` | Binary artifact | 2026-02-22 | 2026-02-22 | - |
-| `research/map_delivery_research_2026-02/notebooks/README.md` | This directory contains optional notebook-based tracking for map delivery experiments. - `map_delivery_option_tracker.ip | 2026-02-13 | 2026-02-13 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
+| `research/map_delivery_research_2026-02/notebooks/README.md` | This directory contains optional notebook-based tracking for map delivery experiments. - `map_delivery_option_tracker.ip | 2026-02-13 | 2026-02-13 | `tests/test_check_spec_drift.py`, `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
 | `research/map_delivery_research_2026-02/notebooks/map_delivery_option_tracker.ipynb` | { | 2026-02-13 | 2026-02-14 | - |
 | `research/map_delivery_research_2026-02/reports/map_quality_report.json` | JSON object keys: checks, generatedAt, policy, statusCounts, thresholds | 2026-02-14 | 2026-02-22 | - |
 | `research/map_delivery_research_2026-02/reports/map_quality_waivers.json` | JSON object keys: owner, policyVersion, thresholds, waivers | 2026-02-14 | 2026-02-22 | - |
@@ -1727,7 +1854,7 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `research/ons_dataset_selection/evidence_register.csv` | evidence_id,source_name,source_url,evidence_type,summary,relevance,notes | 2026-02-07 | 2026-02-07 | - |
 | `research/ons_dataset_selection/linking_rules.md` | Version: 1.0.0 Generated at (UTC): 2026-02-07T08:04:56Z Define deterministic and auditable link creation rules for tile  | 2026-02-07 | 2026-02-07 | - |
 | `research/ons_dataset_selection/ons_datapack_schema.json` | JSON object keys: $defs, $id, $schema, additionalProperties, description, properties, required, title | 2026-02-07 | 2026-02-07 | - |
-| `research/ons_dataset_selection/report.md` | Version: 1.0.0 Generated (UTC): 2026-02-07T08:11:25Z Scope: **B** (statistical + derived indicators; excludes text-only  | 2026-02-07 | 2026-02-07 | `tests/evaluation/harness.py`, `tests/test_audit_pack_builder.py`, `tests/test_boundary_pipeline_variant_policy.py`, `tests/test_check_lmr_host4.py` |
+| `research/ons_dataset_selection/report.md` | Version: 1.0.0 Generated (UTC): 2026-02-07T08:11:25Z Scope: **B** (statistical + derived indicators; excludes text-only  | 2026-02-07 | 2026-02-07 | `tests/evaluation/harness.py`, `tests/test_audit_pack_builder.py`, `tests/test_boundary_pipeline_variant_policy.py`, `tests/test_boundary_run_paths.py` |
 | `research/ons_dataset_selection/roadmap.md` | Version: 1.0.0 Generated (UTC): 2026-02-07T08:11:25Z Deploy a production-ready MCP Geo selection layer for ONS statistic | 2026-02-07 | 2026-02-07 | - |
 | `research/ons_dataset_selection/sample_datapacks/crime-prevalence-context.json` | JSON object keys: ai_safe_controls, chart_templates, created_at_utc, data_card, datapack_id, link_edges, primary_dataset | 2026-02-07 | 2026-02-07 | - |
 | `research/ons_dataset_selection/sample_datapacks/housing-affordability-local.json` | JSON object keys: ai_safe_controls, chart_templates, created_at_utc, data_card, datapack_id, link_edges, primary_dataset | 2026-02-07 | 2026-02-07 | - |
@@ -1746,9 +1873,13 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `research/os_dataset_selection/OS Data Hub API Ecosystem.png` | Binary artifact | 2026-02-08 | 2026-02-08 | - |
 | `research/os_dataset_selection/OS_Data_Hub_Architecting_Great_Britain.pdf` | Binary artifact | 2026-02-08 | 2026-02-08 | - |
 | `research/os_dataset_selection/Technical Integration Specification_ Ordnance Survey API Ecosystem.docx` | Binary artifact | 2026-02-08 | 2026-02-08 | - |
+| `research/os_dataset_selection/cv3_1hb_roadlinks.html` | Road Links &amp; Buildings – CV3 1HB | 2026-04-09 | 2026-04-09 | - |
 | `research/os_dataset_selection/initial_design_codex.md` | **Proposed Exemplar: “Boundary Explorer” Map Wizard (Local-First)** **User journey (what “simplest questions” becomes)** | 2026-02-08 | 2026-02-08 | - |
+| `resources/__init__.py` | Runtime resource package for installed MCP Geo artifacts. | 2026-04-23 | 2026-04-23 | `tests/evaluation/audit_logger.py`, `tests/evaluation/harness.py`, `tests/evaluation/live_capture.py`, `tests/test_admin_lookup_live_internals.py` |
 | `resources/address_classification_codes.json` | JSON object keys: codes, provenance | 2025-11-03 | 2025-11-03 | `tests/test_resources_code_lists.py`, `tests/test_resources_provenance_headers.py` |
-| `resources/admin_boundaries.json` | JSON object keys: crs, features, provenance | 2025-09-17 | 2025-09-17 | `tests/test_boundary_cache.py`, `tests/test_os_mcp_route_query.py`, `tests/test_resources_etag.py`, `tests/test_resources_paging_filtering.py` |
+| `resources/addressbase_epoch_schedule.json` | JSON object keys: description, epochs, version | 2026-04-09 | 2026-04-09 | `tests/test_ons_geo.py`, `tests/test_ons_geo_catalog.py`, `tests/test_ons_geo_freshness.py` |
+| `resources/admin_boundaries.json` | JSON object keys: crs, features, provenance | 2025-09-17 | 2025-09-17 | `tests/test_boundary_cache.py`, `tests/test_check_shared_benchmark_cache.py`, `tests/test_os_mcp_route_query.py`, `tests/test_resources_etag.py` |
+| `resources/area_summary_workflows.json` | JSON object keys: defaultProfile, profiles, version | 2026-04-12 | 2026-04-12 | `tests/test_resource_catalog.py` |
 | `resources/boundaries_wards.json` | JSON object keys: features, provenance | 2025-11-03 | 2025-11-03 | `tests/test_resources_code_lists.py` |
 | `resources/boundary_pack_sources.json` | JSON object keys: kind, packs, version | 2026-02-11 | 2026-02-22 | - |
 | `resources/boundary_packs_index.json` | JSON object keys: cacheMode, generatedAt, kind, packs, version | 2026-02-11 | 2026-02-22 | - |
@@ -1758,78 +1889,87 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `resources/landis/licence_current.md` | Last reviewed: 2026-04-04 - The LandIS home page stated that LandIS soils had become open access and linked to `https:// | 2026-04-04 | 2026-04-04 | - |
 | `resources/landis/soil_classification.md` | This MCP resource is a concise operational summary of the LandIS national soil map and soil-classification guidance for  | 2026-04-04 | 2026-04-04 | - |
 | `resources/landis/soil_data_structures.md` | This MCP resource is a concise operational summary of the LandIS soil data structures paper for implementation and tool- | 2026-04-04 | 2026-04-04 | - |
-| `resources/landis_products.json` | JSON object keys: products, sources, updatedAt, version | 2026-04-04 | 2026-04-06 | `tests/test_server_landis.py` |
-| `resources/layers_catalog.json` | JSON object keys: layers, notes, title, version | 2026-02-08 | 2026-02-08 | - |
+| `resources/landis_products.json` | JSON object keys: products, sources, updatedAt, version | 2026-04-04 | 2026-04-06 | `tests/test_check_shared_benchmark_cache.py`, `tests/test_server_landis.py` |
+| `resources/layers_catalog.json` | JSON object keys: layers, notes, title, version | 2026-02-08 | 2026-04-22 | `tests/test_resources_data_catalog.py` |
 | `resources/map_embedding_style_profiles.json` | JSON object keys: profiles, version | 2026-02-14 | 2026-02-14 | `tests/test_resources_data_catalog.py` |
 | `resources/mcp-geo.jpg` | Binary artifact | 2026-03-22 | 2026-03-22 | - |
 | `resources/nomis_workflows.json` | JSON object keys: defaultProfile, profiles, version | 2026-02-11 | 2026-02-11 | - |
 | `resources/offline_map_catalog.json` | JSON object keys: packs, retrievalContracts, version | 2026-02-14 | 2026-02-17 | `tests/test_resource_catalog.py` |
 | `resources/ons_catalog.json` | JSON object keys: generatedAt, items, placeholder, source | 2026-02-07 | 2026-02-07 | `tests/test_mcp_http.py`, `tests/test_ons_catalog_snapshot.py`, `tests/test_ons_catalog_validate_script.py`, `tests/test_ons_catalog_validator.py` |
-| `resources/ons_geo_cache_index.json` | JSON object keys: cache, generatedAt, products, version | 2026-02-22 | 2026-03-01 | `tests/test_ons_geo.py`, `tests/test_ons_geo_cache.py`, `tests/test_ons_geo_cache_refresh.py`, `tests/test_resource_catalog.py` |
-| `resources/ons_geo_sources.json` | JSON object keys: description, products, version | 2026-02-22 | 2026-02-22 | `tests/test_ons_geo_cache_refresh.py`, `tests/test_resource_catalog.py` |
+| `resources/ons_geo_cache_index.json` | JSON object keys: cache, generatedAt, health, products, supportProducts, version | 2026-02-22 | 2026-04-12 | `tests/test_check_shared_benchmark_cache.py`, `tests/test_mcp_docker_local.py`, `tests/test_ons_geo.py`, `tests/test_ons_geo_cache.py` |
+| `resources/ons_geo_sources.json` | JSON object keys: description, products, supportProducts, version | 2026-02-22 | 2026-04-09 | `tests/test_ons_geo_cache_refresh.py`, `tests/test_ons_geo_live_validate.py`, `tests/test_resource_catalog.py` |
 | `resources/ons_observations.json` | JSON object keys: dataset, dimensions, observations, provenance | 2025-09-17 | 2025-09-17 | `tests/test_resources_ons_observations.py` |
 | `resources/os_catalog.json` | JSON object keys: generatedAt, items, placeholder, source | 2026-02-08 | 2026-02-13 | `tests/test_os_catalog_snapshot.py` |
 | `resources/peat_layers_england.json` | JSON object keys: layers, scope, source, version | 2026-02-22 | 2026-02-22 | - |
 | `resources/prompts/evaluation_prompts.json` | JSON object keys: prompts | 2026-01-28 | 2026-04-04 | - |
 | `resources/protected_landscapes_england.json` | JSON object keys: landscapes, scope, source, version | 2026-02-19 | 2026-02-19 | - |
 | `scripts/__init__.py` | Helper scripts & stdio adapter package for mcp-geo. | 2025-11-03 | 2025-11-03 | `tests/evaluation/audit_logger.py`, `tests/evaluation/harness.py`, `tests/evaluation/live_capture.py`, `tests/test_admin_lookup_live_internals.py` |
-| `scripts/boundary_autofix.py` | from __future__ import annotations | 2026-02-01 | 2026-02-01 | - |
+| `scripts/addressbase_build_xref.py` | from __future__ import annotations | 2026-04-09 | 2026-04-09 | `tests/test_addressbase_build_xref.py` |
+| `scripts/benchmark_env.py` | from __future__ import annotations | 2026-04-13 | 2026-04-14 | `tests/test_benchmark_env.py` |
+| `scripts/boundary_autofix.py` | from __future__ import annotations | 2026-02-01 | 2026-04-12 | `tests/test_boundary_autofix.py` |
 | `scripts/boundary_cache_ingest.py` | from __future__ import annotations | 2026-01-30 | 2026-01-30 | - |
 | `scripts/boundary_cache_schema.sql` | -- PostGIS boundary cache schema for MCP Geo | 2026-01-30 | 2026-01-30 | - |
-| `scripts/boundary_pipeline.py` | from __future__ import annotations | 2026-01-30 | 2026-02-23 | `tests/test_boundary_pipeline_variant_policy.py` |
-| `scripts/boundary_run_tracker.py` | from __future__ import annotations | 2026-02-01 | 2026-02-02 | - |
-| `scripts/boundary_status_ticker.py` | from __future__ import annotations | 2026-02-01 | 2026-02-01 | - |
-| `scripts/boundary_triage.py` | from __future__ import annotations | 2026-02-01 | 2026-02-01 | - |
+| `scripts/boundary_pipeline.py` | from __future__ import annotations | 2026-01-30 | 2026-04-12 | `tests/test_boundary_autofix.py`, `tests/test_boundary_pipeline_variant_policy.py` |
+| `scripts/boundary_run_tracker.py` | from __future__ import annotations | 2026-02-01 | 2026-04-12 | - |
+| `scripts/boundary_status_ticker.py` | from __future__ import annotations | 2026-02-01 | 2026-04-12 | - |
+| `scripts/boundary_triage.py` | from __future__ import annotations | 2026-02-01 | 2026-04-12 | - |
 | `scripts/build_obsidian_kb.py` | from __future__ import annotations | 2026-04-06 | 2026-04-06 | - |
-| `scripts/check_claude_startup_scope.sh` | set -euo pipefail | 2026-03-03 | 2026-03-03 | - |
-| `scripts/check_codex_startup_scope.sh` | set -euo pipefail | 2026-03-03 | 2026-03-06 | - |
+| `scripts/check_claude_startup_scope.sh` | set -euo pipefail | 2026-03-03 | 2026-04-12 | - |
+| `scripts/check_codex_startup_scope.sh` | set -euo pipefail | 2026-03-03 | 2026-04-12 | - |
+| `scripts/check_gemini_startup_scope.sh` | set -euo pipefail | 2026-03-03 | 2026-04-12 | - |
 | `scripts/check_lmr_host4.py` | Automate LMR-HOST-4 evidence checks for Claude Desktop sessions. This script focuses on the known host-runtime gap: - Wi | 2026-02-22 | 2026-02-22 | `tests/test_check_lmr_host4.py` |
 | `scripts/check_non_runtime_quality.sh` | set -euo pipefail | 2026-02-22 | 2026-03-24 | - |
-| `scripts/check_shared_benchmark_cache.sh` | set -euo pipefail | 2026-03-10 | 2026-04-05 | - |
-| `scripts/claude-mcp-local` | set -euo pipefail | 2026-02-04 | 2026-04-05 | - |
+| `scripts/check_shared_benchmark_cache.sh` | set -euo pipefail | 2026-03-10 | 2026-04-12 | - |
+| `scripts/check_spec_drift.py` | from __future__ import annotations | 2026-04-12 | 2026-04-28 | `tests/test_check_spec_drift.py` |
+| `scripts/claude-mcp-local` | set -euo pipefail | 2026-02-04 | 2026-04-12 | - |
 | `scripts/claude_serve_map.py` | Simple web server to serve OS map with API key from environment variable. Usage: python serve_map.py Then open: http://l | 2026-01-21 | 2026-01-21 | - |
-| `scripts/codex-mcp-local` | set -euo pipefail | 2026-03-06 | 2026-04-05 | - |
+| `scripts/codex-mcp-local` | set -euo pipefail | 2026-03-06 | 2026-04-12 | - |
 | `scripts/codex_long_horizon_summary.py` | Generate Long Horizon-style Codex session metrics for a repository filter. | 2026-02-25 | 2026-02-25 | `tests/test_codex_long_horizon_summary.py` |
 | `scripts/devcontainer_mcp_setup.sh` | set -euo pipefail | 2026-01-20 | 2026-03-17 | - |
 | `scripts/devcontainer_post_start.sh` | set -euo pipefail | 2026-01-20 | 2026-03-10 | - |
 | `scripts/docx_hygiene.py` | from __future__ import annotations | 2026-03-16 | 2026-03-16 | `tests/test_docx_hygiene.py` |
 | `scripts/export_spec_package.sh` | set -euo pipefail | 2026-02-02 | 2026-02-02 | - |
+| `scripts/gemini-mcp-local` | set -euo pipefail | 2026-02-04 | 2026-04-12 | - |
 | `scripts/generate_mcp_geo_analytical_index.py` | Validate and export the MCP-Geo analytical index package. | 2026-03-11 | 2026-03-12 | `tests/test_generate_mcp_geo_analytical_index.py` |
 | `scripts/generate_mcp_geo_functionality_showcase.py` | Generate a repeatable showcase report for MCP-Geo evaluation examples. | 2026-03-07 | 2026-03-08 | `tests/test_generate_mcp_geo_functionality_showcase.py` |
-| `scripts/generate_owasp_mcp_tool_manifest.py` | from __future__ import annotations | 2026-03-13 | 2026-03-13 | - |
+| `scripts/generate_owasp_mcp_tool_manifest.py` | from __future__ import annotations | 2026-03-13 | 2026-04-10 | - |
 | `scripts/generate_teignmouth_wheelchair_access_map.py` | from __future__ import annotations | 2026-03-07 | 2026-03-07 | - |
 | `scripts/generate_tool_catalog.py` | Generate a markdown catalog of all registered tools with input/output schemas. Usage: python scripts/generate_tool_catal | 2025-11-03 | 2026-03-10 | - |
-| `scripts/host_benchmark.py` | from __future__ import annotations | 2026-03-06 | 2026-03-17 | `tests/test_host_benchmark.py`, `tests/test_map_trials_host_simulation_profiles.py` |
+| `scripts/host_benchmark.py` | from __future__ import annotations | 2026-03-06 | 2026-04-13 | `tests/test_host_benchmark.py`, `tests/test_map_trials_host_simulation_profiles.py`, `tests/test_unattended_client_eval.py` |
 | `scripts/landis_archive_triage.py` | from __future__ import annotations | 2026-04-05 | 2026-04-05 | `tests/test_landis_ingest.py`, `tests/test_landis_tools.py`, `tests/test_server_landis.py` |
-| `scripts/landis_full_release_archive.py` | Create and verify a full LandIS release archive on local storage. This script treats the existing authenticated ArcGIS p | 2026-04-05 | 2026-04-05 | `tests/test_server_landis.py` |
+| `scripts/landis_full_release_archive.py` | Create and verify a full LandIS release archive on local storage. This script treats the existing authenticated ArcGIS p | 2026-04-05 | 2026-04-12 | `tests/test_server_landis.py` |
 | `scripts/landis_ingest.py` | from __future__ import annotations | 2026-04-04 | 2026-04-06 | `tests/test_landis_ingest.py` |
-| `scripts/landis_phase2_ingest.py` | from __future__ import annotations | 2026-04-05 | 2026-04-06 | `tests/test_landis_ingest.py` |
-| `scripts/landis_portal_download.py` | Download authenticated LandIS portal items to local storage. The script reuses the Atlas-authenticated LandIS portal rou | 2026-04-04 | 2026-04-04 | - |
+| `scripts/landis_phase2_ingest.py` | from __future__ import annotations | 2026-04-05 | 2026-04-12 | `tests/test_landis_ingest.py` |
+| `scripts/landis_portal_download.py` | Download authenticated LandIS portal items to local storage. The script reuses the Atlas-authenticated LandIS portal rou | 2026-04-04 | 2026-04-12 | - |
 | `scripts/landis_portal_inventory.py` | Build an authenticated LandIS portal inventory from an Atlas browser session. This script is intended for local operator | 2026-04-04 | 2026-04-04 | - |
-| `scripts/landis_release_reconciliation.py` | Generate a LandIS release-surface reconciliation manifest. This compares three public-facing surfaces: 1. The authentica | 2026-04-05 | 2026-04-06 | `tests/test_landis_release_reconciliation.py` |
+| `scripts/landis_release_reconciliation.py` | Generate a LandIS release-surface reconciliation manifest. This compares three public-facing surfaces: 1. The authentica | 2026-04-05 | 2026-04-12 | `tests/test_landis_release_reconciliation.py` |
 | `scripts/landis_schema.sql` | CREATE SCHEMA IF NOT EXISTS landis; | 2026-04-04 | 2026-04-05 | - |
-| `scripts/latest_reports.py` | from __future__ import annotations | 2026-01-31 | 2026-01-31 | - |
+| `scripts/latest_reports.py` | from __future__ import annotations | 2026-01-31 | 2026-04-12 | - |
 | `scripts/live_missing_tools_probe.py` | from __future__ import annotations | 2026-02-22 | 2026-02-22 | `tests/test_live_missing_tools_probe.py` |
+| `scripts/llm_wiki_postmortem_inventory.py` | Inventory local Codex sessions as LLM-wiki postmortem candidates. Stage 1 of the MCP-Geo conversation postmortem workflo | 2026-05-14 | 2026-05-14 | - |
 | `scripts/map_trials/export_notebook_scenario_pack.py` | from __future__ import annotations | 2026-02-14 | 2026-02-17 | `tests/test_map_trials_export_notebook_scenario_pack.py` |
 | `scripts/map_trials/host_simulation_profiles.py` | from __future__ import annotations | 2026-02-14 | 2026-02-14 | `tests/test_map_trials_host_simulation_profiles.py` |
 | `scripts/map_trials/map_quality_checks.py` | from __future__ import annotations | 2026-02-14 | 2026-02-22 | `tests/test_map_trials_quality_checks.py` |
 | `scripts/map_trials/summarize_playwright_trials.py` | from __future__ import annotations | 2026-02-13 | 2026-02-14 | `tests/test_map_trials_summary.py` |
 | `scripts/map_trials/summarize_story_gallery.py` | from __future__ import annotations | 2026-02-17 | 2026-02-17 | - |
 | `scripts/map_trials/verify_map_screenshots.py` | from __future__ import annotations | 2026-02-13 | 2026-02-14 | `tests/test_map_trials_verify.py` |
-| `scripts/mcp-docker-local` | set -euo pipefail | 2026-02-04 | 2026-04-06 | - |
+| `scripts/mcp-docker-local` | set -euo pipefail | 2026-02-04 | 2026-04-13 | - |
 | `scripts/mcp_client.py` | Helper client for the mcp-geo STDIO adapter. Usage examples: python scripts/mcp_client.py initialize python scripts/mcp_ | 2025-09-17 | 2026-01-24 | `tests/test_mcp_client_if_none_match.py`, `tests/test_mcp_client_resources_get.py` |
 | `scripts/mcp_http_trace_proxy.py` | HTTP proxy that logs MCP JSON-RPC traffic. Usage: python scripts/mcp_http_trace_proxy.py \\ --upstream http://127.0.0.1: | 2026-01-21 | 2026-01-24 | - |
-| `scripts/mcp_stdio_trace_proxy.py` | MCP stdio proxy that logs JSON-RPC traffic. This proxy sits between an MCP client and an MCP stdio server, forwarding by | 2026-01-21 | 2026-02-09 | `tests/test_mcp_stdio_trace_proxy.py` |
+| `scripts/mcp_stdio_trace_proxy.py` | MCP stdio proxy that logs JSON-RPC traffic. This proxy sits between an MCP client and an MCP stdio server, forwarding by | 2026-01-21 | 2026-02-09 | `tests/test_host_benchmark.py`, `tests/test_mcp_stdio_trace_proxy.py` |
 | `scripts/mcp_ui_mode_probe.py` | Probe MCP-Apps UI content modes over STDIO. Examples: python3 scripts/mcp_ui_mode_probe.py python3 scripts/mcp_ui_mode_p | 2026-02-06 | 2026-02-06 | - |
-| `scripts/mypy-local` | set -euo pipefail | 2026-03-10 | 2026-03-24 | - |
+| `scripts/mypy-local` | set -euo pipefail | 2026-03-10 | 2026-04-12 | - |
 | `scripts/obsidian_kb_common.py` | from __future__ import annotations | 2026-04-06 | 2026-04-06 | `tests/test_obsidian_kb.py` |
 | `scripts/ons_catalog_refresh.py` | Refresh the local ONS dataset catalog index. Usage: python3 scripts/ons_catalog_refresh.py python3 scripts/ons_catalog_r | 2026-02-07 | 2026-02-07 | - |
 | `scripts/ons_catalog_validate.py` | Validate the local ONS catalog index schema and metadata quality. | 2026-02-11 | 2026-02-11 | `tests/test_ons_catalog_validate_script.py` |
-| `scripts/ons_geo_cache_refresh.py` | Refresh the local ONS geography cache used by ons_geo.* tools. Primary exact-mode products: - ONSPD (postcode) - ONSUD ( | 2026-02-22 | 2026-03-01 | `tests/test_ons_geo_cache_refresh.py` |
+| `scripts/ons_geo_cache_refresh.py` | Refresh the local ONS geography cache used by ons_geo.* tools. | 2026-02-22 | 2026-04-22 | `tests/test_ons_geo_cache_refresh.py` |
+| `scripts/ons_geo_live_validate.py` | Opt-in live validation for resolver-driven ONS geo sources. | 2026-04-09 | 2026-04-09 | `tests/test_ons_geo_live_validate.py` |
 | `scripts/os-mcp` | Backward-compatible wrapper for the MCP stdio adapter. This thin wrapper preserves the original script path `scripts/os- | 2025-09-17 | 2026-02-16 | - |
 | `scripts/os_catalog_refresh.py` | Refresh the local Ordnance Survey API + downloads catalog index. This is analogous to scripts/ons_catalog_refresh.py, bu | 2026-02-08 | 2026-02-13 | - |
 | `scripts/os_mcp.py` | Legacy adapter module now delegating to `server.stdio_adapter`. Allows console script and direct invocation to remain st | 2025-11-03 | 2026-03-01 | `tests/evaluation/harness.py`, `tests/evaluation/questions.py`, `tests/test_coverage_guardrails.py`, `tests/test_evaluation_audit_rate_limits.py` |
 | `scripts/pack_cache_refresh.py` | Refresh hybrid fetch cache indexes for boundary and code-list packs. This script keeps the repo lightweight by caching d | 2026-02-11 | 2026-02-22 | - |
+| `scripts/prepare-for-demo` | set -euo pipefail | 2026-04-22 | 2026-04-23 | - |
+| `scripts/prepare_for_demo.py` | from __future__ import annotations | 2026-04-22 | 2026-04-23 | `tests/test_prepare_for_demo.py` |
 | `scripts/pytest-local` | set -euo pipefail | 2026-03-10 | 2026-03-10 | - |
 | `scripts/rate_limit_assessor.py` | from __future__ import annotations | 2026-02-11 | 2026-02-11 | `tests/test_rate_limit_assessor.py` |
 | `scripts/replicate_claude_tutorial.py` | Replicate the Claude tutorial flow against the local mcp-geo STDIO adapter. Usage: ./.venv/bin/python scripts/replicate_ | 2026-02-19 | 2026-02-19 | - |
@@ -1850,18 +1990,19 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `scripts/stakeholder_phase1_extension.py` | Phase 1 stakeholder benchmark extension scenarios and fixtures. | 2026-03-10 | 2026-03-10 | - |
 | `scripts/start_https_proxy.sh` | set -euo pipefail | 2026-01-24 | 2026-02-04 | - |
 | `scripts/trace_report.py` | from __future__ import annotations | 2026-02-04 | 2026-03-17 | `tests/test_trace_report_audit.py`, `tests/test_trace_report_host_metadata.py` |
-| `scripts/trace_session.py` | from __future__ import annotations | 2026-02-04 | 2026-03-17 | `tests/test_obsidian_kb.py`, `tests/test_trace_session.py` |
-| `scripts/trace_utils.py` | from __future__ import annotations | 2026-03-06 | 2026-03-17 | `tests/test_trace_utils.py` |
+| `scripts/trace_session.py` | from __future__ import annotations | 2026-02-04 | 2026-04-12 | `tests/test_obsidian_kb.py`, `tests/test_trace_session.py` |
+| `scripts/trace_utils.py` | from __future__ import annotations | 2026-03-06 | 2026-04-12 | `tests/test_trace_utils.py` |
+| `scripts/unattended_client_eval.py` | from __future__ import annotations | 2026-04-12 | 2026-04-14 | `tests/test_unattended_client_eval.py` |
 | `scripts/validate-owasp-mcp-local` | set -euo pipefail | 2026-03-13 | 2026-03-13 | - |
 | `scripts/validate_obsidian_kb.py` | from __future__ import annotations | 2026-04-06 | 2026-04-06 | - |
-| `scripts/validate_owasp_mcp_server.py` | from __future__ import annotations | 2026-03-13 | 2026-03-13 | `tests/test_owasp_mcp_validation.py` |
+| `scripts/validate_owasp_mcp_server.py` | from __future__ import annotations | 2026-03-13 | 2026-04-10 | `tests/test_owasp_mcp_validation.py` |
 | `scripts/vendor_fetch.sh` | set -euo pipefail | 2026-01-21 | 2026-03-08 | - |
 | `scripts/vendor_html_nojs.py` | from __future__ import annotations | 2026-01-21 | 2026-04-06 | `tests/test_landis_release_reconciliation.py` |
 | `scripts/vendor_package.sh` | set -euo pipefail | 2026-01-21 | 2026-03-08 | - |
 | `scripts/vendor_submodules.sh` | set -euo pipefail | 2026-01-21 | 2026-01-21 | - |
-| `scripts/vscode_mcp_stdio.py` | VS Code MCP stdio entrypoint that works on both host macOS and Linux devcontainers. VS Code runs MCP stdio servers by ex | 2026-02-09 | 2026-03-01 | - |
+| `scripts/vscode_mcp_stdio.py` | VS Code MCP stdio entrypoint that works on both host macOS and Linux devcontainers. VS Code runs MCP stdio servers by ex | 2026-02-09 | 2026-03-01 | `tests/test_host_benchmark.py` |
 | `scripts/vscode_trace_snapshot.py` | Snapshot VS Code MCP trace logs into a trace_session-style directory. VS Code MCP servers can write long-lived trace fil | 2026-02-10 | 2026-02-10 | - |
-| `server/__init__.py` | __all__ = ["__version__"] | 2025-08-20 | 2026-03-16 | `tests/evaluation/audit_logger.py`, `tests/evaluation/harness.py`, `tests/evaluation/live_capture.py`, `tests/test_admin_lookup_live_internals.py` |
+| `server/__init__.py` | __all__ = ["__version__"] | 2025-08-20 | 2026-04-23 | `tests/evaluation/audit_logger.py`, `tests/evaluation/harness.py`, `tests/evaluation/live_capture.py`, `tests/test_admin_lookup_live_internals.py` |
 | `server/audit/__init__.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | `tests/evaluation/audit_logger.py`, `tests/evaluation/harness.py`, `tests/evaluation/live_capture.py`, `tests/test_admin_lookup_live_internals.py` |
 | `server/audit/api.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | `tests/audit_test_utils.py`, `tests/conftest.py`, `tests/evaluation/harness.py`, `tests/evaluation/live_capture.py` |
 | `server/audit/decision_record.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | - |
@@ -1870,7 +2011,7 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `server/audit/integrity.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | `tests/test_audit_pack_builder.py`, `tests/test_owasp_mcp_validation.py` |
 | `server/audit/normalise.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | `tests/test_audit_api.py`, `tests/test_audit_normalise.py` |
 | `server/audit/pack_builder.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | `tests/test_audit_pack_builder.py`, `tests/test_owasp_mcp_validation.py` |
-| `server/audit/redaction.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | `tests/test_audit_pack_builder.py`, `tests/test_owasp_mcp_validation.py` |
+| `server/audit/redaction.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | `tests/test_audit_pack_builder.py`, `tests/test_owasp_mcp_validation.py`, `tests/test_unattended_client_eval.py` |
 | `server/audit/retention.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | `tests/test_audit_api.py`, `tests/test_audit_pack_builder.py` |
 | `server/audit/schemas/audit_card.schema.json` | JSON object keys: $id, $schema, additionalProperties, properties, required, title, type | 2026-03-10 | 2026-03-10 | - |
 | `server/audit/schemas/decision_record.schema.json` | JSON object keys: $defs, $id, $schema, additionalProperties, properties, required, title, type | 2026-03-10 | 2026-03-10 | - |
@@ -1879,36 +2020,40 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `server/audit/schemas/source_access.schema.json` | JSON object keys: $id, $schema, additionalProperties, properties, required, title, type | 2026-03-10 | 2026-03-10 | - |
 | `server/audit/source_register.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | `tests/test_audit_pack_builder.py` |
 | `server/boundary_cache.py` | from __future__ import annotations | 2026-01-30 | 2026-02-22 | `tests/test_admin_lookup_cache.py`, `tests/test_admin_lookup_extended.py`, `tests/test_boundary_cache.py`, `tests/test_resource_catalog.py` |
-| `server/circuit_breaker.py` | from __future__ import annotations | 2026-02-02 | 2026-02-02 | `tests/conftest.py`, `tests/test_circuit_breaker.py`, `tests/test_nomis_common.py` |
-| `server/config.py` | import os | 2025-08-20 | 2026-04-06 | `tests/conftest.py`, `tests/evaluation/questions.py`, `tests/test_admin_lookup.py`, `tests/test_admin_lookup_extended.py` |
-| `server/dataset_cache.py` | from __future__ import annotations | 2026-01-25 | 2026-01-25 | `tests/test_dataset_cache.py`, `tests/test_ons_codes_unit.py` |
+| `server/boundary_run_paths.py` | from __future__ import annotations | 2026-04-12 | 2026-04-12 | `tests/test_boundary_run_paths.py` |
+| `server/circuit_breaker.py` | from __future__ import annotations | 2026-02-02 | 2026-02-02 | `tests/conftest.py`, `tests/test_circuit_breaker.py`, `tests/test_council_tax_band.py`, `tests/test_nomis_common.py` |
+| `server/config.py` | import os | 2025-08-20 | 2026-04-22 | `tests/conftest.py`, `tests/evaluation/questions.py`, `tests/test_admin_lookup.py`, `tests/test_admin_lookup_extended.py` |
+| `server/dataset_cache.py` | from __future__ import annotations | 2026-01-25 | 2026-01-25 | `tests/test_dataset_cache.py`, `tests/test_mcp_docker_local.py`, `tests/test_ons_codes_unit.py` |
 | `server/error_taxonomy.py` | from __future__ import annotations | 2026-01-25 | 2026-04-04 | `tests/test_error_taxonomy.py` |
-| `server/landis.py` | from __future__ import annotations | 2026-04-04 | 2026-04-06 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_ingest.py`, `tests/test_landis_release_reconciliation.py`, `tests/test_landis_resources.py` |
+| `server/landis.py` | from __future__ import annotations | 2026-04-04 | 2026-04-22 | `tests/test_check_shared_benchmark_cache.py`, `tests/test_evaluation_harness_full.py`, `tests/test_landis_ingest.py`, `tests/test_landis_release_reconciliation.py` |
 | `server/logging.py` | from __future__ import annotations | 2026-01-25 | 2026-02-21 | `tests/evaluation/questions.py`, `tests/test_logging_redaction.py`, `tests/test_os_downloads_tools.py`, `tests/test_playground_events.py` |
 | `server/main.py` | import threading | 2025-08-20 | 2026-03-24 | `tests/conftest.py`, `tests/evaluation/harness.py`, `tests/test_admin_lookup.py`, `tests/test_admin_lookup_cache.py` |
 | `server/maps_proxy.py` | from __future__ import annotations | 2026-01-27 | 2026-03-13 | `tests/test_maps_proxy.py`, `tests/test_owasp_mcp_validation.py` |
 | `server/mcp/__init__.py` | Makes this directory a Python package | 2025-08-20 | 2025-08-20 | `tests/evaluation/audit_logger.py`, `tests/evaluation/harness.py`, `tests/evaluation/live_capture.py`, `tests/test_admin_lookup_live_internals.py` |
 | `server/mcp/client_capabilities.py` | from __future__ import annotations | 2026-02-11 | 2026-02-13 | `tests/test_client_capabilities.py` |
-| `server/mcp/elicitation_forms.py` | from __future__ import annotations | 2026-02-07 | 2026-02-13 | `tests/test_elicitation_forms.py` |
+| `server/mcp/elicitation_forms.py` | from __future__ import annotations | 2026-02-07 | 2026-04-12 | `tests/test_elicitation_forms.py` |
 | `server/mcp/http_route_auth.py` | from __future__ import annotations | 2026-03-14 | 2026-03-14 | `tests/test_resource_fallback.py` |
-| `server/mcp/http_transport.py` | from __future__ import annotations | 2026-01-21 | 2026-03-22 | `tests/test_http_transport_coverage_more.py`, `tests/test_main_observability_branches.py`, `tests/test_mcp_http.py`, `tests/test_owasp_mcp_validation.py` |
+| `server/mcp/http_transport.py` | from __future__ import annotations | 2026-01-21 | 2026-06-01 | `tests/test_http_transport_coverage_more.py`, `tests/test_main_observability_branches.py`, `tests/test_mcp_2026_rc.py`, `tests/test_mcp_http.py` |
 | `server/mcp/playground.py` | import json | 2025-08-20 | 2026-04-06 | `tests/test_check_lmr_host4.py`, `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_http_endpoint_matrix.py`, `tests/test_map_trials_host_simulation_profiles.py` |
 | `server/mcp/prompts.py` | from __future__ import annotations | 2026-01-28 | 2026-01-28 | `tests/evaluation/questions.py`, `tests/test_client_capabilities.py`, `tests/test_landis_resources.py`, `tests/test_prompts.py` |
+| `server/mcp/rc2026.py` | from __future__ import annotations | 2026-06-01 | 2026-06-01 | `tests/test_mcp_2026_rc.py` |
 | `server/mcp/resource_access.py` | from __future__ import annotations | 2026-03-14 | 2026-04-04 | `tests/test_resource_fallback.py` |
-| `server/mcp/resource_catalog.py` | from __future__ import annotations | 2026-01-20 | 2026-04-05 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_resources.py`, `tests/test_mcp_http.py`, `tests/test_ons_data.py` |
-| `server/mcp/resource_handoff.py` | from __future__ import annotations | 2026-03-14 | 2026-03-14 | `tests/test_ons_data.py`, `tests/test_os_downloads_tools.py`, `tests/test_resource_fallback.py`, `tests/test_stdio_adapter_direct.py` |
+| `server/mcp/resource_catalog.py` | from __future__ import annotations | 2026-01-20 | 2026-04-23 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_resources.py`, `tests/test_mcp_http.py`, `tests/test_ons_data.py` |
+| `server/mcp/resource_handoff.py` | from __future__ import annotations | 2026-03-14 | 2026-03-14 | `tests/test_ons_data.py`, `tests/test_os_apps_tools.py`, `tests/test_os_downloads_tools.py`, `tests/test_resource_fallback.py` |
 | `server/mcp/resources.py` | import json | 2025-08-20 | 2026-03-14 | `tests/evaluation/harness.py`, `tests/evaluation/questions.py`, `tests/test_audit_normalise.py`, `tests/test_boundary_pipeline_variant_policy.py` |
-| `server/mcp/tool_search.py` | from __future__ import annotations | 2026-01-20 | 2026-04-05 | `tests/test_host_benchmark.py`, `tests/test_landis_resources.py`, `tests/test_os_mcp_descriptor.py`, `tests/test_tool_search.py` |
+| `server/mcp/tool_search.py` | from __future__ import annotations | 2026-01-20 | 2026-04-12 | `tests/test_host_benchmark.py`, `tests/test_landis_resources.py`, `tests/test_os_mcp_descriptor.py`, `tests/test_tool_search.py` |
 | `server/mcp/tools.py` | import importlib | 2025-08-20 | 2026-04-06 | `tests/audit_test_utils.py`, `tests/conftest.py`, `tests/evaluation/harness.py`, `tests/evaluation/live_capture.py` |
 | `server/observability.py` | from __future__ import annotations | 2026-02-11 | 2026-02-13 | `tests/test_main_observability_branches.py`, `tests/test_rate_limit_metrics.py` |
-| `server/ons_geo_cache.py` | from __future__ import annotations | 2026-02-22 | 2026-03-01 | `tests/test_ons_geo.py`, `tests/test_ons_geo_cache.py`, `tests/test_ons_geo_cache_refresh.py`, `tests/test_os_map_tools.py` |
+| `server/ons_geo_cache.py` | from __future__ import annotations | 2026-02-22 | 2026-04-12 | `tests/test_check_shared_benchmark_cache.py`, `tests/test_mcp_docker_local.py`, `tests/test_ons_geo.py`, `tests/test_ons_geo_cache.py` |
+| `server/ons_geo_catalog.py` | from __future__ import annotations | 2026-04-09 | 2026-04-12 | `tests/test_ons_geo_catalog.py` |
+| `server/ons_geo_freshness.py` | from __future__ import annotations | 2026-04-09 | 2026-04-09 | `tests/test_ons_geo.py`, `tests/test_ons_geo_catalog.py`, `tests/test_ons_geo_freshness.py` |
 | `server/owasp_mcp_validation.py` | from __future__ import annotations | 2026-03-13 | 2026-03-24 | `tests/test_owasp_mcp_validation.py` |
-| `server/protocol.py` | Protocol version constants and negotiation helpers for MCP transports. | 2026-01-24 | 2026-02-11 | `tests/audit_test_utils.py`, `tests/test_audit_normalise.py`, `tests/test_client_capabilities.py`, `tests/test_host_benchmark.py` |
+| `server/protocol.py` | Protocol version constants and negotiation helpers for MCP transports. | 2026-01-24 | 2026-06-01 | `tests/audit_test_utils.py`, `tests/test_audit_normalise.py`, `tests/test_client_capabilities.py`, `tests/test_host_benchmark.py` |
 | `server/route_graph.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | `tests/test_os_route_tools.py`, `tests/test_route_graph.py`, `tests/test_route_graph_integration.py`, `tests/test_route_graph_pipeline.py` |
 | `server/route_planning.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | `tests/evaluation/questions.py`, `tests/test_os_mcp_route_query.py`, `tests/test_route_planning.py`, `tests/test_stakeholder_live_run.py` |
-| `server/security.py` | REDACTION_TOKEN = "[REDACTED]" | 2025-09-16 | 2026-03-24 | `tests/test_owasp_mcp_validation.py`, `tests/test_run_local_tool.py`, `tests/test_security.py` |
-| `server/stdio_adapter.py` | STDIO JSON-RPC 2.0 adapter for mcp-geo. Moved from `scripts/os_mcp.py` into the `server` package for consistency. The le | 2025-09-17 | 2026-03-22 | `tests/test_psr_peat_e2e.py`, `tests/test_resource_fallback.py`, `tests/test_stdio_adapter_branches.py`, `tests/test_stdio_adapter_coverage_more.py` |
-| `server/tool_naming.py` | import hashlib | 2026-02-09 | 2026-02-14 | `tests/test_host_benchmark.py`, `tests/test_tool_naming_aliases.py` |
+| `server/security.py` | REDACTION_TOKEN = "[REDACTED]" | 2025-09-16 | 2026-04-22 | `tests/test_owasp_mcp_validation.py`, `tests/test_run_local_tool.py`, `tests/test_security.py` |
+| `server/stdio_adapter.py` | STDIO JSON-RPC 2.0 adapter for mcp-geo. Moved from `scripts/os_mcp.py` into the `server` package for consistency. The le | 2025-09-17 | 2026-06-01 | `tests/test_mcp_2026_rc.py`, `tests/test_psr_peat_e2e.py`, `tests/test_resource_fallback.py`, `tests/test_stdio_adapter_branches.py` |
+| `server/tool_naming.py` | import hashlib | 2026-02-09 | 2026-04-12 | `tests/test_host_benchmark.py`, `tests/test_tool_naming_aliases.py` |
 | `skills/mcp-geo-detailed-os-maps/SKILL.md` | Use this skill when a user-facing map in this repo needs precise Ordnance Survey street or building context, especially  | 2026-03-07 | 2026-03-07 | `tests/test_obsidian_kb.py` |
 | `skills/mcp-geo-long-horizon-summary/SKILL.md` | Use this skill when a user asks for an OpenAI "Long horizon tasks" style summary for MCP Geo work (runtime, tokens, tool | 2026-02-25 | 2026-02-25 | `tests/test_obsidian_kb.py` |
 | `skills/mcp-geo-long-horizon-summary/scripts/run_summary.sh` | set -euo pipefail | 2026-02-25 | 2026-02-25 | - |
@@ -1919,7 +2064,7 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `skills/mcp-geo-repo-extent-complexity/scripts/run_report.sh` | set -euo pipefail | 2026-02-25 | 2026-02-25 | - |
 | `tests/__init__.py` | Test package for MCP Geo. | 2026-01-20 | 2026-01-20 | `tests/evaluation/audit_logger.py`, `tests/evaluation/harness.py`, `tests/evaluation/live_capture.py`, `tests/test_admin_lookup_live_internals.py` |
 | `tests/audit_test_utils.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | `tests/test_audit_api.py`, `tests/test_audit_pack_builder.py` |
-| `tests/conftest.py` | import pytest | 2025-09-16 | 2026-02-21 | - |
+| `tests/conftest.py` | from collections.abc import Callable | 2025-09-16 | 2026-04-23 | - |
 | `tests/evaluation/__init__.py` | Evaluation framework for MCP Geo. | 2026-01-20 | 2026-01-20 | `tests/evaluation/audit_logger.py`, `tests/evaluation/harness.py`, `tests/evaluation/live_capture.py`, `tests/test_admin_lookup_live_internals.py` |
 | `tests/evaluation/audit_logger.py` | Audit logger for MCP Geo evaluation runs. | 2026-01-20 | 2026-02-11 | `tests/evaluation/harness.py`, `tests/test_evaluation_audit_rate_limits.py` |
 | `tests/evaluation/evaluation_results.audit.txt` | ============================================================ | 2026-01-20 | 2026-01-27 | - |
@@ -2000,11 +2145,26 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `tests/fixtures/council_tax/sw1a1aa_results.html` | Search results - Check and challenge your Council Tax band - GOV.UK | 2026-04-04 | 2026-04-04 | - |
 | `tests/fixtures/council_tax/yo17hp_results.html` | Search results - Check and challenge your Council Tax band - GOV.UK | 2026-04-04 | 2026-04-04 | - |
 | `tests/fixtures/council_tax_band_gold.json` | JSON object keys: cases, provider, scope, verifiedOn | 2026-04-04 | 2026-04-04 | `tests/test_council_tax_gold_eval.py` |
+| `tests/fixtures/council_tax_uprn_abp_example.json` | JSON object keys: results, sourceZip, summary | 2026-04-08 | 2026-04-08 | - |
+| `tests/fixtures/ons_geo/chd_sample.csv` | GEOGRAPHY_CODE,GEOGRAPHY_NAME,STATUS,SUCCESSOR_CODE,SUCCESSOR_NAME,CODE_FAMILY,LEVEL | 2026-04-09 | 2026-04-09 | - |
+| `tests/fixtures/ons_geo/nspl_legacy.csv` | pcds,LAD24CD,LAD24NM,WD24CD,WD24NM,CTRY24CD,CTRY24NM,RGN24CD,RGN24NM | 2026-04-09 | 2026-04-09 | - |
+| `tests/fixtures/ons_geo/nsul_sample.csv` | UPRN,pcds,LAD24CD,LAD24NM,OA11CD,LSOA11CD,MSOA11CD,WD24CD,WD24NM,CTRY24CD,CTRY24NM,RGN24CD,RGN24NM,postal_delivery | 2026-04-09 | 2026-04-09 | - |
+| `tests/fixtures/ons_geo/onspd_arcgis_metadata.json` | JSON object keys: fields, maxRecordCount, name, objectIdField | 2026-04-09 | 2026-04-09 | `tests/test_ons_geo_cache_refresh.py` |
+| `tests/fixtures/ons_geo/onspd_arcgis_page_1.json` | JSON object keys: features | 2026-04-09 | 2026-04-09 | `tests/test_ons_geo_cache_refresh.py` |
+| `tests/fixtures/ons_geo/onspd_modern.csv` | pcds,lad25cd,lad25nm,wd25cd,wd25nm,ctry25cd,ctry25nm,rgn25cd,rgn25nm | 2026-04-09 | 2026-04-09 | - |
+| `tests/fixtures/ons_geo/onsud_sample.csv` | UPRN,pcds,LAD24CD,LAD24NM,OA21CD,LSOA21CD,MSOA21CD,WD24CD,WD24NM,CTRY24CD,CTRY24NM,RGN24CD,RGN24NM,postal_delivery | 2026-04-09 | 2026-04-09 | - |
+| `tests/fixtures/ons_geo/portal_package_show.json` | JSON object keys: result, success | 2026-04-09 | 2026-04-09 | `tests/test_ons_geo_cache_refresh.py` |
+| `tests/fixtures/ons_geo/portal_release_page.html` | <html>
+  <body>
+    <a href="https://example.test/downloads/onsud-december-2025-epoch-123.zip">Download ZIP</a>
+  </body | 2026-04-09 | 2026-04-09 | - |
+| `tests/fixtures/ons_geo/rgc_current_sample.csv` | GEOGRAPHY_CODE,GEOGRAPHY_NAME,STATUS,CODE_FAMILY,LEVEL | 2026-04-09 | 2026-04-09 | - |
 | `tests/fixtures/psr_peat_floor_question.json` | JSON object keys: evidenceRequest, expected, id, question | 2026-02-22 | 2026-02-22 | `tests/test_psr_peat_e2e.py` |
 | `tests/helpers.py` | import json | 2026-01-24 | 2026-01-24 | `tests/test_http_transport_coverage_more.py`, `tests/test_mcp_http.py`, `tests/test_ons_codes_unit.py`, `tests/test_ons_data_internal.py` |
 | `tests/outputs/CV312JF-oa-example.html` | MCP Geo - Boundary Explorer | 2026-02-08 | 2026-02-12 | - |
 | `tests/outputs/northolt.html` | MCP Geo - Statistics Dashboard | 2026-02-09 | 2026-02-09 | - |
 | `tests/test_accessors.py` | from tools.accessors import get_gaz, get_dpa | 2025-09-16 | 2025-09-16 | `tests/test_accessors.py` |
+| `tests/test_addressbase_build_xref.py` | from __future__ import annotations | 2026-04-09 | 2026-04-09 | - |
 | `tests/test_admin_lookup.py` | import pytest | 2025-09-17 | 2026-02-01 | `tests/test_admin_lookup.py`, `tests/test_admin_lookup_cache.py`, `tests/test_admin_lookup_live.py`, `tests/test_tool_upstream_endpoint_contracts.py` |
 | `tests/test_admin_lookup_cache.py` | from types import SimpleNamespace | 2026-01-30 | 2026-02-22 | `tests/test_admin_lookup_cache.py` |
 | `tests/test_admin_lookup_extended.py` | import pytest | 2025-09-17 | 2026-03-10 | - |
@@ -2013,38 +2173,46 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `tests/test_audit_api.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | `tests/test_audit_api.py` |
 | `tests/test_audit_normalise.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | - |
 | `tests/test_audit_pack_builder.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | - |
+| `tests/test_benchmark_env.py` | from __future__ import annotations | 2026-04-13 | 2026-04-14 | - |
+| `tests/test_boundary_autofix.py` | from __future__ import annotations | 2026-04-12 | 2026-04-12 | - |
 | `tests/test_boundary_cache.py` | import datetime as dt | 2026-01-30 | 2026-02-22 | `tests/test_boundary_cache.py`, `tests/test_resource_catalog.py` |
 | `tests/test_boundary_pipeline_variant_policy.py` | from __future__ import annotations | 2026-02-23 | 2026-02-23 | - |
+| `tests/test_boundary_run_paths.py` | from __future__ import annotations | 2026-04-12 | 2026-04-12 | - |
 | `tests/test_check_codex_startup_scope.py` | from __future__ import annotations | 2026-03-06 | 2026-03-06 | `tests/test_check_codex_startup_scope.py` |
+| `tests/test_check_gemini_startup_scope.py` | from __future__ import annotations | 2026-03-06 | 2026-04-12 | `tests/test_check_gemini_startup_scope.py` |
 | `tests/test_check_lmr_host4.py` | from __future__ import annotations | 2026-02-22 | 2026-02-22 | - |
+| `tests/test_check_shared_benchmark_cache.py` | from __future__ import annotations | 2026-04-12 | 2026-04-12 | `tests/test_check_shared_benchmark_cache.py` |
+| `tests/test_check_spec_drift.py` | from __future__ import annotations | 2026-04-12 | 2026-04-12 | - |
 | `tests/test_circuit_breaker.py` | from __future__ import annotations | 2026-02-02 | 2026-02-02 | `tests/test_circuit_breaker.py` |
 | `tests/test_client_capabilities.py` | from server.mcp.client_capabilities import summarize_client_capabilities | 2026-02-13 | 2026-02-13 | - |
 | `tests/test_codex_long_horizon_summary.py` | from __future__ import annotations | 2026-02-25 | 2026-02-25 | - |
-| `tests/test_codex_mcp_local.py` | from __future__ import annotations | 2026-03-07 | 2026-04-05 | - |
-| `tests/test_config_secret_file.py` | from server.config import ( | 2026-03-03 | 2026-04-06 | - |
-| `tests/test_council_tax_band.py` | from __future__ import annotations | 2026-04-04 | 2026-04-04 | `tests/test_council_tax_band.py`, `tests/test_council_tax_gold_eval.py` |
+| `tests/test_codex_mcp_local.py` | from __future__ import annotations | 2026-03-07 | 2026-04-12 | - |
+| `tests/test_config_secret_file.py` | from typing import ClassVar | 2026-03-03 | 2026-04-22 | - |
+| `tests/test_council_tax_band.py` | from __future__ import annotations | 2026-04-04 | 2026-04-12 | `tests/test_council_tax_band.py`, `tests/test_council_tax_gold_eval.py` |
 | `tests/test_council_tax_gold_eval.py` | from __future__ import annotations | 2026-04-04 | 2026-04-04 | - |
+| `tests/test_council_tax_uprn_query.py` | from __future__ import annotations | 2026-04-08 | 2026-04-10 | `tests/test_council_tax_uprn_query.py` |
 | `tests/test_coverage_guardrails.py` | from fastapi.testclient import TestClient | 2026-01-20 | 2026-01-20 | - |
-| `tests/test_cross_platform_container_policy.py` | from pathlib import Path | 2026-03-10 | 2026-03-14 | - |
+| `tests/test_cross_platform_container_policy.py` | from pathlib import Path | 2026-03-10 | 2026-04-12 | - |
 | `tests/test_dataset_cache.py` | from server.dataset_cache import DatasetCache | 2026-01-25 | 2026-01-25 | `tests/test_dataset_cache.py` |
 | `tests/test_debug_errors.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2025-09-16 | `tests/test_debug_errors.py` |
 | `tests/test_devcontainer_codex_setup.py` | from __future__ import annotations | 2026-03-06 | 2026-03-17 | - |
 | `tests/test_docx_hygiene.py` | from __future__ import annotations | 2026-03-16 | 2026-03-16 | - |
-| `tests/test_elicitation_forms.py` | from server.mcp import elicitation_forms as forms | 2026-02-07 | 2026-02-07 | - |
+| `tests/test_elicitation_forms.py` | from server.mcp import elicitation_forms as forms | 2026-02-07 | 2026-04-12 | - |
 | `tests/test_epic_b_validation.py` | from collections.abc import Callable | 2025-08-20 | 2025-09-16 | - |
 | `tests/test_error_taxonomy.py` | from server.error_taxonomy import classify_error | 2026-01-25 | 2026-04-04 | - |
 | `tests/test_evaluation_audit_rate_limits.py` | from __future__ import annotations | 2026-02-11 | 2026-02-11 | - |
 | `tests/test_evaluation_expected_errors.py` | from __future__ import annotations | 2026-02-22 | 2026-02-22 | - |
-| `tests/test_evaluation_harness_full.py` | import json | 2026-01-24 | 2026-04-05 | `tests/test_evaluation_harness_full.py` |
+| `tests/test_evaluation_harness_full.py` | import json | 2026-01-24 | 2026-04-12 | `tests/test_evaluation_harness_full.py` |
 | `tests/test_evaluation_harness_live_api.py` | import os | 2026-01-24 | 2026-01-24 | - |
+| `tests/test_gemini_mcp_local.py` | from __future__ import annotations | 2026-04-12 | 2026-04-12 | - |
 | `tests/test_generate_mcp_geo_analytical_index.py` | import subprocess | 2026-03-11 | 2026-03-12 | - |
 | `tests/test_generate_mcp_geo_functionality_showcase.py` | from pathlib import Path | 2026-03-07 | 2026-03-07 | - |
 | `tests/test_golden_scenarios.py` | import itertools | 2025-09-16 | 2026-02-25 | `tests/test_golden_scenarios.py` |
 | `tests/test_health.py` | from fastapi.testclient import TestClient | 2025-08-20 | 2026-01-20 | `tests/test_health.py`, `tests/test_validation.py` |
-| `tests/test_host_benchmark.py` | from __future__ import annotations | 2026-03-06 | 2026-03-17 | `tests/test_host_benchmark.py` |
+| `tests/test_host_benchmark.py` | from __future__ import annotations | 2026-03-06 | 2026-04-14 | `tests/test_host_benchmark.py` |
 | `tests/test_http_endpoint_matrix.py` | from fastapi.testclient import TestClient | 2026-02-11 | 2026-02-11 | - |
 | `tests/test_http_transport_coverage_more.py` | import base64 | 2026-02-07 | 2026-03-13 | - |
-| `tests/test_landis_ingest.py` | from __future__ import annotations | 2026-04-04 | 2026-04-06 | - |
+| `tests/test_landis_ingest.py` | from __future__ import annotations | 2026-04-04 | 2026-04-12 | - |
 | `tests/test_landis_release_reconciliation.py` | from scripts.landis_release_reconciliation import strip_html | 2026-04-06 | 2026-04-06 | - |
 | `tests/test_landis_resources.py` | from __future__ import annotations | 2026-04-04 | 2026-04-05 | `tests/test_landis_resources.py` |
 | `tests/test_landis_tools.py` | from __future__ import annotations | 2026-04-04 | 2026-04-06 | `tests/test_landis_resources.py` |
@@ -2057,14 +2225,15 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `tests/test_map_trials_summary.py` | import json | 2026-02-14 | 2026-02-14 | - |
 | `tests/test_map_trials_verify.py` | from pathlib import Path | 2026-02-14 | 2026-02-14 | - |
 | `tests/test_maps_proxy.py` | from __future__ import annotations | 2026-01-29 | 2026-03-13 | - |
+| `tests/test_mcp_2026_rc.py` | from __future__ import annotations | 2026-06-01 | 2026-06-01 | `tests/test_mcp_2026_rc.py` |
 | `tests/test_mcp_client_if_none_match.py` | import json, subprocess, sys | 2025-09-17 | 2026-01-24 | - |
 | `tests/test_mcp_client_resources_get.py` | import json, subprocess, sys | 2025-09-17 | 2026-01-24 | - |
-| `tests/test_mcp_docker_local.py` | from __future__ import annotations | 2026-04-05 | 2026-04-06 | `tests/test_mcp_docker_local.py` |
-| `tests/test_mcp_http.py` | import base64 | 2026-01-21 | 2026-03-22 | `tests/test_http_transport_coverage_more.py`, `tests/test_mcp_http.py`, `tests/test_resource_fallback.py` |
+| `tests/test_mcp_docker_local.py` | from __future__ import annotations | 2026-04-05 | 2026-04-13 | `tests/test_mcp_docker_local.py` |
+| `tests/test_mcp_http.py` | import base64 | 2026-01-21 | 2026-04-12 | `tests/test_http_transport_coverage_more.py`, `tests/test_mcp_docker_local.py`, `tests/test_mcp_http.py`, `tests/test_resource_fallback.py` |
 | `tests/test_mcp_stdio_trace_proxy.py` | from __future__ import annotations | 2026-02-09 | 2026-02-09 | - |
 | `tests/test_middleware_exception.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2025-09-16 | - |
 | `tests/test_nomis_common.py` | import json | 2026-02-06 | 2026-02-06 | - |
-| `tests/test_nomis_data.py` | from typing import Any, Dict, Tuple | 2026-02-05 | 2026-03-16 | `tests/test_nomis_data.py` |
+| `tests/test_nomis_data.py` | from typing import Any, Dict, Tuple | 2026-02-05 | 2026-04-12 | `tests/test_nomis_data.py` |
 | `tests/test_obsidian_kb.py` | from __future__ import annotations | 2026-04-06 | 2026-04-06 | - |
 | `tests/test_ons_catalog_snapshot.py` | import json | 2026-02-07 | 2026-02-07 | - |
 | `tests/test_ons_catalog_validate_script.py` | from __future__ import annotations | 2026-02-11 | 2026-02-11 | `tests/test_ons_catalog_validate_script.py` |
@@ -2078,29 +2247,35 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `tests/test_ons_dimensions.py` | from fastapi.testclient import TestClient | 2025-09-17 | 2026-01-24 | `tests/test_ons_dimensions_live.py` |
 | `tests/test_ons_dimensions_live.py` | from fastapi.testclient import TestClient | 2025-09-17 | 2026-01-27 | `tests/test_ons_dimensions_live.py` |
 | `tests/test_ons_filter_formats.py` | from typing import Any, Dict, Tuple | 2025-11-03 | 2026-01-24 | - |
-| `tests/test_ons_geo.py` | from __future__ import annotations | 2026-02-22 | 2026-02-23 | `tests/test_ons_geo.py`, `tests/test_ons_geo_cache_refresh.py`, `tests/test_resource_catalog.py` |
-| `tests/test_ons_geo_cache.py` | from __future__ import annotations | 2026-02-22 | 2026-03-01 | `tests/test_ons_geo.py`, `tests/test_ons_geo_cache_refresh.py` |
-| `tests/test_ons_geo_cache_refresh.py` | from __future__ import annotations | 2026-02-22 | 2026-03-01 | `tests/test_ons_geo_cache_refresh.py` |
+| `tests/test_ons_geo.py` | from __future__ import annotations | 2026-02-22 | 2026-06-01 | `tests/test_ons_geo.py`, `tests/test_ons_geo_cache_refresh.py`, `tests/test_ons_geo_live_validate.py`, `tests/test_resource_catalog.py` |
+| `tests/test_ons_geo_cache.py` | from __future__ import annotations | 2026-02-22 | 2026-04-09 | `tests/test_ons_geo.py`, `tests/test_ons_geo_cache_refresh.py` |
+| `tests/test_ons_geo_cache_refresh.py` | from __future__ import annotations | 2026-02-22 | 2026-04-22 | `tests/test_ons_geo_cache_refresh.py` |
+| `tests/test_ons_geo_catalog.py` | from __future__ import annotations | 2026-04-09 | 2026-06-01 | - |
+| `tests/test_ons_geo_freshness.py` | from __future__ import annotations | 2026-04-09 | 2026-04-09 | - |
+| `tests/test_ons_geo_live_validate.py` | from __future__ import annotations | 2026-04-09 | 2026-04-09 | `tests/test_ons_geo_live_validate.py` |
 | `tests/test_ons_new_tools.py` | from typing import Any, Dict, Tuple | 2025-11-03 | 2026-01-25 | - |
 | `tests/test_ons_search_fallback.py` | from fastapi.testclient import TestClient | 2026-01-22 | 2026-03-14 | - |
 | `tests/test_ons_select.py` | import json | 2026-02-07 | 2026-03-14 | `tests/test_ons_select.py`, `tests/test_stdio_adapter_direct.py` |
 | `tests/test_os_apps_log_event.py` | import json | 2026-01-21 | 2026-01-21 | `tests/test_os_apps_log_event.py` |
-| `tests/test_os_apps_tools.py` | from fastapi.testclient import TestClient | 2026-01-20 | 2026-03-14 | - |
+| `tests/test_os_apps_tools.py` | from fastapi.testclient import TestClient | 2026-01-20 | 2026-05-13 | - |
 | `tests/test_os_auth_errors.py` | import requests | 2026-01-27 | 2026-01-27 | - |
 | `tests/test_os_catalog_snapshot.py` | from __future__ import annotations | 2026-02-08 | 2026-02-13 | `tests/test_os_catalog_snapshot.py` |
-| `tests/test_os_common.py` | from typing import ClassVar | 2025-09-16 | 2026-02-13 | - |
+| `tests/test_os_common.py` | from typing import ClassVar | 2025-09-16 | 2026-04-22 | - |
 | `tests/test_os_delivery.py` | from __future__ import annotations | 2026-02-13 | 2026-02-13 | - |
 | `tests/test_os_downloads_tools.py` | from __future__ import annotations | 2026-02-13 | 2026-03-14 | - |
-| `tests/test_os_features_collections.py` | from __future__ import annotations | 2026-02-08 | 2026-03-03 | `tests/test_os_features_collections.py`, `tests/test_os_new_capability_tools.py` |
-| `tests/test_os_features_helpers.py` | from __future__ import annotations | 2026-03-03 | 2026-03-03 | - |
+| `tests/test_os_features_collections.py` | from __future__ import annotations | 2026-02-08 | 2026-04-22 | `tests/test_os_features_collections.py`, `tests/test_os_new_capability_tools.py` |
+| `tests/test_os_features_helpers.py` | from __future__ import annotations | 2026-03-03 | 2026-04-22 | - |
 | `tests/test_os_invalid_inputs.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2026-03-14 | - |
 | `tests/test_os_landscape.py` | from fastapi.testclient import TestClient | 2026-02-19 | 2026-02-19 | `tests/test_os_landscape.py` |
-| `tests/test_os_map_tools.py` | from __future__ import annotations | 2026-02-08 | 2026-03-15 | - |
-| `tests/test_os_mcp_descriptor.py` | from fastapi.testclient import TestClient | 2026-01-20 | 2026-03-15 | `tests/test_coverage_guardrails.py`, `tests/test_os_mcp_descriptor.py` |
+| `tests/test_os_map_helpers_extra.py` | from __future__ import annotations | 2026-04-22 | 2026-04-22 | - |
+| `tests/test_os_map_tools.py` | from __future__ import annotations | 2026-02-08 | 2026-04-22 | - |
+| `tests/test_os_maps_helpers.py` | from __future__ import annotations | 2026-04-22 | 2026-04-22 | - |
+| `tests/test_os_mcp_descriptor.py` | from fastapi.testclient import TestClient | 2026-01-20 | 2026-04-10 | `tests/test_coverage_guardrails.py`, `tests/test_os_mcp_descriptor.py` |
 | `tests/test_os_mcp_internals.py` | from tools import os_mcp | 2026-02-06 | 2026-02-06 | - |
-| `tests/test_os_mcp_route_query.py` | from fastapi.testclient import TestClient | 2026-01-20 | 2026-03-16 | - |
+| `tests/test_os_mcp_route_query.py` | from fastapi.testclient import TestClient | 2026-01-20 | 2026-04-22 | - |
 | `tests/test_os_names_success.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2026-02-13 | - |
 | `tests/test_os_new_capability_tools.py` | from __future__ import annotations | 2026-02-13 | 2026-02-13 | - |
+| `tests/test_os_ngd_spring_2026_live.py` | from __future__ import annotations | 2026-04-22 | 2026-04-22 | - |
 | `tests/test_os_no_api_key.py` | import requests | 2025-09-16 | 2025-09-16 | - |
 | `tests/test_os_offline_tools.py` | from __future__ import annotations | 2026-02-14 | 2026-02-17 | - |
 | `tests/test_os_peat.py` | from __future__ import annotations | 2026-02-22 | 2026-03-14 | `tests/test_os_peat.py` |
@@ -2108,7 +2283,7 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `tests/test_os_places_enrichment.py` | import tools.os_places as os_places | 2025-09-16 | 2026-01-25 | `tests/test_os_places_enrichment.py` |
 | `tests/test_os_places_extra_more_success.py` | import pytest | 2025-09-16 | 2026-03-15 | - |
 | `tests/test_os_places_extra_success.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2026-02-13 | - |
-| `tests/test_os_places_new_tools.py` | from __future__ import annotations | 2026-02-13 | 2026-02-13 | - |
+| `tests/test_os_places_new_tools.py` | from __future__ import annotations | 2026-02-13 | 2026-04-08 | - |
 | `tests/test_os_poi.py` | from fastapi.testclient import TestClient | 2026-02-11 | 2026-03-07 | `tests/test_os_poi.py` |
 | `tests/test_os_qgis_tools.py` | from __future__ import annotations | 2026-02-13 | 2026-03-14 | - |
 | `tests/test_os_retry_errors.py` | import requests | 2025-09-16 | 2026-01-20 | - |
@@ -2120,16 +2295,17 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `tests/test_playground.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2026-04-06 | `tests/test_playground.py`, `tests/test_playground_events.py` |
 | `tests/test_playground_events.py` | import json | 2026-01-25 | 2026-03-24 | `tests/test_playground.py`, `tests/test_playground_events.py` |
 | `tests/test_postcode_tool.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2026-01-27 | - |
+| `tests/test_prepare_for_demo.py` | from __future__ import annotations | 2026-04-22 | 2026-04-23 | - |
 | `tests/test_prompts.py` | import json | 2026-01-29 | 2026-01-29 | - |
-| `tests/test_protocol_versions.py` | from server.protocol import ( | 2026-02-11 | 2026-02-11 | - |
+| `tests/test_protocol_versions.py` | from server.protocol import ( | 2026-02-11 | 2026-06-01 | - |
 | `tests/test_psr_peat_e2e.py` | from __future__ import annotations | 2026-02-22 | 2026-02-22 | - |
 | `tests/test_rate_limit_assessor.py` | from scripts.rate_limit_assessor import ProbePoint, parse_prometheus_metrics, percentile, recommend_limit | 2026-02-11 | 2026-02-11 | - |
 | `tests/test_rate_limit_metrics.py` | from fastapi.testclient import TestClient | 2025-09-17 | 2026-02-13 | - |
 | `tests/test_repo_extent_complexity_report.py` | from __future__ import annotations | 2026-02-25 | 2026-02-25 | - |
-| `tests/test_resource_catalog.py` | from __future__ import annotations | 2026-02-02 | 2026-03-14 | `tests/test_resource_catalog.py` |
+| `tests/test_resource_catalog.py` | from __future__ import annotations | 2026-02-02 | 2026-04-12 | `tests/test_resource_catalog.py` |
 | `tests/test_resource_fallback.py` | from __future__ import annotations | 2026-03-14 | 2026-04-04 | - |
 | `tests/test_resources_code_lists.py` | from fastapi.testclient import TestClient | 2025-11-03 | 2026-01-24 | - |
-| `tests/test_resources_data_catalog.py` | from __future__ import annotations | 2026-02-02 | 2026-03-14 | - |
+| `tests/test_resources_data_catalog.py` | from __future__ import annotations | 2026-02-02 | 2026-04-22 | - |
 | `tests/test_resources_etag.py` | from typing import Any, Dict, List | 2025-09-17 | 2026-02-11 | `tests/test_resources_etag.py` |
 | `tests/test_resources_ons_observations.py` | from fastapi.testclient import TestClient | 2025-09-17 | 2026-01-24 | - |
 | `tests/test_resources_paging_filtering.py` | from fastapi.testclient import TestClient | 2025-09-17 | 2026-02-11 | - |
@@ -2140,70 +2316,71 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `tests/test_route_graph_pipeline.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | - |
 | `tests/test_route_planning.py` | from server import route_planning | 2026-03-10 | 2026-03-10 | - |
 | `tests/test_run_local_tool.py` | from __future__ import annotations | 2026-03-24 | 2026-03-24 | - |
-| `tests/test_security.py` | from server.security import configured_secrets, mask_in_text, mask_in_value, redact | 2025-09-16 | 2026-03-24 | - |
-| `tests/test_server_landis.py` | from __future__ import annotations | 2026-04-04 | 2026-04-06 | - |
+| `tests/test_security.py` | from server.security import configured_secrets, mask_in_text, mask_in_value, redact | 2025-09-16 | 2026-04-22 | - |
+| `tests/test_server_landis.py` | from __future__ import annotations | 2026-04-04 | 2026-04-22 | - |
 | `tests/test_spec_tool_operability_coverage.py` | from __future__ import annotations | 2026-02-22 | 2026-02-22 | - |
 | `tests/test_stakeholder_benchmark_pack.py` | from __future__ import annotations | 2026-03-09 | 2026-03-11 | - |
 | `tests/test_stakeholder_live_run.py` | from __future__ import annotations | 2026-03-09 | 2026-03-10 | - |
 | `tests/test_stdio_adapter.py` | import json, subprocess, sys, textwrap | 2025-09-17 | 2026-01-24 | - |
 | `tests/test_stdio_adapter_branches.py` | import io, json | 2025-11-03 | 2026-01-24 | - |
-| `tests/test_stdio_adapter_coverage_more.py` | import io | 2026-02-07 | 2026-03-14 | - |
-| `tests/test_stdio_adapter_direct.py` | import io, json, re | 2025-11-03 | 2026-03-22 | - |
+| `tests/test_stdio_adapter_coverage_more.py` | import io | 2026-02-07 | 2026-04-12 | - |
+| `tests/test_stdio_adapter_direct.py` | import io | 2025-11-03 | 2026-04-12 | - |
 | `tests/test_stdio_adapter_main.py` | import io, json | 2025-11-03 | 2026-01-24 | - |
 | `tests/test_stdio_resources_etag.py` | import json, subprocess, sys | 2025-09-17 | 2026-01-24 | - |
 | `tests/test_stdio_resources_get.py` | import json, subprocess, sys | 2025-09-17 | 2026-01-24 | `tests/test_stdio_resources_get.py` |
 | `tests/test_stdio_wrapper_spawn.py` | import json, subprocess, sys | 2025-09-17 | 2025-11-03 | - |
 | `tests/test_tool_naming_aliases.py` | from server.tool_naming import resolve_tool_name | 2026-02-14 | 2026-02-14 | - |
-| `tests/test_tool_search.py` | from server.mcp.tool_search import STARTER_TOOLS, get_tool_search_config, search_tools | 2026-01-27 | 2026-04-04 | - |
+| `tests/test_tool_search.py` | from server.mcp.tool_search import STARTER_TOOLS, get_tool_search_config, search_tools | 2026-01-27 | 2026-04-08 | - |
 | `tests/test_tool_upstream_endpoint_contracts.py` | from __future__ import annotations | 2026-02-11 | 2026-02-25 | - |
-| `tests/test_tools_describe.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2026-04-06 | `tests/test_tools_describe.py` |
+| `tests/test_tools_describe.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2026-04-22 | `tests/test_tools_describe.py` |
 | `tests/test_tools_search.py` | from fastapi.testclient import TestClient | 2026-01-20 | 2026-03-15 | `tests/test_coverage_guardrails.py`, `tests/test_tools_describe.py`, `tests/test_tools_search.py`, `tests/test_tools_search_validation.py` |
 | `tests/test_tools_search_validation.py` | def test_tools_search_invalid_mode(client): | 2026-01-29 | 2026-03-14 | - |
 | `tests/test_tools_validation_branches.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2026-02-13 | - |
 | `tests/test_trace_report_audit.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | - |
 | `tests/test_trace_report_host_metadata.py` | from __future__ import annotations | 2026-03-06 | 2026-03-07 | - |
-| `tests/test_trace_session.py` | from __future__ import annotations | 2026-03-07 | 2026-03-17 | `tests/test_trace_session.py` |
+| `tests/test_trace_session.py` | from __future__ import annotations | 2026-03-07 | 2026-04-12 | `tests/test_trace_session.py` |
 | `tests/test_trace_utils.py` | from __future__ import annotations | 2026-03-07 | 2026-03-07 | - |
 | `tests/test_typing_utils.py` | from tools.typing_utils import parse_float | 2025-09-16 | 2025-09-16 | - |
+| `tests/test_unattended_client_eval.py` | from __future__ import annotations | 2026-04-12 | 2026-04-14 | - |
 | `tests/test_unknown_tool.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2025-09-16 | `tests/test_unknown_tool.py` |
 | `tests/test_validation.py` | def call(client, endpoint, method="get", **kwargs): | 2025-08-20 | 2026-01-20 | - |
 | `tools/__init__.py` | from . import accessors, types, typing_utils  # side-effect exports | 2025-09-16 | 2025-09-16 | `tests/evaluation/audit_logger.py`, `tests/evaluation/harness.py`, `tests/evaluation/live_capture.py`, `tests/test_admin_lookup_live_internals.py` |
 | `tools/accessors.py` | from __future__ import annotations | 2025-09-16 | 2025-09-16 | `tests/test_accessors.py` |
 | `tools/admin_lookup.py` | from __future__ import annotations | 2025-09-17 | 2026-03-15 | `tests/evaluation/live_capture.py`, `tests/evaluation/questions.py`, `tests/test_admin_lookup.py`, `tests/test_admin_lookup_cache.py` |
-| `tools/council_tax.py` | from __future__ import annotations | 2026-04-04 | 2026-04-04 | `tests/test_council_tax_band.py`, `tests/test_council_tax_gold_eval.py`, `tests/test_evaluation_harness_full.py`, `tests/test_tool_search.py` |
+| `tools/council_tax.py` | from __future__ import annotations | 2026-04-04 | 2026-04-12 | `tests/test_council_tax_band.py`, `tests/test_council_tax_gold_eval.py`, `tests/test_council_tax_uprn_query.py`, `tests/test_evaluation_harness_full.py` |
 | `tools/landis_archive.py` | from __future__ import annotations | 2026-04-05 | 2026-04-05 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_ingest.py`, `tests/test_landis_resources.py`, `tests/test_landis_tools.py` |
 | `tools/landis_catalog.py` | from __future__ import annotations | 2026-04-04 | 2026-04-04 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_tools.py`, `tests/test_obsidian_kb.py` |
 | `tools/landis_common.py` | from __future__ import annotations | 2026-04-04 | 2026-04-06 | - |
-| `tools/landis_derive.py` | from __future__ import annotations | 2026-04-04 | 2026-04-06 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_resources.py`, `tests/test_landis_tools.py` |
+| `tools/landis_derive.py` | from __future__ import annotations | 2026-04-04 | 2026-04-06 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_resources.py`, `tests/test_landis_tools.py`, `tests/test_os_mcp_route_query.py` |
 | `tools/landis_metadata.py` | from __future__ import annotations | 2026-04-04 | 2026-04-04 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_tools.py` |
-| `tools/landis_natmap.py` | from __future__ import annotations | 2026-04-05 | 2026-04-06 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_resources.py`, `tests/test_landis_tools.py`, `tests/test_server_landis.py` |
+| `tools/landis_natmap.py` | from __future__ import annotations | 2026-04-05 | 2026-04-06 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_resources.py`, `tests/test_landis_tools.py`, `tests/test_os_mcp_route_query.py` |
 | `tools/landis_nsi.py` | from __future__ import annotations | 2026-04-05 | 2026-04-06 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_resources.py`, `tests/test_landis_tools.py` |
-| `tools/landis_soilscapes.py` | from __future__ import annotations | 2026-04-04 | 2026-04-06 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_resources.py`, `tests/test_landis_tools.py` |
+| `tools/landis_soilscapes.py` | from __future__ import annotations | 2026-04-04 | 2026-04-06 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_resources.py`, `tests/test_landis_tools.py`, `tests/test_os_mcp_route_query.py` |
 | `tools/nomis_common.py` | from __future__ import annotations | 2025-09-17 | 2026-02-06 | `tests/test_evaluation_harness_full.py`, `tests/test_nomis_common.py`, `tests/test_nomis_data.py` |
-| `tools/nomis_data.py` | from __future__ import annotations | 2026-02-05 | 2026-03-16 | `tests/test_nomis_data.py`, `tests/test_tool_upstream_endpoint_contracts.py` |
+| `tools/nomis_data.py` | from __future__ import annotations | 2026-02-05 | 2026-04-12 | `tests/test_nomis_data.py`, `tests/test_tool_upstream_endpoint_contracts.py` |
 | `tools/ons_catalog_validator.py` | from __future__ import annotations | 2026-02-11 | 2026-02-11 | `tests/test_ons_catalog_validator.py` |
 | `tools/ons_codes.py` | from __future__ import annotations | 2025-11-03 | 2026-02-22 | `tests/evaluation/questions.py`, `tests/test_mcp_http.py`, `tests/test_ons_codes_live.py`, `tests/test_ons_codes_unit.py` |
 | `tools/ons_common.py` | from __future__ import annotations | 2025-09-17 | 2026-02-11 | `tests/evaluation/live_capture.py`, `tests/test_evaluation_harness_full.py`, `tests/test_ons_catalog_snapshot.py`, `tests/test_ons_common.py` |
-| `tools/ons_data.py` | from __future__ import annotations | 2025-09-17 | 2026-03-14 | `tests/evaluation/questions.py`, `tests/test_ons_data.py`, `tests/test_ons_data_internal.py`, `tests/test_ons_dimensions.py` |
-| `tools/ons_geo.py` | from __future__ import annotations | 2026-02-22 | 2026-02-23 | `tests/test_evaluation_harness_full.py`, `tests/test_ons_geo.py`, `tests/test_ons_geo_cache.py`, `tests/test_ons_geo_cache_refresh.py` |
+| `tools/ons_data.py` | from __future__ import annotations | 2025-09-17 | 2026-03-14 | `tests/evaluation/questions.py`, `tests/test_mcp_docker_local.py`, `tests/test_ons_data.py`, `tests/test_ons_data_internal.py` |
+| `tools/ons_geo.py` | from __future__ import annotations | 2026-02-22 | 2026-04-12 | `tests/test_benchmark_env.py`, `tests/test_check_shared_benchmark_cache.py`, `tests/test_evaluation_harness_full.py`, `tests/test_mcp_docker_local.py` |
 | `tools/ons_search.py` | from __future__ import annotations | 2025-11-03 | 2026-03-14 | `tests/evaluation/live_capture.py`, `tests/evaluation/questions.py`, `tests/test_evaluation_harness_full.py`, `tests/test_mcp_http.py` |
 | `tools/ons_select.py` | from __future__ import annotations | 2026-02-07 | 2026-03-14 | `tests/evaluation/questions.py`, `tests/test_elicitation_forms.py`, `tests/test_mcp_http.py`, `tests/test_ons_select.py` |
-| `tools/os_apps.py` | from __future__ import annotations | 2026-01-20 | 2026-03-14 | `tests/evaluation/questions.py`, `tests/test_check_lmr_host4.py`, `tests/test_host_benchmark.py`, `tests/test_mcp_http.py` |
-| `tools/os_common.py` | from __future__ import annotations | 2025-09-16 | 2026-02-19 | `tests/conftest.py`, `tests/evaluation/live_capture.py`, `tests/test_evaluation_harness_full.py`, `tests/test_mcp_http.py` |
+| `tools/os_apps.py` | from __future__ import annotations | 2026-01-20 | 2026-05-13 | `tests/evaluation/questions.py`, `tests/test_check_lmr_host4.py`, `tests/test_host_benchmark.py`, `tests/test_mcp_http.py` |
+| `tools/os_common.py` | from __future__ import annotations | 2025-09-16 | 2026-04-22 | `tests/conftest.py`, `tests/evaluation/live_capture.py`, `tests/test_evaluation_harness_full.py`, `tests/test_mcp_http.py` |
 | `tools/os_delivery.py` | from __future__ import annotations | 2026-02-13 | 2026-03-14 | `tests/test_os_delivery.py` |
 | `tools/os_downloads.py` | from __future__ import annotations | 2026-02-13 | 2026-03-14 | `tests/test_evaluation_harness_full.py`, `tests/test_live_missing_tools_probe.py`, `tests/test_os_downloads_tools.py`, `tests/test_tool_upstream_endpoint_contracts.py` |
-| `tools/os_features.py` | from __future__ import annotations | 2025-09-16 | 2026-03-14 | `tests/evaluation/questions.py`, `tests/test_epic_b_validation.py`, `tests/test_evaluation_harness_full.py`, `tests/test_os_features_collections.py` |
+| `tools/os_features.py` | from __future__ import annotations | 2025-09-16 | 2026-04-22 | `tests/evaluation/questions.py`, `tests/test_epic_b_validation.py`, `tests/test_evaluation_harness_full.py`, `tests/test_os_features_collections.py` |
 | `tools/os_landscape.py` | from __future__ import annotations | 2026-02-19 | 2026-03-14 | `tests/test_evaluation_harness_full.py`, `tests/test_os_landscape.py`, `tests/test_os_mcp_route_query.py`, `tests/test_os_peat.py` |
 | `tools/os_linked_ids.py` | from __future__ import annotations | 2025-09-16 | 2026-02-13 | `tests/evaluation/questions.py`, `tests/test_epic_b_validation.py`, `tests/test_evaluation_harness_full.py`, `tests/test_os_mcp_descriptor.py` |
-| `tools/os_map.py` | from __future__ import annotations | 2026-02-08 | 2026-03-14 | `tests/evaluation/questions.py`, `tests/test_epic_b_validation.py`, `tests/test_evaluation_harness_full.py`, `tests/test_mcp_http.py` |
-| `tools/os_maps.py` | from __future__ import annotations | 2025-09-16 | 2026-02-22 | `tests/evaluation/questions.py`, `tests/test_epic_b_validation.py`, `tests/test_evaluation_harness_full.py`, `tests/test_mcp_http.py` |
-| `tools/os_mcp.py` | from __future__ import annotations | 2026-01-20 | 2026-03-16 | `tests/evaluation/harness.py`, `tests/evaluation/questions.py`, `tests/test_coverage_guardrails.py`, `tests/test_evaluation_audit_rate_limits.py` |
+| `tools/os_map.py` | from __future__ import annotations | 2026-02-08 | 2026-04-22 | `tests/evaluation/questions.py`, `tests/test_epic_b_validation.py`, `tests/test_evaluation_harness_full.py`, `tests/test_mcp_http.py` |
+| `tools/os_maps.py` | from __future__ import annotations | 2025-09-16 | 2026-04-22 | `tests/evaluation/questions.py`, `tests/test_epic_b_validation.py`, `tests/test_evaluation_harness_full.py`, `tests/test_mcp_http.py` |
+| `tools/os_mcp.py` | from __future__ import annotations | 2026-01-20 | 2026-04-22 | `tests/evaluation/harness.py`, `tests/evaluation/questions.py`, `tests/test_coverage_guardrails.py`, `tests/test_evaluation_audit_rate_limits.py` |
 | `tools/os_names.py` | from __future__ import annotations | 2025-09-16 | 2026-02-13 | `tests/evaluation/questions.py`, `tests/test_epic_b_validation.py`, `tests/test_evaluation_harness_full.py`, `tests/test_golden_scenarios.py` |
 | `tools/os_net.py` | from __future__ import annotations | 2026-02-13 | 2026-02-13 | `tests/test_evaluation_harness_full.py`, `tests/test_os_new_capability_tools.py`, `tests/test_tool_upstream_endpoint_contracts.py` |
 | `tools/os_offline.py` | from __future__ import annotations | 2026-02-14 | 2026-02-17 | `tests/test_evaluation_harness_full.py`, `tests/test_live_missing_tools_probe.py`, `tests/test_os_offline_tools.py` |
 | `tools/os_peat.py` | from __future__ import annotations | 2026-02-22 | 2026-03-14 | `tests/evaluation/questions.py`, `tests/test_evaluation_harness_full.py`, `tests/test_os_mcp_route_query.py`, `tests/test_os_peat.py` |
 | `tools/os_places.py` | from __future__ import annotations | 2025-09-16 | 2026-02-22 | `tests/audit_test_utils.py`, `tests/evaluation/questions.py`, `tests/test_audit_normalise.py`, `tests/test_audit_pack_builder.py` |
-| `tools/os_places_extra.py` | from __future__ import annotations | 2025-09-16 | 2026-03-15 | `tests/test_evaluation_harness_full.py`, `tests/test_os_map_tools.py`, `tests/test_os_places_extra_more_success.py`, `tests/test_os_places_extra_success.py` |
+| `tools/os_places_extra.py` | from __future__ import annotations | 2025-09-16 | 2026-04-08 | `tests/test_evaluation_harness_full.py`, `tests/test_os_map_tools.py`, `tests/test_os_places_extra_more_success.py`, `tests/test_os_places_extra_success.py` |
 | `tools/os_poi.py` | from __future__ import annotations | 2026-02-11 | 2026-03-07 | `tests/evaluation/questions.py`, `tests/test_os_mcp_route_query.py`, `tests/test_os_poi.py`, `tests/test_tool_upstream_endpoint_contracts.py` |
 | `tools/os_qgis.py` | from __future__ import annotations | 2026-02-13 | 2026-03-14 | `tests/test_evaluation_harness_full.py`, `tests/test_os_qgis_tools.py`, `tests/test_tool_upstream_endpoint_contracts.py` |
 | `tools/os_resources.py` | from __future__ import annotations | 2026-03-14 | 2026-03-14 | `tests/test_evaluation_harness_full.py`, `tests/test_landis_resources.py`, `tests/test_os_mcp_descriptor.py`, `tests/test_os_mcp_route_query.py` |
@@ -2214,6 +2391,8 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `tools/registry.py` | from __future__ import annotations | 2025-09-16 | 2025-09-16 | `tests/evaluation/harness.py`, `tests/test_debug_errors.py`, `tests/test_evaluation_harness_full.py`, `tests/test_host_benchmark.py` |
 | `tools/types.py` | from __future__ import annotations | 2025-09-16 | 2026-02-08 | `tests/evaluation/live_capture.py`, `tests/test_admin_lookup_cache.py`, `tests/test_audit_normalise.py`, `tests/test_audit_pack_builder.py` |
 | `tools/typing_utils.py` | from __future__ import annotations | 2025-09-16 | 2026-03-14 | `tests/test_coverage_guardrails.py`, `tests/test_typing_utils.py` |
+| `troubleshooting/ABP/after-revision-trace-claude-report.md` | Date: 2026-04-10 Inputs: - `troubleshooting/ABP/after-revision-trace-claude.md` - Current router and tool-discovery code | 2026-04-10 | 2026-04-10 | - |
+| `troubleshooting/ABP/after-revision-trace-claude.md` | Sensitive values have been redacted consistently throughout this trace: - local usernames and host/session-specific path | 2026-04-10 | 2026-04-10 | - |
 | `troubleshooting/Deep Analysis Report- Peat Survey Failure Chain (Forest of Bowland).docx` | Binary artifact | 2026-03-03 | 2026-03-16 | - |
 | `troubleshooting/Fifth Harold Wood, after updates.docx` | Binary artifact | 2026-03-16 | 2026-03-16 | - |
 | `troubleshooting/Fifth harold_wood_walk_the_streets.html` | Harold Wood — Walk the Streets | 2026-03-16 | 2026-03-16 | - |
@@ -2222,8 +2401,11 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `troubleshooting/Forensic and Methodological Deep Research Study for an MCP Geospatial Server.pdf` | Binary artifact | 2026-02-19 | 2026-02-19 | - |
 | `troubleshooting/Fourth Harold Wood, after updates.docx` | Binary artifact | 2026-03-15 | 2026-03-16 | - |
 | `troubleshooting/Fourth Harold Wood, after updates.md` | Source: `troubleshooting/Fourth Harold Wood, after updates.docx` Prepared: 2026-03-15 Scope: Markdown working copy of th | 2026-03-15 | 2026-03-15 | - |
-| `troubleshooting/Landis/check_real_sites.md` | Is there an example in the paper that we can construct questions from which would validate our MCP-Geo functionality and | - | - | - |
+| `troubleshooting/Landis/check_real_sites.md` | Is there an example in the paper that we can construct questions from which would validate our MCP-Geo functionality and | 2026-04-06 | 2026-04-06 | - |
+| `troubleshooting/Landis/draw_roads_on_map.md` | Let me resume the work from where it left off. I need to: Read remaining chunks for A444 pages Read remaining chunks for | 2026-04-08 | 2026-04-08 | - |
+| `troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md` | What is the best way to stop AI clients from struggling with `mcp-geo` when the real task is "draw the roads on the map" | 2026-04-07 | 2026-04-07 | - |
 | `troubleshooting/Landis/failure_data_availability.md` | "The key use case for all of this is the resilience of our buried infrastructure and also the transport infrastructure.  | 2026-04-06 | 2026-04-06 | - |
+| `troubleshooting/Landis/mapping_landis_results.md` | The Schematic at-risk road lines for A444, A5, B4089, B4095, and the Harbury-Southam rural C network don't look right, n | 2026-04-08 | 2026-04-08 | - |
 | `troubleshooting/MCP-Geo view of Harold Wood Essex.docx` | Binary artifact | 2026-03-14 | 2026-03-16 | - |
 | `troubleshooting/MCP-Geo view of Harold Wood Essex.md` | Source: `troubleshooting/MCP-Geo view of Harold Wood Essex.docx` Prepared: 2026-03-14 Scope: Markdown working copy of th | 2026-03-14 | 2026-03-14 | - |
 | `troubleshooting/Meeth North Devon/Meeth, North Devon report.docx` | Binary artifact | 2026-04-04 | 2026-04-04 | - |
@@ -2251,6 +2433,9 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `troubleshooting/harold-wood-essex-deep-analysis-2026-03-14.md` | Date: 2026-03-14 Scope: Failure modes and misunderstandings in the Harold Wood validation run, with explicit separation  | 2026-03-14 | 2026-03-14 | - |
 | `troubleshooting/harold-wood-essex-trace-evidence-2026-03-14.md` | - Source conversation: `troubleshooting/MCP-Geo view of Harold Wood Essex.md` - Source transport trace: `logs/claude-tra | 2026-03-14 | 2026-03-14 | - |
 | `troubleshooting/mcp-apps-widget-host-bug-report.md` | Submitted as https://github.com/modelcontextprotocol/modelcontextprotocol/issues/2247 20250214-16:50 **Component:** Clau | 2026-02-16 | 2026-02-17 | - |
+| `troubleshooting/mcp-cowork/cowork-sanity-and-failure-report-2026-04-28.md` | Date: 2026-04-28 This note diagnoses the saved Claude Cowork transcripts in `troubleshooting/mcp-cowork/` and separates: | 2026-05-13 | 2026-05-13 | - |
+| `troubleshooting/mcp-cowork/mcp-cowork-fail2.md` | Claude finished the response Show me a map so I can see postcodes around of CV3 1HB Claude responded: Got the coordinate | 2026-05-13 | 2026-05-13 | - |
+| `troubleshooting/mcp-cowork/mcp-cowork-failures.md` | Claude finished the response You said: what version of mcp-geo MCP server is running now what version of mcp-geo MCP ser | 2026-05-13 | 2026-05-13 | - |
 | `troubleshooting/mcp-geo-trace.md` | 2026-02-13 09:51:17.838 [info] Starting server mcp-geo-trace 2026-02-13 09:51:17.838 [info] Connection state: Starting 2 | 2026-02-13 | 2026-02-13 | - |
 | `troubleshooting/mcp-initialise-post-optimisation.jsonc` | 2026-02-13 14: 35: 24.833 [info | 2026-02-13 | 2026-02-13 | - |
 | `troubleshooting/mcp-initialise.json` | 2026-02-13 09: 51: 26.470 [warning
@@ -2262,15 +2447,17 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `troubleshooting/peatland-bowland-floor-question-deep-analysis-2026-02-19.md` | Date: 2026-02-19 Analyst: Codex This report reconstructs and analyzes the floor question event centered on: - `troublesh | 2026-02-19 | 2026-02-19 | - |
 | `troubleshooting/third-harold-wood-after-updates-analysis-2026-03-15.md` | Date: 2026-03-15 Scope: The third Harold Wood validation follow-up where Claude was asked to produce a premises inventor | 2026-03-15 | 2026-03-15 | - |
 | `troubleshooting/validating-nomis-trace-evidence-2026-03-03.md` | - Source: `logs/claude-trace.jsonl` - Scope: failing `nomis_query` attempts for `NM_2028_1` and follow-on `os_mcp_descri | 2026-03-03 | 2026-03-03 | - |
+| `ui/__init__.py` | Runtime UI asset package for installed MCP Geo artifacts. | 2026-04-23 | 2026-04-23 | `tests/evaluation/audit_logger.py`, `tests/evaluation/harness.py`, `tests/evaluation/live_capture.py`, `tests/test_admin_lookup_live_internals.py` |
 | `ui/boundary_explorer.html` | MCP Geo - Map Lab | 2026-02-08 | 2026-03-12 | - |
 | `ui/feature_inspector.html` | MCP Geo - Feature Inspector | 2026-01-20 | 2026-03-11 | - |
+| `ui/fora_york_house_map.html` | Fora - York House Map Viewer | 2026-04-08 | 2026-04-08 | - |
 | `ui/geography_selector.html` | MCP Geo - Geography Selector | 2026-01-20 | 2026-03-11 | - |
 | `ui/route_planner.html` | MCP Geo - Route Planner | 2026-01-20 | 2026-03-11 | - |
 | `ui/shared/compact_contract.css` | :root { | 2026-03-01 | 2026-03-02 | - |
 | `ui/shared/compact_contract.js` | (function initCompactContractGlobal() { | 2026-03-01 | 2026-03-03 | - |
-| `ui/simple_map.html` | Simple Map Lab | 2026-02-27 | 2026-03-03 | - |
+| `ui/simple_map.html` | Simple Map Lab | 2026-02-27 | 2026-04-09 | - |
 | `ui/statistics_dashboard.html` | MCP Geo - Statistics Dashboard | 2026-01-20 | 2026-03-11 | - |
-| `ui/vendor/README.md` | Vendored MapLibre assets These files are vendored to keep MCP-Apps UI widgets working in restricted contexts (e.g. webvi | 2026-02-09 | 2026-03-12 | `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
+| `ui/vendor/README.md` | Vendored MapLibre assets These files are vendored to keep MCP-Apps UI widgets working in restricted contexts (e.g. webvi | 2026-02-09 | 2026-03-12 | `tests/test_check_spec_drift.py`, `tests/test_generate_mcp_geo_analytical_index.py`, `tests/test_generate_mcp_geo_functionality_showcase.py`, `tests/test_obsidian_kb.py` |
 | `ui/vendor/maplibre-gl-csp-worker.js` | /** | 2026-01-29 | 2026-01-29 | - |
 | `ui/vendor/maplibre-gl-js.LICENSE.txt` | Copyright (c) 2023, MapLibre contributors | 2026-02-09 | 2026-02-09 | - |
 | `ui/vendor/maplibre-gl.css` | .maplibregl-map{font:12px/20px Helvetica Neue,Arial,Helvetica,sans-serif;overflow:hidden;position:relative;-webkit-tap-h | 2026-02-09 | 2026-02-09 | - |
@@ -2280,11 +2467,11 @@ last_validated_at: "2026-04-06T14:09:00Z"
 ## Visible Headings
 
 - `AGENTS.md`: `MCP Geo Repository Guidelines` | `Current Tech & Scope` | `Repository Layout` | `Build & Run` | `Command timeout guidance for agents` | `Coding Standards`
-- `CHANGELOG.md`: `Changelog` | `[Unreleased]` | `Added` | `Fixed` | `Changed` | `[0.7.0] - 2026-03-16`
+- `CHANGELOG.md`: `Changelog` | `[Unreleased]` | `[0.8.1] - 2026-04-23` | `Fixed` | `[0.8.0] - 2026-04-23` | `Added`
 - `CONTEXT.md`: `MCP Geo Context` | `Purpose` | `Project Snapshot` | `Spec Package Map` | `Codex Usage (Mac App + Devcontainer)` | `Current Focus`
 - `GEMINI.md`: `GEMINI.md - MCP Geo Server Context` | `Project Overview` | `Main Technologies` | `Architecture` | `Building and Running` | `Prerequisites`
 - `Gemini-Code-Review.md`: `Gemini Code Review: MCP Geo Server` | `Executive Summary` | `1. Technical Design & Architecture` | `1.1 Dual-Transport MCP Implementation` | `1.2 Modular Tooling System` | `1.3 Resilience & Reliability`
-- `README.md`: `MCP Geo Server` | `Public Launch Caveat` | `Start here — run the server and ask it a question` | `1) Get access key (2 minutes)` | `2) Run the server in a folder` | `Optional: higher-rate NOMIS access`
+- `README.md`: `MCP Geo Server` | `Public Launch Caveat` | `Start here — run the server and ask it a question` | `1) Get access key (2 minutes)` | `2) Run the server in a folder` | `Optional: query (default), header, or bearer.`
 - `RELEASE_NOTES/0.2.1.md`: `Release 0.2.1 - 2025-09-17` | `Highlights` | `Added` | `Changed` | `Fixed` | `Upgrade Notes`
 - `RELEASE_NOTES/0.2.10.md`: `Release Notes 0.2.10 (2026-02-05)` | `Added` | `Changed` | `Fixed` | `Tests`
 - `RELEASE_NOTES/0.2.11.md`: `Release Notes 0.2.11 (2026-02-06)` | `Added` | `Changed` | `Tests`
@@ -2300,86 +2487,86 @@ last_validated_at: "2026-04-06T14:09:00Z"
 
 ## Binary Artifacts
 
-- `docs/Claude Conversations on MCP-Geo.docx` (899.0 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/Claude Conversations on MCP-Geo.docx)
-- `docs/Claude failed conversation.docx` (76.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/Claude failed conversation.docx)
-- `docs/Claude failed conversation.pdf` (460.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/Claude failed conversation.pdf)
-- `docs/Documentation collection task.docx` (23.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/Documentation collection task.docx)
-- `docs/Geography/UK Geographies Datapack Spec.pdf` (188.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/Geography/UK Geographies Datapack Spec.pdf)
-- `docs/Geography/hierarchy_poster_v3.6_JUN_2025_A3.pdf` (4.1 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/Geography/hierarchy_poster_v3.6_JUN_2025_A3.pdf)
-- `docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.docx` (23.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.docx)
-- `docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.docx` (109.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.docx)
-- `docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.docx` (1.1 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.docx)
-- `docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx` (63.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx)
-- `docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).pdf` (207.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).pdf)
-- `docs/MasterMap from Claude.jpg` (261.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/MasterMap from Claude.jpg)
-- `docs/MasterMap from Claude.png` (1014.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/MasterMap from Claude.png)
-- `docs/Working with MCP Servers.docx` (3.5 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/Working with MCP Servers.docx)
-- `docs/design/figma/mcp_apps_small_window_wireframes.svg` (6.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/design/figma/mcp_apps_small_window_wireframes.svg)
-- `docs/mcp_geo_prism_bundle/figures/f01_repo_at_a_glance.png` (74.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/f01_repo_at_a_glance.png)
-- `docs/mcp_geo_prism_bundle/figures/f02_reader_pathways.png` (58.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/f02_reader_pathways.png)
-- `docs/mcp_geo_prism_bundle/figures/f03_runtime_request_flow.png` (52.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/f03_runtime_request_flow.png)
-- `docs/mcp_geo_prism_bundle/figures/f04_tool_resource_ecosystem.png` (62.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/f04_tool_resource_ecosystem.png)
-- `docs/mcp_geo_prism_bundle/figures/f05_documentation_publication_stack.png` (81.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/f05_documentation_publication_stack.png)
-- `docs/mcp_geo_prism_bundle/figures/f06_evidence_assurance_ladder.png` (67.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/f06_evidence_assurance_ladder.png)
-- `docs/mcp_geo_prism_bundle/figures/f07_release_iteration_pipeline.png` (64.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/f07_release_iteration_pipeline.png)
-- `docs/mcp_geo_prism_bundle/figures/f08_governed_answer_loop.png` (66.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/f08_governed_answer_loop.png)
-- `docs/mcp_geo_prism_bundle/figures/infographic_documentation_path.png` (85.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/infographic_documentation_path.png)
-- `docs/mcp_geo_prism_bundle/figures/infographic_governed_loop.png` (85.4 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/infographic_governed_loop.png)
-- `docs/mcp_geo_prism_bundle/figures/infographic_repo_map.png` (118.4 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/infographic_repo_map.png)
-- `docs/mcp_geo_prism_bundle/figures/slide_01.jpg` (285.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/slide_01.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_02.jpg` (185.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/slide_02.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_03.jpg` (376.0 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/slide_03.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_04.jpg` (180.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/slide_04.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_05.jpg` (360.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/slide_05.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_06.jpg` (295.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/slide_06.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_07.jpg` (214.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/slide_07.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_08.jpg` (182.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/slide_08.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_09.jpg` (256.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/slide_09.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_10.jpg` (244.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/slide_10.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_11.jpg` (316.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/slide_11.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_12.jpg` (235.9 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/slide_12.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_13.jpg` (208.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/slide_13.jpg)
-- `docs/mcp_geo_prism_bundle/figures/slide_14.jpg` (189.4 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/docs/mcp_geo_prism_bundle/figures/slide_14.jpg)
+- `docs/Claude Conversations on MCP-Geo.docx` (899.0 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/Claude Conversations on MCP-Geo.docx)
+- `docs/Claude failed conversation.docx` (76.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/Claude failed conversation.docx)
+- `docs/Claude failed conversation.pdf` (460.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/Claude failed conversation.pdf)
+- `docs/Documentation collection task.docx` (23.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/Documentation collection task.docx)
+- `docs/Geography/UK Geographies Datapack Spec.pdf` (188.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/Geography/UK Geographies Datapack Spec.pdf)
+- `docs/Geography/hierarchy_poster_v3.6_JUN_2025_A3.pdf` (4.1 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/Geography/hierarchy_poster_v3.6_JUN_2025_A3.pdf)
+- `docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.docx` (23.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/MCP-Geo Forest_of_Bowland_Peatland_Survey.docx)
+- `docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.docx` (109.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/MCP-Geo Intelligence Report- A452 High Street Leamington Resurfacing.docx)
+- `docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.docx` (1.1 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/MCP-Geo Peatland Site Survey - Forest of Bowland National Landscape.docx)
+- `docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx` (63.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).docx)
+- `docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).pdf` (207.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/Mapping Ordnance Survey & ONS APIs to the Model Context Protocol (MCP).pdf)
+- `docs/MasterMap from Claude.jpg` (261.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/MasterMap from Claude.jpg)
+- `docs/MasterMap from Claude.png` (1014.1 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/MasterMap from Claude.png)
+- `docs/Working with MCP Servers.docx` (3.5 MB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/Working with MCP Servers.docx)
+- `docs/design/figma/mcp_apps_small_window_wireframes.svg` (6.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/design/figma/mcp_apps_small_window_wireframes.svg)
+- `docs/mcp_geo_prism_bundle/figures/f01_repo_at_a_glance.png` (74.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/f01_repo_at_a_glance.png)
+- `docs/mcp_geo_prism_bundle/figures/f02_reader_pathways.png` (58.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/f02_reader_pathways.png)
+- `docs/mcp_geo_prism_bundle/figures/f03_runtime_request_flow.png` (52.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/f03_runtime_request_flow.png)
+- `docs/mcp_geo_prism_bundle/figures/f04_tool_resource_ecosystem.png` (62.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/f04_tool_resource_ecosystem.png)
+- `docs/mcp_geo_prism_bundle/figures/f05_documentation_publication_stack.png` (81.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/f05_documentation_publication_stack.png)
+- `docs/mcp_geo_prism_bundle/figures/f06_evidence_assurance_ladder.png` (67.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/f06_evidence_assurance_ladder.png)
+- `docs/mcp_geo_prism_bundle/figures/f07_release_iteration_pipeline.png` (64.7 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/f07_release_iteration_pipeline.png)
+- `docs/mcp_geo_prism_bundle/figures/f08_governed_answer_loop.png` (66.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/f08_governed_answer_loop.png)
+- `docs/mcp_geo_prism_bundle/figures/infographic_documentation_path.png` (85.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/infographic_documentation_path.png)
+- `docs/mcp_geo_prism_bundle/figures/infographic_governed_loop.png` (85.4 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/infographic_governed_loop.png)
+- `docs/mcp_geo_prism_bundle/figures/infographic_repo_map.png` (118.4 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/infographic_repo_map.png)
+- `docs/mcp_geo_prism_bundle/figures/slide_01.jpg` (285.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/slide_01.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_02.jpg` (185.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/slide_02.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_03.jpg` (376.0 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/slide_03.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_04.jpg` (180.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/slide_04.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_05.jpg` (360.8 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/slide_05.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_06.jpg` (295.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/slide_06.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_07.jpg` (214.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/slide_07.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_08.jpg` (182.5 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/slide_08.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_09.jpg` (256.2 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/slide_09.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_10.jpg` (244.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/slide_10.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_11.jpg` (316.6 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/slide_11.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_12.jpg` (235.9 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/slide_12.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_13.jpg` (208.3 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/slide_13.jpg)
+- `docs/mcp_geo_prism_bundle/figures/slide_14.jpg` (189.4 KB): [Pinned source](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/docs/mcp_geo_prism_bundle/figures/slide_14.jpg)
 
 ## Pinned Sources
 
-- [`.github/workflows/ci.yml`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/.github/workflows/ci.yml)
-- [`AGENTS.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/AGENTS.md)
-- [`CHANGELOG.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/CHANGELOG.md)
-- [`CONTEXT.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/CONTEXT.md)
-- [`GEMINI.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/GEMINI.md)
-- [`Gemini-Code-Review.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/Gemini-Code-Review.md)
-- [`PROGRESS.MD`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/PROGRESS.MD)
-- [`README.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/README.md)
-- [`RELEASE_NOTES/0.2.1.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.1.md)
-- [`RELEASE_NOTES/0.2.10.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.10.md)
-- [`RELEASE_NOTES/0.2.11.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.11.md)
-- [`RELEASE_NOTES/0.2.12.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.12.md)
-- [`RELEASE_NOTES/0.2.2.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.2.md)
-- [`RELEASE_NOTES/0.2.3.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.3.md)
-- [`RELEASE_NOTES/0.2.4.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.4.md)
-- [`RELEASE_NOTES/0.2.5.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.5.md)
-- [`RELEASE_NOTES/0.2.6.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.6.md)
-- [`RELEASE_NOTES/0.2.7.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.7.md)
-- [`RELEASE_NOTES/0.2.8.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.8.md)
-- [`RELEASE_NOTES/0.2.9.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.9.md)
-- [`RELEASE_NOTES/0.3.0.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.3.0.md)
-- [`RELEASE_NOTES/0.3.1.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.3.1.md)
-- [`RELEASE_NOTES/0.3.2.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.3.2.md)
-- [`RELEASE_NOTES/0.4.0.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.4.0.md)
-- [`RELEASE_NOTES/0.5.0.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.5.0.md)
-- [`RELEASE_NOTES/0.6.0.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.6.0.md)
-- [`RELEASE_NOTES/0.7.0.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.7.0.md)
-- [`SKILL.md`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/SKILL.md)
-- [`data/benchmarking/stakeholder_eval/benchmark_pack_v1.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/benchmark_pack_v1.json)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_01_vulnerable_households.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_01_vulnerable_households.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_02_address_batch.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_02_address_batch.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_06_bassetlaw_assets_subset.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_06_bassetlaw_assets_subset.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_07_property_sample.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_07_property_sample.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_08_housing_allocations.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_08_housing_allocations.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_08_planning_permissions.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_08_planning_permissions.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_08_site_promoters.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_08_site_promoters.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_09_bduk_subset.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_09_bduk_subset.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_10_council_tax_like.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_10_council_tax_like.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_10_price_paid_subset.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_10_price_paid_subset.csv)
+- [`.github/workflows/ci.yml`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/.github/workflows/ci.yml)
+- [`AGENTS.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/AGENTS.md)
+- [`CHANGELOG.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/CHANGELOG.md)
+- [`CONTEXT.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/CONTEXT.md)
+- [`GEMINI.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/GEMINI.md)
+- [`Gemini-Code-Review.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/Gemini-Code-Review.md)
+- [`PROGRESS.MD`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/PROGRESS.MD)
+- [`README.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/README.md)
+- [`RELEASE_NOTES/0.2.1.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.1.md)
+- [`RELEASE_NOTES/0.2.10.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.10.md)
+- [`RELEASE_NOTES/0.2.11.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.11.md)
+- [`RELEASE_NOTES/0.2.12.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.12.md)
+- [`RELEASE_NOTES/0.2.2.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.2.md)
+- [`RELEASE_NOTES/0.2.3.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.3.md)
+- [`RELEASE_NOTES/0.2.4.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.4.md)
+- [`RELEASE_NOTES/0.2.5.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.5.md)
+- [`RELEASE_NOTES/0.2.6.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.6.md)
+- [`RELEASE_NOTES/0.2.7.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.7.md)
+- [`RELEASE_NOTES/0.2.8.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.8.md)
+- [`RELEASE_NOTES/0.2.9.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.9.md)
+- [`RELEASE_NOTES/0.3.0.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.3.0.md)
+- [`RELEASE_NOTES/0.3.1.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.3.1.md)
+- [`RELEASE_NOTES/0.3.2.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.3.2.md)
+- [`RELEASE_NOTES/0.4.0.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.4.0.md)
+- [`RELEASE_NOTES/0.5.0.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.5.0.md)
+- [`RELEASE_NOTES/0.6.0.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.6.0.md)
+- [`RELEASE_NOTES/0.7.0.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.7.0.md)
+- [`RELEASE_NOTES/0.8.0.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.8.0.md)
+- [`RELEASE_NOTES/0.8.1.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.8.1.md)
+- [`SKILL.md`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/SKILL.md)
+- [`data/benchmarking/stakeholder_eval/benchmark_pack_v1.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/benchmark_pack_v1.json)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_01_vulnerable_households.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_01_vulnerable_households.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_02_address_batch.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_02_address_batch.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_06_bassetlaw_assets_subset.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_06_bassetlaw_assets_subset.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_07_property_sample.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_07_property_sample.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_08_housing_allocations.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_08_housing_allocations.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_08_planning_permissions.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_08_planning_permissions.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_08_site_promoters.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_08_site_promoters.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_09_bduk_subset.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_09_bduk_subset.csv)

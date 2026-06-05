@@ -5,7 +5,11 @@ removes legacy OpenAI Apps (skybridge) compatibility.
 
 ## Sources
 - MCP Apps spec: `docs/vendor/mcp/repos/ext-apps/specification/2026-01-26/apps.mdx`
+- MCP Apps draft/spec repo refresh: `docs/vendor/mcp/repos/ext-apps` at
+  `9a37ad71827d076af06978fa7f7f510449687061`
 - MCP core spec: `docs/vendor/mcp/repos/modelcontextprotocol/docs/specification/2025-11-25/`
+- MCP 2026-07-28 RC tracking:
+  `Plans/PLAN-MCP-2026-07-28-RC-alignment.md`
 
 ## Alignment Summary
 - Core MCP handshake now negotiates protocol versions instead of echoing client input.
@@ -16,6 +20,10 @@ removes legacy OpenAI Apps (skybridge) compatibility.
 - UI resources are exposed as `ui://mcp-geo/<slug>` with
   `mimeType: text/html;profile=mcp-app`.
 - Tool metadata uses `_meta.ui.resourceUri` only (no `openai/*` keys).
+- The 2026-06-01 ext-apps refresh reinforces `_meta.ui.resourceUri`, server
+  resource APIs, request teardown, and host/bridge pre-handshake guards. Existing
+  widgets should keep the current metadata shape and future widget changes
+  should tolerate `ui/notifications/request-teardown`.
 - Tool results return standard MCP `content` and optional `structuredContent`.
   Compatibility shims:
   - Legacy `uiResourceUris` field.

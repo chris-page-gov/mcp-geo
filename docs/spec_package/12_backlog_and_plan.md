@@ -34,13 +34,14 @@
    `resolvedSourceUrl` and related source metadata, and it should support
    optional external raw-artifact roots or mirrors (for example mounted SSD
    volumes) so large downloads do not have to live only on the primary local disk.
-7. **MCP draft 2026 readiness**: prepare for the upstream `DRAFT-2026-v1`
-   specification without adopting it by default. Track draft drift, lock
-   deterministic `tools/list` ordering with regressions, add Streamable HTTP
-   `Mcp-Method` / `Mcp-Name` observe-mode validation before any strict mode,
-   centralize extension capability declarations, and design `_meta` trace
-   context handling. Detailed assessment:
-   `Plans/PLAN-MCP-draft-2026-readiness.md`.
+7. **MCP 2026-07-28 RC readiness**: keep the default runtime on
+   `2025-11-25` while validating the release-candidate direction behind
+   `MCP_2026_RC_ENABLED=1` or `MCP_PROTOCOL_2026_07_28_ENABLED=1`.
+   Current tranche adds `server/discover`, stateless HTTP, per-request `_meta`,
+   `Mcp-Method` / `Mcp-Name` observe/strict handling, cache metadata,
+   MRTR-style input-required responses, resource-not-found error-code mapping,
+   and schema guardrails. Detailed ledger:
+   `Plans/PLAN-MCP-2026-07-28-RC-alignment.md`.
 
 ### Medium priority
 8. **Pagination for large tool results**: token-based paging for OS features and large datasets.

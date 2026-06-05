@@ -3,16 +3,16 @@ title: "Tool Family - os map"
 kb_kind: "code_family"
 source_paths:
   - "tools/os_map.py"
-source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tools/os_map.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tools/os_map.py"
 source_hashes:
-  tools/os_map.py: "sha256:6d093b88-24dd409a-1524f887-9b155756-c72bf7e8-05eaff3b-66b9f20c-a6f5fe74"
-generated_at: "2026-04-06T14:09:00Z"
+  tools/os_map.py: "sha256:92fa2563-b7a170b2-742701c9-05a1846a-944d3ab9-7c82172f-10e66ab7-4463efe3"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-08"
-last_validated_at: "2026-04-06T14:09:00Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Tool Family - os map
 
@@ -25,8 +25,8 @@ last_validated_at: "2026-04-06T14:09:00Z"
 
 | Path | Summary | First Seen | Last Commit | Related Tests |
 | --- | --- | --- | --- | --- |
-| `tools/os_map.py` | from __future__ import annotations | 2026-02-08 | 2026-03-14 | `tests/evaluation/questions.py`, `tests/test_epic_b_validation.py`, `tests/test_evaluation_harness_full.py`, `tests/test_mcp_http.py` |
+| `tools/os_map.py` | from __future__ import annotations | 2026-02-08 | 2026-04-22 | `tests/evaluation/questions.py`, `tests/test_epic_b_validation.py`, `tests/test_evaluation_harness_full.py`, `tests/test_mcp_http.py` |
 
 ## Pinned Sources
 
-- [`tools/os_map.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tools/os_map.py)
+- [`tools/os_map.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tools/os_map.py)

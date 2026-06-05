@@ -3,16 +3,16 @@ title: "Config"
 kb_kind: "code_module"
 source_paths:
   - "server/config.py"
-source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/config.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/config.py"
 source_hashes:
-  server/config.py: "sha256:5f486969-42b3a0c4-0294857b-58947efa-f9118e02-a58260cb-60584eb1-897c72b3"
-generated_at: "2026-04-06T14:09:00Z"
+  server/config.py: "sha256:c4c7b59d-665141d5-8ed65753-9ca70ef7-eac9568d-53393668-b5319f06-93df29bf"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-04-06T14:09:00Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Config
 
@@ -25,8 +25,8 @@ last_validated_at: "2026-04-06T14:09:00Z"
 
 | Path | Summary | First Seen | Last Commit | Related Tests |
 | --- | --- | --- | --- | --- |
-| `server/config.py` | import os | 2025-08-20 | 2026-04-06 | `tests/conftest.py`, `tests/evaluation/questions.py`, `tests/test_admin_lookup.py`, `tests/test_admin_lookup_extended.py` |
+| `server/config.py` | import os | 2025-08-20 | 2026-04-22 | `tests/conftest.py`, `tests/evaluation/questions.py`, `tests/test_admin_lookup.py`, `tests/test_admin_lookup_extended.py` |
 
 ## Pinned Sources
 
-- [`server/config.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/server/config.py)
+- [`server/config.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/server/config.py)

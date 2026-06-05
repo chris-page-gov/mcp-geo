@@ -58,41 +58,41 @@ source_paths:
   - "data/offline_packs/gb_transport_mbtiles.mbtiles"
   - "data/report_inputs/mcp_geo_analytical_index_manifest.json"
   - "data/report_inputs/mcp_geo_functionality_showcase_examples.json"
-source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/benchmark_pack_v1.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_01_vulnerable_households.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_02_address_batch.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_06_bassetlaw_assets_subset.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_07_property_sample.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_08_housing_allocations.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_08_planning_permissions.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_08_site_promoters.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_09_bduk_subset.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_10_council_tax_like.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_10_price_paid_subset.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_11_postcode_sample.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_12_dispatch_resources.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_13_case_addresses.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_14_building_candidates.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_15_uprn_geography_sample.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_16_patient_sample.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_16_pharmacy_sites.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_17_street_segments.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_18_referral_wards.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_18_service_sites.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_19_service_coverage_towns.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_19_service_sites.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_20_patrol_demand_cells.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_20_patrol_resources.csv"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/live_run_2026-03-09.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/live_run_2026-03-10.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/live_run_latest.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/reference_outputs/sg01.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/reference_outputs/sg02.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/reference_outputs/sg03.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/benchmark_pack_v1.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_01_vulnerable_households.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_02_address_batch.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_06_bassetlaw_assets_subset.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_07_property_sample.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_08_housing_allocations.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_08_planning_permissions.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_08_site_promoters.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_09_bduk_subset.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_10_council_tax_like.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_10_price_paid_subset.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_11_postcode_sample.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_12_dispatch_resources.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_13_case_addresses.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_14_building_candidates.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_15_uprn_geography_sample.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_16_patient_sample.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_16_pharmacy_sites.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_17_street_segments.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_18_referral_wards.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_18_service_sites.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_19_service_coverage_towns.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_19_service_sites.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_20_patrol_demand_cells.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_20_patrol_resources.csv"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/live_run_2026-03-09.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/live_run_2026-03-10.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/live_run_latest.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/reference_outputs/sg01.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/reference_outputs/sg02.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/reference_outputs/sg03.json"
 source_hashes:
   data/benchmarking/stakeholder_eval/benchmark_pack_v1.json: "sha256:25a3a2b0-a1a2c527-7f403dc7-f3ca04ee-af025a97-c1f928c7-45b9562d-aa4a0899"
   data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt: "sha256:049b6282-185b37ca-39f55776-1b8f8061-2b88b4c3-202b4d6c-578c5ac3-7d0a8d99"
@@ -126,10 +126,10 @@ source_hashes:
   data/benchmarking/stakeholder_eval/reference_outputs/sg01.json: "sha256:13e1bf58-d7682a18-8d13cc5b-5dff6389-9a6f26ef-2b13f68a-24774502-f8fd47da"
   data/benchmarking/stakeholder_eval/reference_outputs/sg02.json: "sha256:eacd4d9f-c4cde4bc-c0748314-828f498a-a31a9bf2-e42ec146-696f2b82-7fe87564"
   data/benchmarking/stakeholder_eval/reference_outputs/sg03.json: "sha256:e81e0ef9-adab9b68-95537e03-a10308c9-c2b4743c-48afd7d3-d7c404ff-d7dea5ba"
-generated_at: "2026-04-06T14:09:00Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-14"
-last_validated_at: "2026-04-06T14:09:00Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Data Manifests
 
@@ -201,43 +201,43 @@ last_validated_at: "2026-04-06T14:09:00Z"
 
 ## Pinned Sources
 
-- [`data/benchmarking/stakeholder_eval/benchmark_pack_v1.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/benchmark_pack_v1.json)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_01_vulnerable_households.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_01_vulnerable_households.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_02_address_batch.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_02_address_batch.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_06_bassetlaw_assets_subset.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_06_bassetlaw_assets_subset.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_07_property_sample.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_07_property_sample.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_08_housing_allocations.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_08_housing_allocations.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_08_planning_permissions.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_08_planning_permissions.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_08_site_promoters.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_08_site_promoters.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_09_bduk_subset.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_09_bduk_subset.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_10_council_tax_like.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_10_council_tax_like.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_10_price_paid_subset.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_10_price_paid_subset.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_11_postcode_sample.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_11_postcode_sample.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_12_dispatch_resources.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_12_dispatch_resources.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_13_case_addresses.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_13_case_addresses.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_14_building_candidates.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_14_building_candidates.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_15_uprn_geography_sample.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_15_uprn_geography_sample.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_16_patient_sample.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_16_patient_sample.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_16_pharmacy_sites.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_16_pharmacy_sites.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_17_street_segments.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_17_street_segments.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_18_referral_wards.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_18_referral_wards.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_18_service_sites.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_18_service_sites.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_19_service_coverage_towns.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_19_service_coverage_towns.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_19_service_sites.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_19_service_sites.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_20_patrol_demand_cells.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_20_patrol_demand_cells.csv)
-- [`data/benchmarking/stakeholder_eval/fixtures/scenario_20_patrol_resources.csv`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/fixtures/scenario_20_patrol_resources.csv)
-- [`data/benchmarking/stakeholder_eval/live_run_2026-03-09.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/live_run_2026-03-09.json)
-- [`data/benchmarking/stakeholder_eval/live_run_2026-03-10.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/live_run_2026-03-10.json)
-- [`data/benchmarking/stakeholder_eval/live_run_latest.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/live_run_latest.json)
-- [`data/benchmarking/stakeholder_eval/reference_outputs/sg01.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/reference_outputs/sg01.json)
-- [`data/benchmarking/stakeholder_eval/reference_outputs/sg02.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/reference_outputs/sg02.json)
-- [`data/benchmarking/stakeholder_eval/reference_outputs/sg03.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/reference_outputs/sg03.json)
-- [`data/benchmarking/stakeholder_eval/reference_outputs/sg04.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/reference_outputs/sg04.json)
-- [`data/benchmarking/stakeholder_eval/reference_outputs/sg05.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/reference_outputs/sg05.json)
-- [`data/benchmarking/stakeholder_eval/reference_outputs/sg06.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/reference_outputs/sg06.json)
-- [`data/benchmarking/stakeholder_eval/reference_outputs/sg07.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/reference_outputs/sg07.json)
-- [`data/benchmarking/stakeholder_eval/reference_outputs/sg08.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/reference_outputs/sg08.json)
-- [`data/benchmarking/stakeholder_eval/reference_outputs/sg09.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/reference_outputs/sg09.json)
-- [`data/benchmarking/stakeholder_eval/reference_outputs/sg10.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/reference_outputs/sg10.json)
-- [`data/benchmarking/stakeholder_eval/reference_outputs/sg11.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/data/benchmarking/stakeholder_eval/reference_outputs/sg11.json)
+- [`data/benchmarking/stakeholder_eval/benchmark_pack_v1.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/benchmark_pack_v1.json)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_01_vulnerable_households.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_01_vulnerable_households.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_02_address_batch.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_02_address_batch.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_06_bassetlaw_assets_subset.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_06_bassetlaw_assets_subset.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_07_property_sample.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_07_property_sample.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_08_housing_allocations.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_08_housing_allocations.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_08_planning_permissions.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_08_planning_permissions.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_08_site_promoters.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_08_site_promoters.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_09_bduk_subset.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_09_bduk_subset.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_10_council_tax_like.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_10_council_tax_like.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_10_price_paid_subset.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_10_price_paid_subset.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_11_postcode_sample.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_11_postcode_sample.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_12_dispatch_resources.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_12_dispatch_resources.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_13_case_addresses.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_13_case_addresses.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_14_building_candidates.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_14_building_candidates.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_15_uprn_geography_sample.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_15_uprn_geography_sample.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_16_patient_sample.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_16_patient_sample.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_16_pharmacy_sites.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_16_pharmacy_sites.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_17_street_segments.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_17_street_segments.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_18_referral_wards.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_18_referral_wards.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_18_service_sites.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_18_service_sites.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_19_service_coverage_towns.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_19_service_coverage_towns.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_19_service_sites.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_19_service_sites.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_20_patrol_demand_cells.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_20_patrol_demand_cells.csv)
+- [`data/benchmarking/stakeholder_eval/fixtures/scenario_20_patrol_resources.csv`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/fixtures/scenario_20_patrol_resources.csv)
+- [`data/benchmarking/stakeholder_eval/live_run_2026-03-09.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/live_run_2026-03-09.json)
+- [`data/benchmarking/stakeholder_eval/live_run_2026-03-10.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/live_run_2026-03-10.json)
+- [`data/benchmarking/stakeholder_eval/live_run_latest.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/live_run_latest.json)
+- [`data/benchmarking/stakeholder_eval/reference_outputs/sg01.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/reference_outputs/sg01.json)
+- [`data/benchmarking/stakeholder_eval/reference_outputs/sg02.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/reference_outputs/sg02.json)
+- [`data/benchmarking/stakeholder_eval/reference_outputs/sg03.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/reference_outputs/sg03.json)
+- [`data/benchmarking/stakeholder_eval/reference_outputs/sg04.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/reference_outputs/sg04.json)
+- [`data/benchmarking/stakeholder_eval/reference_outputs/sg05.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/reference_outputs/sg05.json)
+- [`data/benchmarking/stakeholder_eval/reference_outputs/sg06.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/reference_outputs/sg06.json)
+- [`data/benchmarking/stakeholder_eval/reference_outputs/sg07.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/reference_outputs/sg07.json)
+- [`data/benchmarking/stakeholder_eval/reference_outputs/sg08.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/reference_outputs/sg08.json)
+- [`data/benchmarking/stakeholder_eval/reference_outputs/sg09.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/reference_outputs/sg09.json)
+- [`data/benchmarking/stakeholder_eval/reference_outputs/sg10.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/reference_outputs/sg10.json)
+- [`data/benchmarking/stakeholder_eval/reference_outputs/sg11.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/data/benchmarking/stakeholder_eval/reference_outputs/sg11.json)

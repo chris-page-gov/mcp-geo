@@ -2,14 +2,14 @@
 title: "Assets"
 kb_kind: "assets_hub"
 source_paths:
-source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
 source_hashes:
-generated_at: "2026-04-06T14:09:00Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: ""
-last_validated_at: "2026-04-06T14:09:00Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Assets
 

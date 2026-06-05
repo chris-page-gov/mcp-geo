@@ -24,35 +24,39 @@ source_paths:
   - "RELEASE_NOTES/0.5.0.md"
   - "RELEASE_NOTES/0.6.0.md"
   - "RELEASE_NOTES/0.7.0.md"
-source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
+  - "RELEASE_NOTES/0.8.0.md"
+  - "RELEASE_NOTES/0.8.1.md"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/CHANGELOG.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/CONTEXT.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/PROGRESS.MD"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.1.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.10.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.11.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.12.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.2.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.3.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.4.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.5.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.6.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.7.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.8.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.2.9.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.3.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.3.1.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.3.2.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.4.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.5.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.6.0.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/RELEASE_NOTES/0.7.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/CHANGELOG.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/CONTEXT.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/PROGRESS.MD"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.1.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.10.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.11.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.12.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.2.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.3.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.4.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.5.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.6.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.7.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.8.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.2.9.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.3.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.3.1.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.3.2.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.4.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.5.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.6.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.7.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.8.0.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/RELEASE_NOTES/0.8.1.md"
 source_hashes:
-  CHANGELOG.md: "sha256:252eed1f-fb15f22a-3e8565c7-6b106cd0-8ff2b9ee-5283fcb5-b57b1589-9c309984"
-  CONTEXT.md: "sha256:7491e909-2b856e35-9845b0e1-b1810012-38af25c8-c53f46e6-03d769d6-e84157de"
-  PROGRESS.MD: "sha256:36e56707-408a87b1-1d7424ba-f7865265-90fb6b64-77910634-ed261080-5fa6bafd"
+  CHANGELOG.md: "sha256:7609427d-3636dc27-ba969ca5-4ed0c777-8469c7a8-5fb9d2db-63dad5eb-34168c23"
+  CONTEXT.md: "sha256:320e381f-5f7471c2-97d5ed69-8c72003e-d5f4c724-3426eb51-ca99076b-eede3adb"
+  PROGRESS.MD: "sha256:cb45234f-a9a2e553-76fab9f1-837fe7ab-f8cfdc22-083df4d5-88ada35f-40ecefaa"
   RELEASE_NOTES/0.2.1.md: "sha256:ad7fae04-5fa333cc-c431d7e6-6a790a48-85da7032-4d2cf2c8-2ba90af5-b54aedf6"
   RELEASE_NOTES/0.2.10.md: "sha256:10a1b4ac-dc2be5ba-18142c63-8986e311-5a64227f-14681141-2db6cf3f-ddfb1d18"
   RELEASE_NOTES/0.2.11.md: "sha256:abedb7ff-8bf00de3-94653863-e60d6e25-ba866dab-785f246e-51555121-a9842073"
@@ -72,10 +76,12 @@ source_hashes:
   RELEASE_NOTES/0.5.0.md: "sha256:165a9034-59772d49-1696e2f7-f6b68961-748fc2c9-35952e20-d308829f-d35d577f"
   RELEASE_NOTES/0.6.0.md: "sha256:15acee0d-2241e5cc-aeeac3cb-804839e9-d3db920c-61221a77-70726fe6-3f1d2bf9"
   RELEASE_NOTES/0.7.0.md: "sha256:1e5723a1-ea654d4f-abe38931-449c006a-a1e3c17c-060b5bfd-2238711c-52c74be5"
-generated_at: "2026-04-06T14:09:00Z"
+  RELEASE_NOTES/0.8.0.md: "sha256:831956d7-83840a17-cd402d0f-1994e79e-de7c29ff-3ba00e38-3e443278-54f22500"
+  RELEASE_NOTES/0.8.1.md: "sha256:40a14b52-2a189b65-40628826-2221912d-598d1f43-c56ef705-04d9f633-874a793c"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-04-06T14:09:00Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Chronology
 
@@ -83,126 +89,126 @@ last_validated_at: "2026-04-06T14:09:00Z"
 
 | Commit | Date | Subject |
 | --- | --- | --- |
+| [`9238072`](https://github.com/chris-page-gov/mcp-geo/commit/9238072) | 2026-06-01 | feat(protocol): align MCP 2026 release candidate |
+| [`2d7d7ba`](https://github.com/chris-page-gov/mcp-geo/commit/2d7d7ba) | 2026-05-14 | docs(llm-wiki): add postmortem capture workflow |
+| [`238ff5f`](https://github.com/chris-page-gov/mcp-geo/commit/238ff5f) | 2026-05-13 | fix(mcp-apps): capture handoff and LandIS evidence |
+| [`062ec22`](https://github.com/chris-page-gov/mcp-geo/commit/062ec22) | 2026-04-28 | [codex] Capture MCP draft and research backlog (#76) |
+| [`3b541ea`](https://github.com/chris-page-gov/mcp-geo/commit/3b541ea) | 2026-04-23 | chore(release): publish 0.8.1 |
+| [`d71af06`](https://github.com/chris-page-gov/mcp-geo/commit/d71af06) | 2026-04-23 | fix(packaging): include installed runtime assets |
+| [`9a9b8bb`](https://github.com/chris-page-gov/mcp-geo/commit/9a9b8bb) | 2026-04-23 | chore(release): publish 0.8.0 |
+| [`bc39943`](https://github.com/chris-page-gov/mcp-geo/commit/bc39943) | 2026-04-23 | Merge pull request #75 from chris-page-gov/codex/prepare-for-demo-check |
+| [`53cc392`](https://github.com/chris-page-gov/mcp-geo/commit/53cc392) | 2026-04-23 | fix(demo): hard fail wrapper and launcher errors |
+| [`38454ca`](https://github.com/chris-page-gov/mcp-geo/commit/38454ca) | 2026-04-23 | fix(demo): support local refs during fetch checks |
+| [`c6b8f2f`](https://github.com/chris-page-gov/mcp-geo/commit/c6b8f2f) | 2026-04-23 | fix(demo): block readiness on fetch failures |
+| [`422b2e2`](https://github.com/chris-page-gov/mcp-geo/commit/422b2e2) | 2026-04-23 | test(mcp): isolate default toolset config |
+| [`619ae2d`](https://github.com/chris-page-gov/mcp-geo/commit/619ae2d) | 2026-04-23 | fix(demo): resolve fetched branch and tag refs |
+| [`ad85f57`](https://github.com/chris-page-gov/mcp-geo/commit/ad85f57) | 2026-04-23 | fix(demo): handle rebuild and latest image aliases |
+| [`52e60ef`](https://github.com/chris-page-gov/mcp-geo/commit/52e60ef) | 2026-04-23 | fix(demo): tighten readiness edge cases |
+| [`73af2ae`](https://github.com/chris-page-gov/mcp-geo/commit/73af2ae) | 2026-04-23 | fix(demo): harden readiness failure paths |
+| [`72fe3d3`](https://github.com/chris-page-gov/mcp-geo/commit/72fe3d3) | 2026-04-22 | fix(demo): address readiness review comments |
+| [`119ec0e`](https://github.com/chris-page-gov/mcp-geo/commit/119ec0e) | 2026-04-22 | chore(demo): add MCP client readiness check |
+| [`e69f56d`](https://github.com/chris-page-gov/mcp-geo/commit/e69f56d) | 2026-04-22 | Merge pull request #74 from chris-page-gov/codex/latest-ngd-release |
+| [`60ca9a0`](https://github.com/chris-page-gov/mcp-geo/commit/60ca9a0) | 2026-04-22 | chore(security): refresh map layer manifest |
+| [`0f81f76`](https://github.com/chris-page-gov/mcp-geo/commit/0f81f76) | 2026-04-22 | fix(os): advertise spring NGD map layers |
+| [`45e295d`](https://github.com/chris-page-gov/mcp-geo/commit/45e295d) | 2026-04-22 | fix(os): dedupe inventory layer requests |
+| [`e3225de`](https://github.com/chris-page-gov/mcp-geo/commit/e3225de) | 2026-04-22 | feat(os): support OS NGD spring 2026 layers |
+| [`569a1c7`](https://github.com/chris-page-gov/mcp-geo/commit/569a1c7) | 2026-04-22 | docs(agents): reduce tracking doc merge conflicts |
+| [`98689bf`](https://github.com/chris-page-gov/mcp-geo/commit/98689bf) | 2026-04-22 | Merge pull request #73 from chris-page-gov/codex/fix-landis-archive-selection |
+| [`b221cc4`](https://github.com/chris-page-gov/mcp-geo/commit/b221cc4) | 2026-04-22 | Merge remote-tracking branch 'origin/main' into codex/fix-landis-archive-selection |
+| [`45b4fc9`](https://github.com/chris-page-gov/mcp-geo/commit/45b4fc9) | 2026-04-22 | Merge pull request #72 from chris-page-gov/codex/route-area-profile-workflow-uri |
+| [`6bb0621`](https://github.com/chris-page-gov/mcp-geo/commit/6bb0621) | 2026-04-22 | Merge remote-tracking branch 'origin/main' into codex/route-area-profile-workflow-uri |
+| [`8f4ea86`](https://github.com/chris-page-gov/mcp-geo/commit/8f4ea86) | 2026-04-22 | Merge pull request #71 from chris-page-gov/codex/fix-ons-uprn-shard-ingest |
+| [`4a0920c`](https://github.com/chris-page-gov/mcp-geo/commit/4a0920c) | 2026-04-22 | fix(ons): union UPRN shard schemas |
+| [`70216b5`](https://github.com/chris-page-gov/mcp-geo/commit/70216b5) | 2026-04-22 | fix(ons): normalize UPRN shard headers |
+| [`671d3a5`](https://github.com/chris-page-gov/mcp-geo/commit/671d3a5) | 2026-04-22 | fix(landis): select latest archive across roots |
+| [`edb6806`](https://github.com/chris-page-gov/mcp-geo/commit/edb6806) | 2026-04-22 | fix(os-mcp): include workflow URI for area profiles |
+| [`b65e1cf`](https://github.com/chris-page-gov/mcp-geo/commit/b65e1cf) | 2026-04-22 | fix(ons): ingest all UPRN archive shards |
+| [`c5b4aa8`](https://github.com/chris-page-gov/mcp-geo/commit/c5b4aa8) | 2026-04-14 | Merge pull request #70 from chris-page-gov/codex/unattended-client-eval |
+| [`7148c13`](https://github.com/chris-page-gov/mcp-geo/commit/7148c13) | 2026-04-14 | fix(benchmark): preserve wrapper defaults and fail fast |
+| [`07497c8`](https://github.com/chris-page-gov/mcp-geo/commit/07497c8) | 2026-04-14 | chore(security): suppress residual codeql sink alert |
+| [`4b4342c`](https://github.com/chris-page-gov/mcp-geo/commit/4b4342c) | 2026-04-14 | fix(security): stop writing inherited mcp env values |
+| [`79dbdc3`](https://github.com/chris-page-gov/mcp-geo/commit/79dbdc3) | 2026-04-14 | fix(security): redact eval artifacts and harden ad map |
+| [`6c1a718`](https://github.com/chris-page-gov/mcp-geo/commit/6c1a718) | 2026-04-14 | Testing use in Advertising |
+| [`82cda57`](https://github.com/chris-page-gov/mcp-geo/commit/82cda57) | 2026-04-14 | chore(reports): isolate unattended eval artifacts |
+| [`0018ebc`](https://github.com/chris-page-gov/mcp-geo/commit/0018ebc) | 2026-04-13 | fix(benchmark): quit idle vscode app after eval runs |
+| [`033e773`](https://github.com/chris-page-gov/mcp-geo/commit/033e773) | 2026-04-13 | docs(benchmark): close unattended remediation plan |
+| [`19778ee`](https://github.com/chris-page-gov/mcp-geo/commit/19778ee) | 2026-04-13 | fix(benchmark): remove vscode primer chat |
+| [`1b058a0`](https://github.com/chris-page-gov/mcp-geo/commit/1b058a0) | 2026-04-13 | fix(benchmark): wait for useful vscode activity |
+| [`c28642f`](https://github.com/chris-page-gov/mcp-geo/commit/c28642f) | 2026-04-13 | fix(benchmark): harden vscode capability waits and cleanup |
+| [`9646250`](https://github.com/chris-page-gov/mcp-geo/commit/9646250) | 2026-04-13 | fix(benchmark): recover vscode readiness via unique workspaces |
+| [`3f108cb`](https://github.com/chris-page-gov/mcp-geo/commit/3f108cb) | 2026-04-13 | fix(benchmark): launch traced vscode wrappers via python |
+| [`f32ff23`](https://github.com/chris-page-gov/mcp-geo/commit/f32ff23) | 2026-04-13 | fix(benchmark): route vscode evals through workspace mcp |
+| [`0b558fd`](https://github.com/chris-page-gov/mcp-geo/commit/0b558fd) | 2026-04-13 | fix(benchmark): support targeted unattended probes |
+| [`aa1e479`](https://github.com/chris-page-gov/mcp-geo/commit/aa1e479) | 2026-04-13 | fix(benchmark): isolate vscode unattended instances |
+| [`74e453b`](https://github.com/chris-page-gov/mcp-geo/commit/74e453b) | 2026-04-13 | fix(benchmark): isolate vscode benchmark sessions |
+| [`dcdb25c`](https://github.com/chris-page-gov/mcp-geo/commit/dcdb25c) | 2026-04-13 | fix(benchmark): trace vscode through the repo window |
+| [`3810274`](https://github.com/chris-page-gov/mcp-geo/commit/3810274) | 2026-04-13 | fix(benchmark): harden unattended gemini and vscode tracks |
+| [`46d47b7`](https://github.com/chris-page-gov/mcp-geo/commit/46d47b7) | 2026-04-13 | feat(benchmark): add readiness-first unattended eval |
+| [`158cf3c`](https://github.com/chris-page-gov/mcp-geo/commit/158cf3c) | 2026-04-13 | docs(benchmark): add unattended eval remediation plan |
+| [`a125672`](https://github.com/chris-page-gov/mcp-geo/commit/a125672) | 2026-04-13 | docs(claude): add repo guidance and ignore local settings |
+| [`738c58c`](https://github.com/chris-page-gov/mcp-geo/commit/738c58c) | 2026-04-13 | fix(benchmark): reuse local OS key sources in eval runs |
+| [`566a08c`](https://github.com/chris-page-gov/mcp-geo/commit/566a08c) | 2026-04-12 | feat(benchmark): add unattended client evaluation evidence |
+| [`6010afb`](https://github.com/chris-page-gov/mcp-geo/commit/6010afb) | 2026-04-12 | [codex] Harden Claude interop, ONS workflows, and storage follow-ups (#69) |
+| [`9037da5`](https://github.com/chris-page-gov/mcp-geo/commit/9037da5) | 2026-04-10 | Merge pull request #68 from chris-page-gov/codex/playground-audit-fixes |
+| [`1ed8162`](https://github.com/chris-page-gov/mcp-geo/commit/1ed8162) | 2026-04-10 | fix(playground): clear npm audit advisories |
+| [`b5c06f4`](https://github.com/chris-page-gov/mcp-geo/commit/b5c06f4) | 2026-04-10 | Merge pull request #58 from chris-page-gov/dependabot/npm_and_yarn/playground/npm_and_yarn-c17fe8d85c |
+| [`0b661b7`](https://github.com/chris-page-gov/mcp-geo/commit/0b661b7) | 2026-04-10 | Merge remote-tracking branch 'origin/main' into codex/dependabot-pr-58 |
+| [`05d028b`](https://github.com/chris-page-gov/mcp-geo/commit/05d028b) | 2026-04-10 | Merge pull request #65 from chris-page-gov/codex/abp-trace-analysis |
+| [`6ede4c7`](https://github.com/chris-page-gov/mcp-geo/commit/6ede4c7) | 2026-04-10 | Merge pull request #64 from chris-page-gov/codex/ABP |
+| [`d92608b`](https://github.com/chris-page-gov/mcp-geo/commit/d92608b) | 2026-04-10 | Merge remote-tracking branch 'origin/main' into codex/ABP |
+| [`e85241b`](https://github.com/chris-page-gov/mcp-geo/commit/e85241b) | 2026-04-10 | Merge pull request #66 from chris-page-gov/codex/owasp-helper-reexec |
+| [`215d956`](https://github.com/chris-page-gov/mcp-geo/commit/215d956) | 2026-04-10 | Merge remote-tracking branch 'origin/codex/owasp-helper-reexec' into codex/ABP |
+| [`96f20e6`](https://github.com/chris-page-gov/mcp-geo/commit/96f20e6) | 2026-04-10 | Merge remote-tracking branch 'origin/main' into codex/ABP |
+| [`8cefcee`](https://github.com/chris-page-gov/mcp-geo/commit/8cefcee) | 2026-04-10 | Merge remote-tracking branch 'origin/main' into codex/abp-trace-analysis |
+| [`d6294df`](https://github.com/chris-page-gov/mcp-geo/commit/d6294df) | 2026-04-10 | Merge remote-tracking branch 'origin/main' into codex/owasp-helper-reexec |
+| [`5cfc25f`](https://github.com/chris-page-gov/mcp-geo/commit/5cfc25f) | 2026-04-10 | fix(owasp): re-exec helper scripts in repo venv |
+| [`d8f2d59`](https://github.com/chris-page-gov/mcp-geo/commit/d8f2d59) | 2026-04-10 | docs(troubleshooting): add redacted Claude ABP trace |
+| [`5d1eac1`](https://github.com/chris-page-gov/mcp-geo/commit/5d1eac1) | 2026-04-10 | feat(council-tax): add xref builder and always-load tools |
+| [`67d2a9a`](https://github.com/chris-page-gov/mcp-geo/commit/67d2a9a) | 2026-04-10 | feat(council-tax): support ABP parquet xref queries via duckdb |
+| [`3db5ae2`](https://github.com/chris-page-gov/mcp-geo/commit/3db5ae2) | 2026-04-10 | Merge pull request #63 from chris-page-gov/codex/council-tax-road-refinements |
+| [`f2c8146`](https://github.com/chris-page-gov/mcp-geo/commit/f2c8146) | 2026-04-10 | fix(ons_geo): harden paging and ndjson schema inference |
+| [`92205f2`](https://github.com/chris-page-gov/mcp-geo/commit/92205f2) | 2026-04-10 | fix(ons_geo): harden paging and xref discovery |
+| [`e642d97`](https://github.com/chris-page-gov/mcp-geo/commit/e642d97) | 2026-04-09 | fix(ons_geo): reject suffixless direct URLs |
+| [`fa3b637`](https://github.com/chris-page-gov/mcp-geo/commit/fa3b637) | 2026-04-09 | fix(ons_geo): prefer discovery file URLs over landing pages |
+| [`14cdea0`](https://github.com/chris-page-gov/mcp-geo/commit/14cdea0) | 2026-04-09 | fix(ons_geo): tighten readiness and road bbox fallback |
+| [`65e5c4e`](https://github.com/chris-page-gov/mcp-geo/commit/65e5c4e) | 2026-04-09 | docs(repo): add pre-review sweep guidance |
+| [`58a4b08`](https://github.com/chris-page-gov/mcp-geo/commit/58a4b08) | 2026-04-09 | fix(ons_geo): harden source selection and parquet parity |
+| [`1f7196b`](https://github.com/chris-page-gov/mcp-geo/commit/1f7196b) | 2026-04-09 | fix(ons_geo): stream row sources and normalize parquet uprns |
+| [`ea90ea6`](https://github.com/chris-page-gov/mcp-geo/commit/ea90ea6) | 2026-04-09 | fix(ons_geo): reject suffixless portal assets |
+| [`4464b49`](https://github.com/chris-page-gov/mcp-geo/commit/4464b49) | 2026-04-09 | fix(ons_geo): migrate legacy cache indexes safely |
+| [`b70ddcd`](https://github.com/chris-page-gov/mcp-geo/commit/b70ddcd) | 2026-04-09 | fix(ons_geo): align audit and jsonl parsing |
+| [`1947968`](https://github.com/chris-page-gov/mcp-geo/commit/1947968) | 2026-04-09 | fix(ons_geo): harden audit freshness inputs |
+| [`a217f7d`](https://github.com/chris-page-gov/mcp-geo/commit/a217f7d) | 2026-04-09 | test(ons_geo): raise audit and selector coverage |
+| [`9715c6a`](https://github.com/chris-page-gov/mcp-geo/commit/9715c6a) | 2026-04-09 | fix(os_map): avoid cache lookups for gss-only aoi |
+| [`3acd354`](https://github.com/chris-page-gov/mcp-geo/commit/3acd354) | 2026-04-09 | fix(review): address polygon and cache feedback |
+| [`514cb02`](https://github.com/chris-page-gov/mcp-geo/commit/514cb02) | 2026-04-09 | feat(ons_geo): add resilient source resolution |
+| [`0e150f3`](https://github.com/chris-page-gov/mcp-geo/commit/0e150f3) | 2026-04-08 | fix(geo): harden selector and polygon inputs |
+| [`44ac1ce`](https://github.com/chris-page-gov/mcp-geo/commit/44ac1ce) | 2026-04-08 | Merge pull request #62 from chris-page-gov/codex/docs-followups |
+| [`e4c363a`](https://github.com/chris-page-gov/mcp-geo/commit/e4c363a) | 2026-04-08 | fix(ui): redact york house style probe URLs |
+| [`7088a4c`](https://github.com/chris-page-gov/mcp-geo/commit/7088a4c) | 2026-04-08 | Merge branch 'main' into codex/docs-followups |
+| [`2e05e89`](https://github.com/chris-page-gov/mcp-geo/commit/2e05e89) | 2026-04-08 | docs(landis): add map and council tax support artifacts |
+| [`bfb89cd`](https://github.com/chris-page-gov/mcp-geo/commit/bfb89cd) | 2026-04-08 | Merge pull request #61 from chris-page-gov/codex/landis_tests |
+| [`e2196e1`](https://github.com/chris-page-gov/mcp-geo/commit/e2196e1) | 2026-04-08 | docs(landis): add MVP implementation plan |
+| [`3def268`](https://github.com/chris-page-gov/mcp-geo/commit/3def268) | 2026-04-08 | docs(landis): expand resilience knowledge base |
+| [`226aa57`](https://github.com/chris-page-gov/mcp-geo/commit/226aa57) | 2026-04-08 | docs(repo): clarify OWASP tool contract maintenance |
+| [`847498c`](https://github.com/chris-page-gov/mcp-geo/commit/847498c) | 2026-04-08 | feat(council_tax): add AddressBase Premium UPRN query |
+| [`d98bcf8`](https://github.com/chris-page-gov/mcp-geo/commit/d98bcf8) | 2026-04-08 | fix(os_features): normalize CQL queryable field names |
+| [`07b9603`](https://github.com/chris-page-gov/mcp-geo/commit/07b9603) | 2026-04-08 | test(ci): cover road export in evaluation harness |
+| [`40e4d03`](https://github.com/chris-page-gov/mcp-geo/commit/40e4d03) | 2026-04-08 | fix(ci): resolve os_mcp mypy redefinition |
+| [`5c7b5fb`](https://github.com/chris-page-gov/mcp-geo/commit/5c7b5fb) | 2026-04-08 | fix(ci): refresh road export lint and owasp metadata |
+| [`1861f80`](https://github.com/chris-page-gov/mcp-geo/commit/1861f80) | 2026-04-07 | Merge origin/main into codex/landis_tests-conflicts |
+| [`b341d10`](https://github.com/chris-page-gov/mcp-geo/commit/b341d10) | 2026-04-07 | feat(os_map): add road overlay export bundles |
+| [`68ae120`](https://github.com/chris-page-gov/mcp-geo/commit/68ae120) | 2026-04-06 | feat(repo): add landis bootstrap fixes and repository knowledge base (#60) |
+| [`16b8f6a`](https://github.com/chris-page-gov/mcp-geo/commit/16b8f6a) | 2026-04-06 | docs(landis): add real-sites validation note |
 | [`004e7d4`](https://github.com/chris-page-gov/mcp-geo/commit/004e7d4) | 2026-04-06 | fix(ci): harden landis bootstrap and refresh owasp baseline |
 | [`b279fe5`](https://github.com/chris-page-gov/mcp-geo/commit/b279fe5) | 2026-04-06 | fix(landis): detect latest portal archive for bootstrap |
 | [`5447feb`](https://github.com/chris-page-gov/mcp-geo/commit/5447feb) | 2026-04-06 | feat(repo): check in landis runtime fixes and knowledge base |
 | [`bc8b6be`](https://github.com/chris-page-gov/mcp-geo/commit/bc8b6be) | 2026-04-06 | docs(landis): add Obsidian knowledge base (#59) |
+| [`1e4b1eb`](https://github.com/chris-page-gov/mcp-geo/commit/1e4b1eb) | 2026-04-06 | chore(deps): bump the npm_and_yarn group across 1 directory with 2 updates |
 | [`a28ce4b`](https://github.com/chris-page-gov/mcp-geo/commit/a28ce4b) | 2026-04-06 | Merge pull request #57 from chris-page-gov/codex/landis |
 | [`038ba6a`](https://github.com/chris-page-gov/mcp-geo/commit/038ba6a) | 2026-04-06 | fix(landis): search all local archive roots |
 | [`f7d5f8a`](https://github.com/chris-page-gov/mcp-geo/commit/f7d5f8a) | 2026-04-06 | fix(landis): preserve nsi area pagination counts |
 | [`94fe40f`](https://github.com/chris-page-gov/mcp-geo/commit/94fe40f) | 2026-04-06 | fix(landis): harden html stripping and nsi nearest query |
-| [`badee01`](https://github.com/chris-page-gov/mcp-geo/commit/badee01) | 2026-04-06 | Merge origin/main into codex/landis |
-| [`e2207cd`](https://github.com/chris-page-gov/mcp-geo/commit/e2207cd) | 2026-04-06 | fix(landis): harden html stripping in release scan |
-| [`7d01e9f`](https://github.com/chris-page-gov/mcp-geo/commit/7d01e9f) | 2026-04-06 | chore(config): wrap long LandIS path constant |
-| [`39b7e1d`](https://github.com/chris-page-gov/mcp-geo/commit/39b7e1d) | 2026-04-06 | fix(docker): stop publishing wrapper postgres by default |
-| [`15986f9`](https://github.com/chris-page-gov/mcp-geo/commit/15986f9) | 2026-04-06 | fix(playground): normalize invalid payload handling |
-| [`851397a`](https://github.com/chris-page-gov/mcp-geo/commit/851397a) | 2026-04-05 | fix(docker): harden postgis sidecar defaults |
-| [`d0ed25a`](https://github.com/chris-page-gov/mcp-geo/commit/d0ed25a) | 2026-04-05 | feat(landis): add local archive phase 2 surfaces |
-| [`4fc8b86`](https://github.com/chris-page-gov/mcp-geo/commit/4fc8b86) | 2026-04-05 | Merge pull request #56 from chris-page-gov/codex/secret-placeholder-error-salvage |
-| [`5b43aef`](https://github.com/chris-page-gov/mcp-geo/commit/5b43aef) | 2026-04-05 | fix(config): preserve defaults for invalid fallback env values |
-| [`b82a787`](https://github.com/chris-page-gov/mcp-geo/commit/b82a787) | 2026-03-24 | fix(config): ignore placeholder env values in fallback shim |
-| [`42c0d40`](https://github.com/chris-page-gov/mcp-geo/commit/42c0d40) | 2026-03-24 | fix(config): align fallback settings with env ignore-empty |
-| [`07a3424`](https://github.com/chris-page-gov/mcp-geo/commit/07a3424) | 2026-03-22 | fix(config): coerce fallback settings shim values |
-| [`83f779e`](https://github.com/chris-page-gov/mcp-geo/commit/83f779e) | 2026-03-22 | fix(server): harden secret loading and tool error payloads |
-| [`63cc9e4`](https://github.com/chris-page-gov/mcp-geo/commit/63cc9e4) | 2026-04-04 | feat(landis): add mvp runtime and phase 2 surfacing plan |
-| [`6cd781a`](https://github.com/chris-page-gov/mcp-geo/commit/6cd781a) | 2026-03-24 | fix(config): ignore placeholder env values in fallback shim |
-| [`87de62a`](https://github.com/chris-page-gov/mcp-geo/commit/87de62a) | 2026-03-24 | fix(config): align fallback settings with env ignore-empty |
-| [`99d3165`](https://github.com/chris-page-gov/mcp-geo/commit/99d3165) | 2026-03-22 | fix(config): coerce fallback settings shim values |
-| [`beb5f49`](https://github.com/chris-page-gov/mcp-geo/commit/beb5f49) | 2026-03-22 | fix(server): harden secret loading and tool error payloads |
-| [`c39d5dd`](https://github.com/chris-page-gov/mcp-geo/commit/c39d5dd) | 2026-04-04 | Merge pull request #55 from chris-page-gov/codex/cowork-fail1 |
-| [`c25f0ec`](https://github.com/chris-page-gov/mcp-geo/commit/c25f0ec) | 2026-04-04 | fix(server): address council tax review and ci findings |
-| [`1339a18`](https://github.com/chris-page-gov/mcp-geo/commit/1339a18) | 2026-04-04 | Potential fix for pull request finding 'CodeQL / Information exposure through an exception' |
-| [`c3e736c`](https://github.com/chris-page-gov/mcp-geo/commit/c3e736c) | 2026-04-04 | Potential fix for pull request finding 'CodeQL / Information exposure through an exception' |
-| [`f47470b`](https://github.com/chris-page-gov/mcp-geo/commit/f47470b) | 2026-04-04 | docs(research): add Meeth and LandIS research materials |
-| [`6dcb238`](https://github.com/chris-page-gov/mcp-geo/commit/6dcb238) | 2026-04-04 | feat(council_tax): add band lookup pilot |
-| [`66409ab`](https://github.com/chris-page-gov/mcp-geo/commit/66409ab) | 2026-03-24 | fix(security): accept wrapper-based ruff gates |
-| [`959e2f8`](https://github.com/chris-page-gov/mcp-geo/commit/959e2f8) | 2026-03-24 | chore(ci): widen shared infra static gates |
-| [`73f0553`](https://github.com/chris-page-gov/mcp-geo/commit/73f0553) | 2026-03-24 | fix(devx): repair local quality wrappers |
-| [`58e264f`](https://github.com/chris-page-gov/mcp-geo/commit/58e264f) | 2026-03-24 | fix(security): redact mcp http auth secrets |
-| [`2a1e153`](https://github.com/chris-page-gov/mcp-geo/commit/2a1e153) | 2026-03-24 | fix(http): enforce auth on raw routes |
-| [`fbcc75e`](https://github.com/chris-page-gov/mcp-geo/commit/fbcc75e) | 2026-03-24 | docs(review): record remediation baseline |
-| [`8d93cec`](https://github.com/chris-page-gov/mcp-geo/commit/8d93cec) | 2026-03-17 | chore: prepare Docker catalog submission and clean trace tooling |
-| [`57fbc54`](https://github.com/chris-page-gov/mcp-geo/commit/57fbc54) | 2026-03-16 | fix(ci): skip scorecard on release tags |
-| [`04e55c6`](https://github.com/chris-page-gov/mcp-geo/commit/04e55c6) | 2026-03-16 | docs(docker): update release tag examples for 0.7.0 |
-| [`830e898`](https://github.com/chris-page-gov/mcp-geo/commit/830e898) | 2026-03-16 | chore(release): publish 0.7.0 |
-| [`d4e6901`](https://github.com/chris-page-gov/mcp-geo/commit/d4e6901) | 2026-03-16 | docs(reports): add redacted Codex report (#50) |
-| [`dc43374`](https://github.com/chris-page-gov/mcp-geo/commit/dc43374) | 2026-03-16 | docs(hygiene): add DOCX baseline and sanitizer (#49) |
-| [`4c0f0b3`](https://github.com/chris-page-gov/mcp-geo/commit/4c0f0b3) | 2026-03-16 | chore(deps): bump devalue (#38) |
-| [`017c81c`](https://github.com/chris-page-gov/mcp-geo/commit/017c81c) | 2026-03-16 | docs(reports): add Road Stat USRN task brief (#48) |
-| [`bfe0bf5`](https://github.com/chris-page-gov/mcp-geo/commit/bfe0bf5) | 2026-03-16 | fix(nomis): restore legacy district fallback (#44) |
-| [`8a66a89`](https://github.com/chris-page-gov/mcp-geo/commit/8a66a89) | 2026-03-16 | docs(troubleshooting): add fifth Harold Wood artifacts (#41) |
-| [`7558df2`](https://github.com/chris-page-gov/mcp-geo/commit/7558df2) | 2026-03-16 | fix(os-mcp): trim punctuation from resource URIs (#42) |
-| [`767e2fb`](https://github.com/chris-page-gov/mcp-geo/commit/767e2fb) | 2026-03-16 | fix(scripts): default uv cache inside repo (#43) |
-| [`ec5ce13`](https://github.com/chris-page-gov/mcp-geo/commit/ec5ce13) | 2026-03-15 | chore(troubleshooting): add second Harold Wood trace |
-| [`11d466e`](https://github.com/chris-page-gov/mcp-geo/commit/11d466e) | 2026-03-15 | fix(mcp): harden Harold Wood follow-up workflows |
-| [`013456e`](https://github.com/chris-page-gov/mcp-geo/commit/013456e) | 2026-03-15 | fix(mcp): analyze third Harold Wood follow-up |
-| [`bb4de3e`](https://github.com/chris-page-gov/mcp-geo/commit/bb4de3e) | 2026-03-15 | fix(admin): refresh live boundary sources for NOMIS |
-| [`d660dcc`](https://github.com/chris-page-gov/mcp-geo/commit/d660dcc) | 2026-03-14 | fix(mcp): harden Harold Wood routing and trace analysis |
-| [`cfa047f`](https://github.com/chris-page-gov/mcp-geo/commit/cfa047f) | 2026-03-14 | docs(devcontainer): harden cross-platform setup |
-| [`02bd96b`](https://github.com/chris-page-gov/mcp-geo/commit/02bd96b) | 2026-03-14 | feat(mcp): add auth-aware resource fallback |
-| [`36a567d`](https://github.com/chris-page-gov/mcp-geo/commit/36a567d) | 2026-03-13 | feat(security): implement OWASP MCP validation and remediation baseline (#37) |
-| [`e54f134`](https://github.com/chris-page-gov/mcp-geo/commit/e54f134) | 2026-03-13 | Merge pull request #36 from chris-page-gov/codex/playground-hardening-demo-workbench |
-| [`1e9a997`](https://github.com/chris-page-gov/mcp-geo/commit/1e9a997) | 2026-03-13 | test(playground): cover explorer resource flows |
-| [`5a14259`](https://github.com/chris-page-gov/mcp-geo/commit/5a14259) | 2026-03-13 | fix(playground): wait for startup before marking connected |
-| [`997c577`](https://github.com/chris-page-gov/mcp-geo/commit/997c577) | 2026-03-13 | fix(playground): allow resource-name bridge reads |
-| [`459390d`](https://github.com/chris-page-gov/mcp-geo/commit/459390d) | 2026-03-13 | fix(playground): stabilize routing full-suite selector |
-| [`ec1e0e4`](https://github.com/chris-page-gov/mcp-geo/commit/ec1e0e4) | 2026-03-12 | fix(security): tighten remaining PR review paths |
-| [`bd2c8a0`](https://github.com/chris-page-gov/mcp-geo/commit/bd2c8a0) | 2026-03-12 | fix(stdio): keep ui assets transport-aware |
-| [`a5e1e26`](https://github.com/chris-page-gov/mcp-geo/commit/a5e1e26) | 2026-03-12 | fix(playground): normalize published ui assets |
-| [`2ec6852`](https://github.com/chris-page-gov/mcp-geo/commit/2ec6852) | 2026-03-12 | fix(playground): address review and ci regressions |
-| [`8578e67`](https://github.com/chris-page-gov/mcp-geo/commit/8578e67) | 2026-03-12 | fix(playground): skip fallback preview csp |
-| [`8ef45c0`](https://github.com/chris-page-gov/mcp-geo/commit/8ef45c0) | 2026-03-12 | fix(playground): address remaining review comments |
-| [`972d27c`](https://github.com/chris-page-gov/mcp-geo/commit/972d27c) | 2026-03-12 | fix(playground): clear remaining PR blockers |
-| [`5977c01`](https://github.com/chris-page-gov/mcp-geo/commit/5977c01) | 2026-03-12 | fix(playground): address review follow-ups |
-| [`8f8debc`](https://github.com/chris-page-gov/mcp-geo/commit/8f8debc) | 2026-03-11 | feat(playground): harden workbench and add full UI coverage |
-| [`b675da0`](https://github.com/chris-page-gov/mcp-geo/commit/b675da0) | 2026-03-11 | chore(devcontainer): simplify dockerfile setup |
-| [`3f7effb`](https://github.com/chris-page-gov/mcp-geo/commit/3f7effb) | 2026-03-11 | docs(reports): publish analytical index bundle |
-| [`fe86291`](https://github.com/chris-page-gov/mcp-geo/commit/fe86291) | 2026-03-11 | docs: add prism bundle and event materials |
-| [`50a348c`](https://github.com/chris-page-gov/mcp-geo/commit/50a348c) | 2026-03-10 | ci: rebuild workflow from current main |
-| [`8aaceb7`](https://github.com/chris-page-gov/mcp-geo/commit/8aaceb7) | 2026-03-10 | ci: rebuild workflow from current main |
-| [`fd21e33`](https://github.com/chris-page-gov/mcp-geo/commit/fd21e33) | 2026-03-10 | chore(devcontainer): harden cross-platform setup |
-| [`44e1b0d`](https://github.com/chris-page-gov/mcp-geo/commit/44e1b0d) | 2026-03-10 | fix(docker): keep proxy args build-scoped |
-| [`7c86fd0`](https://github.com/chris-page-gov/mcp-geo/commit/7c86fd0) | 2026-03-10 | chore(devcontainer): harden cross-platform setup |
-| [`01e557b`](https://github.com/chris-page-gov/mcp-geo/commit/01e557b) | 2026-03-10 | wip(audit): checkpoint decision support pack |
-| [`c702002`](https://github.com/chris-page-gov/mcp-geo/commit/c702002) | 2026-03-08 | fix(reports): use requested showcase report date |
-| [`67695a7`](https://github.com/chris-page-gov/mcp-geo/commit/67695a7) | 2026-03-01 | docs(reporting): add codex usage examples and refresh telemetry |
-| [`f97da1d`](https://github.com/chris-page-gov/mcp-geo/commit/f97da1d) | 2026-03-08 | docs(mcp): adopt OpenAI Documentation MCP |
-| [`1949ed1`](https://github.com/chris-page-gov/mcp-geo/commit/1949ed1) | 2026-03-10 | feat(route): add pgRouting route planning and stakeholder benchmarks |
-| [`a58942a`](https://github.com/chris-page-gov/mcp-geo/commit/a58942a) | 2026-03-10 | fix(route): keep suggested avoid constraints executable |
-| [`16a1e51`](https://github.com/chris-page-gov/mcp-geo/commit/16a1e51) | 2026-03-10 | fix(route): preserve avoid constraints |
-| [`d92282a`](https://github.com/chris-page-gov/mcp-geo/commit/d92282a) | 2026-03-10 | fix(dev): add host-aware tool wrappers |
-| [`dd54b79`](https://github.com/chris-page-gov/mcp-geo/commit/dd54b79) | 2026-03-10 | fix(route): redact graph provenance output |
-| [`7362db0`](https://github.com/chris-page-gov/mcp-geo/commit/7362db0) | 2026-03-10 | docs(reports): add stakeholder capability roadmap |
-| [`83d6f27`](https://github.com/chris-page-gov/mcp-geo/commit/83d6f27) | 2026-03-10 | feat(benchmark): extend stakeholder pack with phase1 scenarios |
-| [`c61e7dc`](https://github.com/chris-page-gov/mcp-geo/commit/c61e7dc) | 2026-03-10 | fix(benchmark): enforce shared postgres cache |
-| [`7182936`](https://github.com/chris-page-gov/mcp-geo/commit/7182936) | 2026-03-10 | fix(claude): reuse devcontainer postgis |
-| [`428ac1b`](https://github.com/chris-page-gov/mcp-geo/commit/428ac1b) | 2026-03-10 | feat(devcontainer): build repo postgis image |
-| [`3638795`](https://github.com/chris-page-gov/mcp-geo/commit/3638795) | 2026-03-10 | fix(devcontainer): standardize pgrouting postgres |
-| [`1f2978a`](https://github.com/chris-page-gov/mcp-geo/commit/1f2978a) | 2026-03-10 | feat(route): add MRN routing stack and sync live benchmark docs |
-| [`c88d523`](https://github.com/chris-page-gov/mcp-geo/commit/c88d523) | 2026-03-09 | feat(benchmark): add stakeholder live rerun report |
-| [`157f6f8`](https://github.com/chris-page-gov/mcp-geo/commit/157f6f8) | 2026-03-09 | docs(benchmark): add stakeholder gap analysis |
-| [`f5f3cbb`](https://github.com/chris-page-gov/mcp-geo/commit/f5f3cbb) | 2026-03-09 | feat(benchmark): add stakeholder evaluation pack |
-| [`38815ff`](https://github.com/chris-page-gov/mcp-geo/commit/38815ff) | 2026-03-08 | Merge pull request #30 from chris-page-gov/codex/release-0.6.0-integration |
-| [`af85ebe`](https://github.com/chris-page-gov/mcp-geo/commit/af85ebe) | 2026-03-08 | chore(release): prepare 0.6.0 |
-| [`34cba29`](https://github.com/chris-page-gov/mcp-geo/commit/34cba29) | 2026-03-08 | chore(release): record map-lab integration gate |
-| [`edfb70d`](https://github.com/chris-page-gov/mcp-geo/commit/edfb70d) | 2026-03-01 | feat(playground): improve boundary harness basemap and local proxy defaults |
-| [`e573c89`](https://github.com/chris-page-gov/mcp-geo/commit/e573c89) | 2026-03-01 | fix(review): validate os_map export ids and lock job paths |
-| [`025aad5`](https://github.com/chris-page-gov/mcp-geo/commit/025aad5) | 2026-03-01 | fix(review): address cache probe and export polling race conditions |
-| [`7856157`](https://github.com/chris-page-gov/mcp-geo/commit/7856157) | 2026-03-01 | merge(main): resolve PR conflicts for map-lab branch |
-| [`58c8f88`](https://github.com/chris-page-gov/mcp-geo/commit/58c8f88) | 2026-03-07 | feat(reports): add repeatable mcp-geo showcase report |
-| [`ded8774`](https://github.com/chris-page-gov/mcp-geo/commit/ded8774) | 2026-03-07 | chore(reports): refresh wheelchair map png renders |
-| [`9867b23`](https://github.com/chris-page-gov/mcp-geo/commit/9867b23) | 2026-03-07 | feat(reports): default access maps to detailed os vector basemaps |
-| [`7c7be67`](https://github.com/chris-page-gov/mcp-geo/commit/7c7be67) | 2026-03-07 | feat(reports): add zoomable wheelchair access maps |
-| [`94d2c72`](https://github.com/chris-page-gov/mcp-geo/commit/94d2c72) | 2026-03-07 | feat(reports): add comparator access maps and os light toggle |
-| [`c5c7bc7`](https://github.com/chris-page-gov/mcp-geo/commit/c5c7bc7) | 2026-03-07 | Merge pull request #27 from chris-page-gov/codex/gpt-5-4-host-benchmark |
-| [`331471c`](https://github.com/chris-page-gov/mcp-geo/commit/331471c) | 2026-03-07 | merge(main): preserve tracker updates across benchmark branch |
-| [`816e20c`](https://github.com/chris-page-gov/mcp-geo/commit/816e20c) | 2026-03-07 | fix(benchmark): tighten discovery scoring and bundling |
-| [`5a871f7`](https://github.com/chris-page-gov/mcp-geo/commit/5a871f7) | 2026-03-07 | feat(reports): add Teignmouth wheelchair access map |
-| [`6df8901`](https://github.com/chris-page-gov/mcp-geo/commit/6df8901) | 2026-03-07 | fix(benchmark): preserve MCP restore and UI trace paths |
-| [`3279c31`](https://github.com/chris-page-gov/mcp-geo/commit/3279c31) | 2026-03-07 | fix(benchmark): address PR review feedback |
-| [`71a2c7a`](https://github.com/chris-page-gov/mcp-geo/commit/71a2c7a) | 2026-03-06 | feat(benchmark): add codex host benchmark harness |
-| [`7d5d794`](https://github.com/chris-page-gov/mcp-geo/commit/7d5d794) | 2026-03-04 | docs(tracking): mark v0.5.0 publication complete |
-| [`a76ff59`](https://github.com/chris-page-gov/mcp-geo/commit/a76ff59) | 2026-03-04 | release(repo): prepare v0.5.0 public launch |
 
 ## Dated Reports and Research Packs
 
@@ -294,3 +300,31 @@ last_validated_at: "2026-04-06T14:09:00Z"
 - `2026-04-05` `research/landis-data-source/landis_archive_triage_2026-04-05.json`
 - `2026-04-05` `research/landis-data-source/landis_full_release_manifest_2026-04-05.json`
 - `2026-04-05` `research/landis-data-source/landis_release_reconciliation_2026-04-05.json`
+- `2026-04-07` `troubleshooting/Landis/draw_roads_on_map_analysis_2026-04-07.md`
+- `2026-04-12` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12.json`
+- `2026-04-12` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12.md`
+- `2026-04-12` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12_analysis.md`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.claude_cli.readiness.json`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.codex_cli.readiness.json`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.gemini_cli.readiness.json`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.json`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.md`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13.vscode_ide.readiness.json`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_readiness_probe_v2.claude_cli.readiness.json`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_readiness_probe_v2.codex_cli.readiness.json`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_readiness_probe_v2.gemini_cli.readiness.json`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_readiness_probe_v2.json`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_readiness_probe_v2.md`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_readiness_probe_v2.vscode_ide.readiness.json`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v16_useful_wait.json`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v16_useful_wait.md`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v16_useful_wait.vscode_ide.readiness.json`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v17_no_primer.json`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v17_no_primer.md`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_canary_v17_no_primer.vscode_ide.readiness.json`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_full_v18_no_primer.json`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_full_v18_no_primer.md`
+- `2026-04-13` `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-13_vscode_full_v18_no_primer.vscode_ide.readiness.json`
+- `2026-05-13` `docs/reports/landis_leacs_access_probe_2026-05-13.md`
+- `2026-05-13` `research/landis-data-source/landis_leacs_access_probe_2026-05-13.json`
+- `2026-05-13` `troubleshooting/mcp-cowork/cowork-sanity-and-failure-report-2026-04-28.md`

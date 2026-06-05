@@ -85,11 +85,23 @@ source_paths:
   - "tests/fixtures/council_tax/sw1a1aa_results.html"
   - "tests/fixtures/council_tax/yo17hp_results.html"
   - "tests/fixtures/council_tax_band_gold.json"
+  - "tests/fixtures/council_tax_uprn_abp_example.json"
+  - "tests/fixtures/ons_geo/chd_sample.csv"
+  - "tests/fixtures/ons_geo/nspl_legacy.csv"
+  - "tests/fixtures/ons_geo/nsul_sample.csv"
+  - "tests/fixtures/ons_geo/onspd_arcgis_metadata.json"
+  - "tests/fixtures/ons_geo/onspd_arcgis_page_1.json"
+  - "tests/fixtures/ons_geo/onspd_modern.csv"
+  - "tests/fixtures/ons_geo/onsud_sample.csv"
+  - "tests/fixtures/ons_geo/portal_package_show.json"
+  - "tests/fixtures/ons_geo/portal_release_page.html"
+  - "tests/fixtures/ons_geo/rgc_current_sample.csv"
   - "tests/fixtures/psr_peat_floor_question.json"
   - "tests/helpers.py"
   - "tests/outputs/CV312JF-oa-example.html"
   - "tests/outputs/northolt.html"
   - "tests/test_accessors.py"
+  - "tests/test_addressbase_build_xref.py"
   - "tests/test_admin_lookup.py"
   - "tests/test_admin_lookup_cache.py"
   - "tests/test_admin_lookup_extended.py"
@@ -98,10 +110,16 @@ source_paths:
   - "tests/test_audit_api.py"
   - "tests/test_audit_normalise.py"
   - "tests/test_audit_pack_builder.py"
+  - "tests/test_benchmark_env.py"
+  - "tests/test_boundary_autofix.py"
   - "tests/test_boundary_cache.py"
   - "tests/test_boundary_pipeline_variant_policy.py"
+  - "tests/test_boundary_run_paths.py"
   - "tests/test_check_codex_startup_scope.py"
+  - "tests/test_check_gemini_startup_scope.py"
   - "tests/test_check_lmr_host4.py"
+  - "tests/test_check_shared_benchmark_cache.py"
+  - "tests/test_check_spec_drift.py"
   - "tests/test_circuit_breaker.py"
   - "tests/test_client_capabilities.py"
   - "tests/test_codex_long_horizon_summary.py"
@@ -109,6 +127,7 @@ source_paths:
   - "tests/test_config_secret_file.py"
   - "tests/test_council_tax_band.py"
   - "tests/test_council_tax_gold_eval.py"
+  - "tests/test_council_tax_uprn_query.py"
   - "tests/test_coverage_guardrails.py"
   - "tests/test_cross_platform_container_policy.py"
   - "tests/test_dataset_cache.py"
@@ -122,6 +141,7 @@ source_paths:
   - "tests/test_evaluation_expected_errors.py"
   - "tests/test_evaluation_harness_full.py"
   - "tests/test_evaluation_harness_live_api.py"
+  - "tests/test_gemini_mcp_local.py"
   - "tests/test_generate_mcp_geo_analytical_index.py"
   - "tests/test_generate_mcp_geo_functionality_showcase.py"
   - "tests/test_golden_scenarios.py"
@@ -142,6 +162,7 @@ source_paths:
   - "tests/test_map_trials_summary.py"
   - "tests/test_map_trials_verify.py"
   - "tests/test_maps_proxy.py"
+  - "tests/test_mcp_2026_rc.py"
   - "tests/test_mcp_client_if_none_match.py"
   - "tests/test_mcp_client_resources_get.py"
   - "tests/test_mcp_docker_local.py"
@@ -166,6 +187,9 @@ source_paths:
   - "tests/test_ons_geo.py"
   - "tests/test_ons_geo_cache.py"
   - "tests/test_ons_geo_cache_refresh.py"
+  - "tests/test_ons_geo_catalog.py"
+  - "tests/test_ons_geo_freshness.py"
+  - "tests/test_ons_geo_live_validate.py"
   - "tests/test_ons_new_tools.py"
   - "tests/test_ons_search_fallback.py"
   - "tests/test_ons_select.py"
@@ -180,12 +204,15 @@ source_paths:
   - "tests/test_os_features_helpers.py"
   - "tests/test_os_invalid_inputs.py"
   - "tests/test_os_landscape.py"
+  - "tests/test_os_map_helpers_extra.py"
   - "tests/test_os_map_tools.py"
+  - "tests/test_os_maps_helpers.py"
   - "tests/test_os_mcp_descriptor.py"
   - "tests/test_os_mcp_internals.py"
   - "tests/test_os_mcp_route_query.py"
   - "tests/test_os_names_success.py"
   - "tests/test_os_new_capability_tools.py"
+  - "tests/test_os_ngd_spring_2026_live.py"
   - "tests/test_os_no_api_key.py"
   - "tests/test_os_offline_tools.py"
   - "tests/test_os_peat.py"
@@ -205,6 +232,7 @@ source_paths:
   - "tests/test_playground.py"
   - "tests/test_playground_events.py"
   - "tests/test_postcode_tool.py"
+  - "tests/test_prepare_for_demo.py"
   - "tests/test_prompts.py"
   - "tests/test_protocol_versions.py"
   - "tests/test_psr_peat_e2e.py"
@@ -250,47 +278,48 @@ source_paths:
   - "tests/test_trace_session.py"
   - "tests/test_trace_utils.py"
   - "tests/test_typing_utils.py"
+  - "tests/test_unattended_client_eval.py"
   - "tests/test_unknown_tool.py"
   - "tests/test_validation.py"
-source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/__init__.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/audit_test_utils.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/conftest.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/__init__.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/audit_logger.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/evaluation_results.audit.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/evaluation_results.benchmark.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/evaluation_results.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/harness.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/live_capture.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/047c3949.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/08eea8b1.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/13ad9383.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/15cb80c1.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/172ff2f7.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/19f40194.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/1f415869.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/2692a326.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/271c9a92.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/328c0257.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/3628f5d1.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/393a6d69.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/3d3c1f52.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/464a7d6a.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/49e6e04e.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/4e4bc6a9.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/4f7c55c0.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/4fc811e8.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/4ffd83a6.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/52a9f148.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/53b72503.txt"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/5671006d.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/__init__.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/audit_test_utils.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/conftest.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/__init__.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/audit_logger.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/evaluation_results.audit.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/evaluation_results.benchmark.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/evaluation_results.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/harness.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/live_capture.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/047c3949.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/08eea8b1.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/13ad9383.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/15cb80c1.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/172ff2f7.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/19f40194.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/1f415869.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/2692a326.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/271c9a92.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/328c0257.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/3628f5d1.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/393a6d69.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/3d3c1f52.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/464a7d6a.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/49e6e04e.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/4e4bc6a9.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/4f7c55c0.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/4fc811e8.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/4ffd83a6.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/52a9f148.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/53b72503.txt"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/5671006d.txt"
 source_hashes:
   tests/__init__.py: "sha256:90c1c086-2b10341e-ea2bdb1a-0caf307b-6a4c8b7a-7b9db608-6cfbf4d3-257bda88"
   tests/audit_test_utils.py: "sha256:c78f8d01-3c67cfbf-ac814649-2016214b-886627f6-aaccf83d-69c85ea7-d58cd40e"
-  tests/conftest.py: "sha256:134e1d72-93883816-2f5643ae-5a1d305d-21665e91-43459581-2b45d179-e72f01b0"
+  tests/conftest.py: "sha256:8a61d9ef-74f8fac1-31a0e3ed-8d244f93-14d111a1-4b19c4c0-a7fb6a7b-4e1d29b7"
   tests/evaluation/__init__.py: "sha256:083df5cd-20bdb002-668fa0e8-614a1648-73e06aab-47afa892-b976f2aa-719cd21d"
   tests/evaluation/audit_logger.py: "sha256:b534afcb-2cf15fe4-6ad6650d-a2c8394b-9377c69d-1e8c4fe4-88c11e20-77b20441"
   tests/evaluation/evaluation_results.audit.txt: "sha256:5f0e926a-26e4a708-f671dd84-ed87fc6e-f02b75a0-6c7981ba-371bf6ef-7593a8da"
@@ -320,17 +349,17 @@ source_hashes:
   tests/evaluation/logs/audit/52a9f148.txt: "sha256:5afa7bba-78d2b308-ae937561-0aab6644-f2f61852-f91d02fa-316fa0e6-7fc6c536"
   tests/evaluation/logs/audit/53b72503.txt: "sha256:2eb1db48-0b8247a7-9c5c37df-1c6dff01-2e35ac20-8fc7ad0e-82b28c87-da601d5c"
   tests/evaluation/logs/audit/5671006d.txt: "sha256:8272b0a9-8fde1483-62432bc2-363bf93f-52819d46-2c18dd5f-990f11bd-ce13972a"
-generated_at: "2026-04-06T14:09:00Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-04-06T14:09:00Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Test and Validation Surface
 
 ## Evidence Scope
 
 - Categories: `code_runtime`
-- Source file count: 250
+- Source file count: 279
 
 ## Source Inventory
 
@@ -338,7 +367,7 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | --- | --- | --- | --- | --- |
 | `tests/__init__.py` | Test package for MCP Geo. | 2026-01-20 | 2026-01-20 | `tests/evaluation/audit_logger.py`, `tests/evaluation/harness.py`, `tests/evaluation/live_capture.py`, `tests/test_admin_lookup_live_internals.py` |
 | `tests/audit_test_utils.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | `tests/test_audit_api.py`, `tests/test_audit_pack_builder.py` |
-| `tests/conftest.py` | import pytest | 2025-09-16 | 2026-02-21 | - |
+| `tests/conftest.py` | from collections.abc import Callable | 2025-09-16 | 2026-04-23 | - |
 | `tests/evaluation/__init__.py` | Evaluation framework for MCP Geo. | 2026-01-20 | 2026-01-20 | `tests/evaluation/audit_logger.py`, `tests/evaluation/harness.py`, `tests/evaluation/live_capture.py`, `tests/test_admin_lookup_live_internals.py` |
 | `tests/evaluation/audit_logger.py` | Audit logger for MCP Geo evaluation runs. | 2026-01-20 | 2026-02-11 | `tests/evaluation/harness.py`, `tests/test_evaluation_audit_rate_limits.py` |
 | `tests/evaluation/evaluation_results.audit.txt` | ============================================================ | 2026-01-20 | 2026-01-27 | - |
@@ -419,11 +448,26 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `tests/fixtures/council_tax/sw1a1aa_results.html` | Search results - Check and challenge your Council Tax band - GOV.UK | 2026-04-04 | 2026-04-04 | - |
 | `tests/fixtures/council_tax/yo17hp_results.html` | Search results - Check and challenge your Council Tax band - GOV.UK | 2026-04-04 | 2026-04-04 | - |
 | `tests/fixtures/council_tax_band_gold.json` | JSON object keys: cases, provider, scope, verifiedOn | 2026-04-04 | 2026-04-04 | `tests/test_council_tax_gold_eval.py` |
+| `tests/fixtures/council_tax_uprn_abp_example.json` | JSON object keys: results, sourceZip, summary | 2026-04-08 | 2026-04-08 | - |
+| `tests/fixtures/ons_geo/chd_sample.csv` | GEOGRAPHY_CODE,GEOGRAPHY_NAME,STATUS,SUCCESSOR_CODE,SUCCESSOR_NAME,CODE_FAMILY,LEVEL | 2026-04-09 | 2026-04-09 | - |
+| `tests/fixtures/ons_geo/nspl_legacy.csv` | pcds,LAD24CD,LAD24NM,WD24CD,WD24NM,CTRY24CD,CTRY24NM,RGN24CD,RGN24NM | 2026-04-09 | 2026-04-09 | - |
+| `tests/fixtures/ons_geo/nsul_sample.csv` | UPRN,pcds,LAD24CD,LAD24NM,OA11CD,LSOA11CD,MSOA11CD,WD24CD,WD24NM,CTRY24CD,CTRY24NM,RGN24CD,RGN24NM,postal_delivery | 2026-04-09 | 2026-04-09 | - |
+| `tests/fixtures/ons_geo/onspd_arcgis_metadata.json` | JSON object keys: fields, maxRecordCount, name, objectIdField | 2026-04-09 | 2026-04-09 | `tests/test_ons_geo_cache_refresh.py` |
+| `tests/fixtures/ons_geo/onspd_arcgis_page_1.json` | JSON object keys: features | 2026-04-09 | 2026-04-09 | `tests/test_ons_geo_cache_refresh.py` |
+| `tests/fixtures/ons_geo/onspd_modern.csv` | pcds,lad25cd,lad25nm,wd25cd,wd25nm,ctry25cd,ctry25nm,rgn25cd,rgn25nm | 2026-04-09 | 2026-04-09 | - |
+| `tests/fixtures/ons_geo/onsud_sample.csv` | UPRN,pcds,LAD24CD,LAD24NM,OA21CD,LSOA21CD,MSOA21CD,WD24CD,WD24NM,CTRY24CD,CTRY24NM,RGN24CD,RGN24NM,postal_delivery | 2026-04-09 | 2026-04-09 | - |
+| `tests/fixtures/ons_geo/portal_package_show.json` | JSON object keys: result, success | 2026-04-09 | 2026-04-09 | `tests/test_ons_geo_cache_refresh.py` |
+| `tests/fixtures/ons_geo/portal_release_page.html` | <html>
+  <body>
+    <a href="https://example.test/downloads/onsud-december-2025-epoch-123.zip">Download ZIP</a>
+  </body | 2026-04-09 | 2026-04-09 | - |
+| `tests/fixtures/ons_geo/rgc_current_sample.csv` | GEOGRAPHY_CODE,GEOGRAPHY_NAME,STATUS,CODE_FAMILY,LEVEL | 2026-04-09 | 2026-04-09 | - |
 | `tests/fixtures/psr_peat_floor_question.json` | JSON object keys: evidenceRequest, expected, id, question | 2026-02-22 | 2026-02-22 | `tests/test_psr_peat_e2e.py` |
 | `tests/helpers.py` | import json | 2026-01-24 | 2026-01-24 | `tests/test_http_transport_coverage_more.py`, `tests/test_mcp_http.py`, `tests/test_ons_codes_unit.py`, `tests/test_ons_data_internal.py` |
 | `tests/outputs/CV312JF-oa-example.html` | MCP Geo - Boundary Explorer | 2026-02-08 | 2026-02-12 | - |
 | `tests/outputs/northolt.html` | MCP Geo - Statistics Dashboard | 2026-02-09 | 2026-02-09 | - |
 | `tests/test_accessors.py` | from tools.accessors import get_gaz, get_dpa | 2025-09-16 | 2025-09-16 | `tests/test_accessors.py` |
+| `tests/test_addressbase_build_xref.py` | from __future__ import annotations | 2026-04-09 | 2026-04-09 | - |
 | `tests/test_admin_lookup.py` | import pytest | 2025-09-17 | 2026-02-01 | `tests/test_admin_lookup.py`, `tests/test_admin_lookup_cache.py`, `tests/test_admin_lookup_live.py`, `tests/test_tool_upstream_endpoint_contracts.py` |
 | `tests/test_admin_lookup_cache.py` | from types import SimpleNamespace | 2026-01-30 | 2026-02-22 | `tests/test_admin_lookup_cache.py` |
 | `tests/test_admin_lookup_extended.py` | import pytest | 2025-09-17 | 2026-03-10 | - |
@@ -432,38 +476,46 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `tests/test_audit_api.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | `tests/test_audit_api.py` |
 | `tests/test_audit_normalise.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | - |
 | `tests/test_audit_pack_builder.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | - |
+| `tests/test_benchmark_env.py` | from __future__ import annotations | 2026-04-13 | 2026-04-14 | - |
+| `tests/test_boundary_autofix.py` | from __future__ import annotations | 2026-04-12 | 2026-04-12 | - |
 | `tests/test_boundary_cache.py` | import datetime as dt | 2026-01-30 | 2026-02-22 | `tests/test_boundary_cache.py`, `tests/test_resource_catalog.py` |
 | `tests/test_boundary_pipeline_variant_policy.py` | from __future__ import annotations | 2026-02-23 | 2026-02-23 | - |
+| `tests/test_boundary_run_paths.py` | from __future__ import annotations | 2026-04-12 | 2026-04-12 | - |
 | `tests/test_check_codex_startup_scope.py` | from __future__ import annotations | 2026-03-06 | 2026-03-06 | `tests/test_check_codex_startup_scope.py` |
+| `tests/test_check_gemini_startup_scope.py` | from __future__ import annotations | 2026-03-06 | 2026-04-12 | `tests/test_check_gemini_startup_scope.py` |
 | `tests/test_check_lmr_host4.py` | from __future__ import annotations | 2026-02-22 | 2026-02-22 | - |
+| `tests/test_check_shared_benchmark_cache.py` | from __future__ import annotations | 2026-04-12 | 2026-04-12 | `tests/test_check_shared_benchmark_cache.py` |
+| `tests/test_check_spec_drift.py` | from __future__ import annotations | 2026-04-12 | 2026-04-12 | - |
 | `tests/test_circuit_breaker.py` | from __future__ import annotations | 2026-02-02 | 2026-02-02 | `tests/test_circuit_breaker.py` |
 | `tests/test_client_capabilities.py` | from server.mcp.client_capabilities import summarize_client_capabilities | 2026-02-13 | 2026-02-13 | - |
 | `tests/test_codex_long_horizon_summary.py` | from __future__ import annotations | 2026-02-25 | 2026-02-25 | - |
-| `tests/test_codex_mcp_local.py` | from __future__ import annotations | 2026-03-07 | 2026-04-05 | - |
-| `tests/test_config_secret_file.py` | from server.config import ( | 2026-03-03 | 2026-04-06 | - |
-| `tests/test_council_tax_band.py` | from __future__ import annotations | 2026-04-04 | 2026-04-04 | `tests/test_council_tax_band.py`, `tests/test_council_tax_gold_eval.py` |
+| `tests/test_codex_mcp_local.py` | from __future__ import annotations | 2026-03-07 | 2026-04-12 | - |
+| `tests/test_config_secret_file.py` | from typing import ClassVar | 2026-03-03 | 2026-04-22 | - |
+| `tests/test_council_tax_band.py` | from __future__ import annotations | 2026-04-04 | 2026-04-12 | `tests/test_council_tax_band.py`, `tests/test_council_tax_gold_eval.py` |
 | `tests/test_council_tax_gold_eval.py` | from __future__ import annotations | 2026-04-04 | 2026-04-04 | - |
+| `tests/test_council_tax_uprn_query.py` | from __future__ import annotations | 2026-04-08 | 2026-04-10 | `tests/test_council_tax_uprn_query.py` |
 | `tests/test_coverage_guardrails.py` | from fastapi.testclient import TestClient | 2026-01-20 | 2026-01-20 | - |
-| `tests/test_cross_platform_container_policy.py` | from pathlib import Path | 2026-03-10 | 2026-03-14 | - |
+| `tests/test_cross_platform_container_policy.py` | from pathlib import Path | 2026-03-10 | 2026-04-12 | - |
 | `tests/test_dataset_cache.py` | from server.dataset_cache import DatasetCache | 2026-01-25 | 2026-01-25 | `tests/test_dataset_cache.py` |
 | `tests/test_debug_errors.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2025-09-16 | `tests/test_debug_errors.py` |
 | `tests/test_devcontainer_codex_setup.py` | from __future__ import annotations | 2026-03-06 | 2026-03-17 | - |
 | `tests/test_docx_hygiene.py` | from __future__ import annotations | 2026-03-16 | 2026-03-16 | - |
-| `tests/test_elicitation_forms.py` | from server.mcp import elicitation_forms as forms | 2026-02-07 | 2026-02-07 | - |
+| `tests/test_elicitation_forms.py` | from server.mcp import elicitation_forms as forms | 2026-02-07 | 2026-04-12 | - |
 | `tests/test_epic_b_validation.py` | from collections.abc import Callable | 2025-08-20 | 2025-09-16 | - |
 | `tests/test_error_taxonomy.py` | from server.error_taxonomy import classify_error | 2026-01-25 | 2026-04-04 | - |
 | `tests/test_evaluation_audit_rate_limits.py` | from __future__ import annotations | 2026-02-11 | 2026-02-11 | - |
 | `tests/test_evaluation_expected_errors.py` | from __future__ import annotations | 2026-02-22 | 2026-02-22 | - |
-| `tests/test_evaluation_harness_full.py` | import json | 2026-01-24 | 2026-04-05 | `tests/test_evaluation_harness_full.py` |
+| `tests/test_evaluation_harness_full.py` | import json | 2026-01-24 | 2026-04-12 | `tests/test_evaluation_harness_full.py` |
 | `tests/test_evaluation_harness_live_api.py` | import os | 2026-01-24 | 2026-01-24 | - |
+| `tests/test_gemini_mcp_local.py` | from __future__ import annotations | 2026-04-12 | 2026-04-12 | - |
 | `tests/test_generate_mcp_geo_analytical_index.py` | import subprocess | 2026-03-11 | 2026-03-12 | - |
 | `tests/test_generate_mcp_geo_functionality_showcase.py` | from pathlib import Path | 2026-03-07 | 2026-03-07 | - |
 | `tests/test_golden_scenarios.py` | import itertools | 2025-09-16 | 2026-02-25 | `tests/test_golden_scenarios.py` |
 | `tests/test_health.py` | from fastapi.testclient import TestClient | 2025-08-20 | 2026-01-20 | `tests/test_health.py`, `tests/test_validation.py` |
-| `tests/test_host_benchmark.py` | from __future__ import annotations | 2026-03-06 | 2026-03-17 | `tests/test_host_benchmark.py` |
+| `tests/test_host_benchmark.py` | from __future__ import annotations | 2026-03-06 | 2026-04-14 | `tests/test_host_benchmark.py` |
 | `tests/test_http_endpoint_matrix.py` | from fastapi.testclient import TestClient | 2026-02-11 | 2026-02-11 | - |
 | `tests/test_http_transport_coverage_more.py` | import base64 | 2026-02-07 | 2026-03-13 | - |
-| `tests/test_landis_ingest.py` | from __future__ import annotations | 2026-04-04 | 2026-04-06 | - |
+| `tests/test_landis_ingest.py` | from __future__ import annotations | 2026-04-04 | 2026-04-12 | - |
 | `tests/test_landis_release_reconciliation.py` | from scripts.landis_release_reconciliation import strip_html | 2026-04-06 | 2026-04-06 | - |
 | `tests/test_landis_resources.py` | from __future__ import annotations | 2026-04-04 | 2026-04-05 | `tests/test_landis_resources.py` |
 | `tests/test_landis_tools.py` | from __future__ import annotations | 2026-04-04 | 2026-04-06 | `tests/test_landis_resources.py` |
@@ -476,14 +528,15 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `tests/test_map_trials_summary.py` | import json | 2026-02-14 | 2026-02-14 | - |
 | `tests/test_map_trials_verify.py` | from pathlib import Path | 2026-02-14 | 2026-02-14 | - |
 | `tests/test_maps_proxy.py` | from __future__ import annotations | 2026-01-29 | 2026-03-13 | - |
+| `tests/test_mcp_2026_rc.py` | from __future__ import annotations | 2026-06-01 | 2026-06-01 | `tests/test_mcp_2026_rc.py` |
 | `tests/test_mcp_client_if_none_match.py` | import json, subprocess, sys | 2025-09-17 | 2026-01-24 | - |
 | `tests/test_mcp_client_resources_get.py` | import json, subprocess, sys | 2025-09-17 | 2026-01-24 | - |
-| `tests/test_mcp_docker_local.py` | from __future__ import annotations | 2026-04-05 | 2026-04-06 | `tests/test_mcp_docker_local.py` |
-| `tests/test_mcp_http.py` | import base64 | 2026-01-21 | 2026-03-22 | `tests/test_http_transport_coverage_more.py`, `tests/test_mcp_http.py`, `tests/test_resource_fallback.py` |
+| `tests/test_mcp_docker_local.py` | from __future__ import annotations | 2026-04-05 | 2026-04-13 | `tests/test_mcp_docker_local.py` |
+| `tests/test_mcp_http.py` | import base64 | 2026-01-21 | 2026-04-12 | `tests/test_http_transport_coverage_more.py`, `tests/test_mcp_docker_local.py`, `tests/test_mcp_http.py`, `tests/test_resource_fallback.py` |
 | `tests/test_mcp_stdio_trace_proxy.py` | from __future__ import annotations | 2026-02-09 | 2026-02-09 | - |
 | `tests/test_middleware_exception.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2025-09-16 | - |
 | `tests/test_nomis_common.py` | import json | 2026-02-06 | 2026-02-06 | - |
-| `tests/test_nomis_data.py` | from typing import Any, Dict, Tuple | 2026-02-05 | 2026-03-16 | `tests/test_nomis_data.py` |
+| `tests/test_nomis_data.py` | from typing import Any, Dict, Tuple | 2026-02-05 | 2026-04-12 | `tests/test_nomis_data.py` |
 | `tests/test_obsidian_kb.py` | from __future__ import annotations | 2026-04-06 | 2026-04-06 | - |
 | `tests/test_ons_catalog_snapshot.py` | import json | 2026-02-07 | 2026-02-07 | - |
 | `tests/test_ons_catalog_validate_script.py` | from __future__ import annotations | 2026-02-11 | 2026-02-11 | `tests/test_ons_catalog_validate_script.py` |
@@ -497,29 +550,35 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `tests/test_ons_dimensions.py` | from fastapi.testclient import TestClient | 2025-09-17 | 2026-01-24 | `tests/test_ons_dimensions_live.py` |
 | `tests/test_ons_dimensions_live.py` | from fastapi.testclient import TestClient | 2025-09-17 | 2026-01-27 | `tests/test_ons_dimensions_live.py` |
 | `tests/test_ons_filter_formats.py` | from typing import Any, Dict, Tuple | 2025-11-03 | 2026-01-24 | - |
-| `tests/test_ons_geo.py` | from __future__ import annotations | 2026-02-22 | 2026-02-23 | `tests/test_ons_geo.py`, `tests/test_ons_geo_cache_refresh.py`, `tests/test_resource_catalog.py` |
-| `tests/test_ons_geo_cache.py` | from __future__ import annotations | 2026-02-22 | 2026-03-01 | `tests/test_ons_geo.py`, `tests/test_ons_geo_cache_refresh.py` |
-| `tests/test_ons_geo_cache_refresh.py` | from __future__ import annotations | 2026-02-22 | 2026-03-01 | `tests/test_ons_geo_cache_refresh.py` |
+| `tests/test_ons_geo.py` | from __future__ import annotations | 2026-02-22 | 2026-06-01 | `tests/test_ons_geo.py`, `tests/test_ons_geo_cache_refresh.py`, `tests/test_ons_geo_live_validate.py`, `tests/test_resource_catalog.py` |
+| `tests/test_ons_geo_cache.py` | from __future__ import annotations | 2026-02-22 | 2026-04-09 | `tests/test_ons_geo.py`, `tests/test_ons_geo_cache_refresh.py` |
+| `tests/test_ons_geo_cache_refresh.py` | from __future__ import annotations | 2026-02-22 | 2026-04-22 | `tests/test_ons_geo_cache_refresh.py` |
+| `tests/test_ons_geo_catalog.py` | from __future__ import annotations | 2026-04-09 | 2026-06-01 | - |
+| `tests/test_ons_geo_freshness.py` | from __future__ import annotations | 2026-04-09 | 2026-04-09 | - |
+| `tests/test_ons_geo_live_validate.py` | from __future__ import annotations | 2026-04-09 | 2026-04-09 | `tests/test_ons_geo_live_validate.py` |
 | `tests/test_ons_new_tools.py` | from typing import Any, Dict, Tuple | 2025-11-03 | 2026-01-25 | - |
 | `tests/test_ons_search_fallback.py` | from fastapi.testclient import TestClient | 2026-01-22 | 2026-03-14 | - |
 | `tests/test_ons_select.py` | import json | 2026-02-07 | 2026-03-14 | `tests/test_ons_select.py`, `tests/test_stdio_adapter_direct.py` |
 | `tests/test_os_apps_log_event.py` | import json | 2026-01-21 | 2026-01-21 | `tests/test_os_apps_log_event.py` |
-| `tests/test_os_apps_tools.py` | from fastapi.testclient import TestClient | 2026-01-20 | 2026-03-14 | - |
+| `tests/test_os_apps_tools.py` | from fastapi.testclient import TestClient | 2026-01-20 | 2026-05-13 | - |
 | `tests/test_os_auth_errors.py` | import requests | 2026-01-27 | 2026-01-27 | - |
 | `tests/test_os_catalog_snapshot.py` | from __future__ import annotations | 2026-02-08 | 2026-02-13 | `tests/test_os_catalog_snapshot.py` |
-| `tests/test_os_common.py` | from typing import ClassVar | 2025-09-16 | 2026-02-13 | - |
+| `tests/test_os_common.py` | from typing import ClassVar | 2025-09-16 | 2026-04-22 | - |
 | `tests/test_os_delivery.py` | from __future__ import annotations | 2026-02-13 | 2026-02-13 | - |
 | `tests/test_os_downloads_tools.py` | from __future__ import annotations | 2026-02-13 | 2026-03-14 | - |
-| `tests/test_os_features_collections.py` | from __future__ import annotations | 2026-02-08 | 2026-03-03 | `tests/test_os_features_collections.py`, `tests/test_os_new_capability_tools.py` |
-| `tests/test_os_features_helpers.py` | from __future__ import annotations | 2026-03-03 | 2026-03-03 | - |
+| `tests/test_os_features_collections.py` | from __future__ import annotations | 2026-02-08 | 2026-04-22 | `tests/test_os_features_collections.py`, `tests/test_os_new_capability_tools.py` |
+| `tests/test_os_features_helpers.py` | from __future__ import annotations | 2026-03-03 | 2026-04-22 | - |
 | `tests/test_os_invalid_inputs.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2026-03-14 | - |
 | `tests/test_os_landscape.py` | from fastapi.testclient import TestClient | 2026-02-19 | 2026-02-19 | `tests/test_os_landscape.py` |
-| `tests/test_os_map_tools.py` | from __future__ import annotations | 2026-02-08 | 2026-03-15 | - |
-| `tests/test_os_mcp_descriptor.py` | from fastapi.testclient import TestClient | 2026-01-20 | 2026-03-15 | `tests/test_coverage_guardrails.py`, `tests/test_os_mcp_descriptor.py` |
+| `tests/test_os_map_helpers_extra.py` | from __future__ import annotations | 2026-04-22 | 2026-04-22 | - |
+| `tests/test_os_map_tools.py` | from __future__ import annotations | 2026-02-08 | 2026-04-22 | - |
+| `tests/test_os_maps_helpers.py` | from __future__ import annotations | 2026-04-22 | 2026-04-22 | - |
+| `tests/test_os_mcp_descriptor.py` | from fastapi.testclient import TestClient | 2026-01-20 | 2026-04-10 | `tests/test_coverage_guardrails.py`, `tests/test_os_mcp_descriptor.py` |
 | `tests/test_os_mcp_internals.py` | from tools import os_mcp | 2026-02-06 | 2026-02-06 | - |
-| `tests/test_os_mcp_route_query.py` | from fastapi.testclient import TestClient | 2026-01-20 | 2026-03-16 | - |
+| `tests/test_os_mcp_route_query.py` | from fastapi.testclient import TestClient | 2026-01-20 | 2026-04-22 | - |
 | `tests/test_os_names_success.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2026-02-13 | - |
 | `tests/test_os_new_capability_tools.py` | from __future__ import annotations | 2026-02-13 | 2026-02-13 | - |
+| `tests/test_os_ngd_spring_2026_live.py` | from __future__ import annotations | 2026-04-22 | 2026-04-22 | - |
 | `tests/test_os_no_api_key.py` | import requests | 2025-09-16 | 2025-09-16 | - |
 | `tests/test_os_offline_tools.py` | from __future__ import annotations | 2026-02-14 | 2026-02-17 | - |
 | `tests/test_os_peat.py` | from __future__ import annotations | 2026-02-22 | 2026-03-14 | `tests/test_os_peat.py` |
@@ -527,7 +586,7 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `tests/test_os_places_enrichment.py` | import tools.os_places as os_places | 2025-09-16 | 2026-01-25 | `tests/test_os_places_enrichment.py` |
 | `tests/test_os_places_extra_more_success.py` | import pytest | 2025-09-16 | 2026-03-15 | - |
 | `tests/test_os_places_extra_success.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2026-02-13 | - |
-| `tests/test_os_places_new_tools.py` | from __future__ import annotations | 2026-02-13 | 2026-02-13 | - |
+| `tests/test_os_places_new_tools.py` | from __future__ import annotations | 2026-02-13 | 2026-04-08 | - |
 | `tests/test_os_poi.py` | from fastapi.testclient import TestClient | 2026-02-11 | 2026-03-07 | `tests/test_os_poi.py` |
 | `tests/test_os_qgis_tools.py` | from __future__ import annotations | 2026-02-13 | 2026-03-14 | - |
 | `tests/test_os_retry_errors.py` | import requests | 2025-09-16 | 2026-01-20 | - |
@@ -539,16 +598,17 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `tests/test_playground.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2026-04-06 | `tests/test_playground.py`, `tests/test_playground_events.py` |
 | `tests/test_playground_events.py` | import json | 2026-01-25 | 2026-03-24 | `tests/test_playground.py`, `tests/test_playground_events.py` |
 | `tests/test_postcode_tool.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2026-01-27 | - |
+| `tests/test_prepare_for_demo.py` | from __future__ import annotations | 2026-04-22 | 2026-04-23 | - |
 | `tests/test_prompts.py` | import json | 2026-01-29 | 2026-01-29 | - |
-| `tests/test_protocol_versions.py` | from server.protocol import ( | 2026-02-11 | 2026-02-11 | - |
+| `tests/test_protocol_versions.py` | from server.protocol import ( | 2026-02-11 | 2026-06-01 | - |
 | `tests/test_psr_peat_e2e.py` | from __future__ import annotations | 2026-02-22 | 2026-02-22 | - |
 | `tests/test_rate_limit_assessor.py` | from scripts.rate_limit_assessor import ProbePoint, parse_prometheus_metrics, percentile, recommend_limit | 2026-02-11 | 2026-02-11 | - |
 | `tests/test_rate_limit_metrics.py` | from fastapi.testclient import TestClient | 2025-09-17 | 2026-02-13 | - |
 | `tests/test_repo_extent_complexity_report.py` | from __future__ import annotations | 2026-02-25 | 2026-02-25 | - |
-| `tests/test_resource_catalog.py` | from __future__ import annotations | 2026-02-02 | 2026-03-14 | `tests/test_resource_catalog.py` |
+| `tests/test_resource_catalog.py` | from __future__ import annotations | 2026-02-02 | 2026-04-12 | `tests/test_resource_catalog.py` |
 | `tests/test_resource_fallback.py` | from __future__ import annotations | 2026-03-14 | 2026-04-04 | - |
 | `tests/test_resources_code_lists.py` | from fastapi.testclient import TestClient | 2025-11-03 | 2026-01-24 | - |
-| `tests/test_resources_data_catalog.py` | from __future__ import annotations | 2026-02-02 | 2026-03-14 | - |
+| `tests/test_resources_data_catalog.py` | from __future__ import annotations | 2026-02-02 | 2026-04-22 | - |
 | `tests/test_resources_etag.py` | from typing import Any, Dict, List | 2025-09-17 | 2026-02-11 | `tests/test_resources_etag.py` |
 | `tests/test_resources_ons_observations.py` | from fastapi.testclient import TestClient | 2025-09-17 | 2026-01-24 | - |
 | `tests/test_resources_paging_filtering.py` | from fastapi.testclient import TestClient | 2025-09-17 | 2026-02-11 | - |
@@ -559,73 +619,74 @@ last_validated_at: "2026-04-06T14:09:00Z"
 | `tests/test_route_graph_pipeline.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | - |
 | `tests/test_route_planning.py` | from server import route_planning | 2026-03-10 | 2026-03-10 | - |
 | `tests/test_run_local_tool.py` | from __future__ import annotations | 2026-03-24 | 2026-03-24 | - |
-| `tests/test_security.py` | from server.security import configured_secrets, mask_in_text, mask_in_value, redact | 2025-09-16 | 2026-03-24 | - |
-| `tests/test_server_landis.py` | from __future__ import annotations | 2026-04-04 | 2026-04-06 | - |
+| `tests/test_security.py` | from server.security import configured_secrets, mask_in_text, mask_in_value, redact | 2025-09-16 | 2026-04-22 | - |
+| `tests/test_server_landis.py` | from __future__ import annotations | 2026-04-04 | 2026-04-22 | - |
 | `tests/test_spec_tool_operability_coverage.py` | from __future__ import annotations | 2026-02-22 | 2026-02-22 | - |
 | `tests/test_stakeholder_benchmark_pack.py` | from __future__ import annotations | 2026-03-09 | 2026-03-11 | - |
 | `tests/test_stakeholder_live_run.py` | from __future__ import annotations | 2026-03-09 | 2026-03-10 | - |
 | `tests/test_stdio_adapter.py` | import json, subprocess, sys, textwrap | 2025-09-17 | 2026-01-24 | - |
 | `tests/test_stdio_adapter_branches.py` | import io, json | 2025-11-03 | 2026-01-24 | - |
-| `tests/test_stdio_adapter_coverage_more.py` | import io | 2026-02-07 | 2026-03-14 | - |
-| `tests/test_stdio_adapter_direct.py` | import io, json, re | 2025-11-03 | 2026-03-22 | - |
+| `tests/test_stdio_adapter_coverage_more.py` | import io | 2026-02-07 | 2026-04-12 | - |
+| `tests/test_stdio_adapter_direct.py` | import io | 2025-11-03 | 2026-04-12 | - |
 | `tests/test_stdio_adapter_main.py` | import io, json | 2025-11-03 | 2026-01-24 | - |
 | `tests/test_stdio_resources_etag.py` | import json, subprocess, sys | 2025-09-17 | 2026-01-24 | - |
 | `tests/test_stdio_resources_get.py` | import json, subprocess, sys | 2025-09-17 | 2026-01-24 | `tests/test_stdio_resources_get.py` |
 | `tests/test_stdio_wrapper_spawn.py` | import json, subprocess, sys | 2025-09-17 | 2025-11-03 | - |
 | `tests/test_tool_naming_aliases.py` | from server.tool_naming import resolve_tool_name | 2026-02-14 | 2026-02-14 | - |
-| `tests/test_tool_search.py` | from server.mcp.tool_search import STARTER_TOOLS, get_tool_search_config, search_tools | 2026-01-27 | 2026-04-04 | - |
+| `tests/test_tool_search.py` | from server.mcp.tool_search import STARTER_TOOLS, get_tool_search_config, search_tools | 2026-01-27 | 2026-04-08 | - |
 | `tests/test_tool_upstream_endpoint_contracts.py` | from __future__ import annotations | 2026-02-11 | 2026-02-25 | - |
-| `tests/test_tools_describe.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2026-04-06 | `tests/test_tools_describe.py` |
+| `tests/test_tools_describe.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2026-04-22 | `tests/test_tools_describe.py` |
 | `tests/test_tools_search.py` | from fastapi.testclient import TestClient | 2026-01-20 | 2026-03-15 | `tests/test_coverage_guardrails.py`, `tests/test_tools_describe.py`, `tests/test_tools_search.py`, `tests/test_tools_search_validation.py` |
 | `tests/test_tools_search_validation.py` | def test_tools_search_invalid_mode(client): | 2026-01-29 | 2026-03-14 | - |
 | `tests/test_tools_validation_branches.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2026-02-13 | - |
 | `tests/test_trace_report_audit.py` | from __future__ import annotations | 2026-03-10 | 2026-03-10 | - |
 | `tests/test_trace_report_host_metadata.py` | from __future__ import annotations | 2026-03-06 | 2026-03-07 | - |
-| `tests/test_trace_session.py` | from __future__ import annotations | 2026-03-07 | 2026-03-17 | `tests/test_trace_session.py` |
+| `tests/test_trace_session.py` | from __future__ import annotations | 2026-03-07 | 2026-04-12 | `tests/test_trace_session.py` |
 | `tests/test_trace_utils.py` | from __future__ import annotations | 2026-03-07 | 2026-03-07 | - |
 | `tests/test_typing_utils.py` | from tools.typing_utils import parse_float | 2025-09-16 | 2025-09-16 | - |
+| `tests/test_unattended_client_eval.py` | from __future__ import annotations | 2026-04-12 | 2026-04-14 | - |
 | `tests/test_unknown_tool.py` | from fastapi.testclient import TestClient | 2025-09-16 | 2025-09-16 | `tests/test_unknown_tool.py` |
 | `tests/test_validation.py` | def call(client, endpoint, method="get", **kwargs): | 2025-08-20 | 2026-01-20 | - |
 
 ## Pinned Sources
 
-- [`tests/__init__.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/__init__.py)
-- [`tests/audit_test_utils.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/audit_test_utils.py)
-- [`tests/conftest.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/conftest.py)
-- [`tests/evaluation/__init__.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/__init__.py)
-- [`tests/evaluation/audit_logger.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/audit_logger.py)
-- [`tests/evaluation/evaluation_results.audit.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/evaluation_results.audit.txt)
-- [`tests/evaluation/evaluation_results.benchmark.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/evaluation_results.benchmark.txt)
-- [`tests/evaluation/evaluation_results.json`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/evaluation_results.json)
-- [`tests/evaluation/harness.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/harness.py)
-- [`tests/evaluation/live_capture.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/live_capture.py)
-- [`tests/evaluation/logs/audit/047c3949.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/047c3949.txt)
-- [`tests/evaluation/logs/audit/08eea8b1.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/08eea8b1.txt)
-- [`tests/evaluation/logs/audit/13ad9383.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/13ad9383.txt)
-- [`tests/evaluation/logs/audit/15cb80c1.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/15cb80c1.txt)
-- [`tests/evaluation/logs/audit/172ff2f7.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/172ff2f7.txt)
-- [`tests/evaluation/logs/audit/19f40194.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/19f40194.txt)
-- [`tests/evaluation/logs/audit/1f415869.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/1f415869.txt)
-- [`tests/evaluation/logs/audit/2692a326.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/2692a326.txt)
-- [`tests/evaluation/logs/audit/271c9a92.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/271c9a92.txt)
-- [`tests/evaluation/logs/audit/328c0257.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/328c0257.txt)
-- [`tests/evaluation/logs/audit/3628f5d1.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/3628f5d1.txt)
-- [`tests/evaluation/logs/audit/393a6d69.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/393a6d69.txt)
-- [`tests/evaluation/logs/audit/3d3c1f52.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/3d3c1f52.txt)
-- [`tests/evaluation/logs/audit/464a7d6a.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/464a7d6a.txt)
-- [`tests/evaluation/logs/audit/49e6e04e.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/49e6e04e.txt)
-- [`tests/evaluation/logs/audit/4e4bc6a9.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/4e4bc6a9.txt)
-- [`tests/evaluation/logs/audit/4f7c55c0.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/4f7c55c0.txt)
-- [`tests/evaluation/logs/audit/4fc811e8.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/4fc811e8.txt)
-- [`tests/evaluation/logs/audit/4ffd83a6.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/4ffd83a6.txt)
-- [`tests/evaluation/logs/audit/52a9f148.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/52a9f148.txt)
-- [`tests/evaluation/logs/audit/53b72503.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/53b72503.txt)
-- [`tests/evaluation/logs/audit/5671006d.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/5671006d.txt)
-- [`tests/evaluation/logs/audit/58f6acfe.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/58f6acfe.txt)
-- [`tests/evaluation/logs/audit/5d58b670.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/5d58b670.txt)
-- [`tests/evaluation/logs/audit/612fbdcf.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/612fbdcf.txt)
-- [`tests/evaluation/logs/audit/6a554f33.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/6a554f33.txt)
-- [`tests/evaluation/logs/audit/70b26fc5.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/70b26fc5.txt)
-- [`tests/evaluation/logs/audit/73f6a027.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/73f6a027.txt)
-- [`tests/evaluation/logs/audit/7c2d3745.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/7c2d3745.txt)
-- [`tests/evaluation/logs/audit/90599991.txt`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tests/evaluation/logs/audit/90599991.txt)
+- [`tests/__init__.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/__init__.py)
+- [`tests/audit_test_utils.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/audit_test_utils.py)
+- [`tests/conftest.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/conftest.py)
+- [`tests/evaluation/__init__.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/__init__.py)
+- [`tests/evaluation/audit_logger.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/audit_logger.py)
+- [`tests/evaluation/evaluation_results.audit.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/evaluation_results.audit.txt)
+- [`tests/evaluation/evaluation_results.benchmark.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/evaluation_results.benchmark.txt)
+- [`tests/evaluation/evaluation_results.json`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/evaluation_results.json)
+- [`tests/evaluation/harness.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/harness.py)
+- [`tests/evaluation/live_capture.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/live_capture.py)
+- [`tests/evaluation/logs/audit/047c3949.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/047c3949.txt)
+- [`tests/evaluation/logs/audit/08eea8b1.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/08eea8b1.txt)
+- [`tests/evaluation/logs/audit/13ad9383.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/13ad9383.txt)
+- [`tests/evaluation/logs/audit/15cb80c1.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/15cb80c1.txt)
+- [`tests/evaluation/logs/audit/172ff2f7.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/172ff2f7.txt)
+- [`tests/evaluation/logs/audit/19f40194.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/19f40194.txt)
+- [`tests/evaluation/logs/audit/1f415869.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/1f415869.txt)
+- [`tests/evaluation/logs/audit/2692a326.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/2692a326.txt)
+- [`tests/evaluation/logs/audit/271c9a92.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/271c9a92.txt)
+- [`tests/evaluation/logs/audit/328c0257.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/328c0257.txt)
+- [`tests/evaluation/logs/audit/3628f5d1.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/3628f5d1.txt)
+- [`tests/evaluation/logs/audit/393a6d69.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/393a6d69.txt)
+- [`tests/evaluation/logs/audit/3d3c1f52.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/3d3c1f52.txt)
+- [`tests/evaluation/logs/audit/464a7d6a.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/464a7d6a.txt)
+- [`tests/evaluation/logs/audit/49e6e04e.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/49e6e04e.txt)
+- [`tests/evaluation/logs/audit/4e4bc6a9.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/4e4bc6a9.txt)
+- [`tests/evaluation/logs/audit/4f7c55c0.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/4f7c55c0.txt)
+- [`tests/evaluation/logs/audit/4fc811e8.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/4fc811e8.txt)
+- [`tests/evaluation/logs/audit/4ffd83a6.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/4ffd83a6.txt)
+- [`tests/evaluation/logs/audit/52a9f148.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/52a9f148.txt)
+- [`tests/evaluation/logs/audit/53b72503.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/53b72503.txt)
+- [`tests/evaluation/logs/audit/5671006d.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/5671006d.txt)
+- [`tests/evaluation/logs/audit/58f6acfe.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/58f6acfe.txt)
+- [`tests/evaluation/logs/audit/5d58b670.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/5d58b670.txt)
+- [`tests/evaluation/logs/audit/612fbdcf.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/612fbdcf.txt)
+- [`tests/evaluation/logs/audit/6a554f33.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/6a554f33.txt)
+- [`tests/evaluation/logs/audit/70b26fc5.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/70b26fc5.txt)
+- [`tests/evaluation/logs/audit/73f6a027.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/73f6a027.txt)
+- [`tests/evaluation/logs/audit/7c2d3745.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/7c2d3745.txt)
+- [`tests/evaluation/logs/audit/90599991.txt`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tests/evaluation/logs/audit/90599991.txt)

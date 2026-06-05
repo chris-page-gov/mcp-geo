@@ -3,16 +3,16 @@ title: "Tool Family - os common"
 kb_kind: "code_family"
 source_paths:
   - "tools/os_common.py"
-source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tools/os_common.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tools/os_common.py"
 source_hashes:
-  tools/os_common.py: "sha256:f1ee59d4-fd278c0a-4d358916-8020b7b5-e7bda128-ceeb4d4a-f126e8fd-348584f6"
-generated_at: "2026-04-06T14:09:00Z"
+  tools/os_common.py: "sha256:d807f718-69166087-b1189e4a-191d3efa-9b075135-80347838-71e4f702-09b8bc6a"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2025-09-16"
-last_validated_at: "2026-04-06T14:09:00Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Tool Family - os common
 
@@ -25,8 +25,8 @@ last_validated_at: "2026-04-06T14:09:00Z"
 
 | Path | Summary | First Seen | Last Commit | Related Tests |
 | --- | --- | --- | --- | --- |
-| `tools/os_common.py` | from __future__ import annotations | 2025-09-16 | 2026-02-19 | `tests/conftest.py`, `tests/evaluation/live_capture.py`, `tests/test_evaluation_harness_full.py`, `tests/test_mcp_http.py` |
+| `tools/os_common.py` | from __future__ import annotations | 2025-09-16 | 2026-04-22 | `tests/conftest.py`, `tests/evaluation/live_capture.py`, `tests/test_evaluation_harness_full.py`, `tests/test_mcp_http.py` |
 
 ## Pinned Sources
 
-- [`tools/os_common.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tools/os_common.py)
+- [`tools/os_common.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tools/os_common.py)

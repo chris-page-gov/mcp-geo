@@ -3,16 +3,16 @@ title: "Tool Family - os features"
 kb_kind: "code_family"
 source_paths:
   - "tools/os_features.py"
-source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tools/os_features.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tools/os_features.py"
 source_hashes:
-  tools/os_features.py: "sha256:07d65a75-570ab14e-80c94ea7-2f0c5fc4-a9f9ee9f-f689ad48-bd7b9648-d35dde20"
-generated_at: "2026-04-06T14:09:00Z"
+  tools/os_features.py: "sha256:9f4d7c1b-8f949da7-a89edcd3-29af64b3-326050b2-97bf43a3-342b08c9-ba5856d1"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2025-09-16"
-last_validated_at: "2026-04-06T14:09:00Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Tool Family - os features
 
@@ -25,8 +25,8 @@ last_validated_at: "2026-04-06T14:09:00Z"
 
 | Path | Summary | First Seen | Last Commit | Related Tests |
 | --- | --- | --- | --- | --- |
-| `tools/os_features.py` | from __future__ import annotations | 2025-09-16 | 2026-03-14 | `tests/evaluation/questions.py`, `tests/test_epic_b_validation.py`, `tests/test_evaluation_harness_full.py`, `tests/test_os_features_collections.py` |
+| `tools/os_features.py` | from __future__ import annotations | 2025-09-16 | 2026-04-22 | `tests/evaluation/questions.py`, `tests/test_epic_b_validation.py`, `tests/test_evaluation_harness_full.py`, `tests/test_os_features_collections.py` |
 
 ## Pinned Sources
 
-- [`tools/os_features.py`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/tools/os_features.py)
+- [`tools/os_features.py`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/tools/os_features.py)

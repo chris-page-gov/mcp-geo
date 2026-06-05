@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROCESS_DOCKER_TRANSPORT="${MCP_GEO_DOCKER_TRANSPORT:-}"
+
+hydrate_demo_env_value() {
+  local key="$1"
+  local file="${MCP_GEO_ENV_FILE:-$REPO_ROOT/.env}"
+  local value="${!key:-}"
+  if [[ -n "$value" || ! -f "$file" ]]; then
+    return 0
+  fi
+  value="$(
+    awk -v k="$key" '
+      /^[[:space:]]*#/ { next }
+      {
+        line = $0
+        sub(/^[[:space:]]*export[[:space:]]+/, "", line)
+        if (line !~ ("^[[:space:]]*" k "[[:space:]]*=")) {
+          next
+        }
+        sub("^[[:space:]]*" k "[[:space:]]*=", "", line)
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
+        if ((line ~ /^".*"$/) || (line ~ /^'\''.*'\''$/)) {
+          line = substr(line, 2, length(line) - 2)
+        }
+        print line
+        found = 1
+      }
+      END {
+        if (!found) {
+          exit 1
+        }
+      }
+    ' "$file" 2>/dev/null || true
+  )"
+  if [[ -n "$value" ]]; then
+    export "$key=$value"
+  fi
+}
+
+for key in \
+  MCP_GEO_DOCKER_TRANSPORT \
+  MCP_GEO_DOCKER_NETWORK \
+  MCP_GEO_POSTGIS_CONTAINER \
+  MCP_GEO_POSTGIS_VOLUME \
+  MCP_GEO_HTTP_CONTAINER_NAME \
+  MCP_GEO_HTTP_HOST \
+  MCP_GEO_HTTP_PORT \
+  MCP_GEO_HTTP_REPLACE \
+  MCP_HTTP_AUTH_MODE \
+  MCP_2026_RC_ENABLED \
+  MCP_PROTOCOL_2026_07_28_ENABLED; do
+  hydrate_demo_env_value "$key"
+done
+
+if [[ -n "$PROCESS_DOCKER_TRANSPORT" ]]; then
+  export MCP_GEO_DOCKER_TRANSPORT="$PROCESS_DOCKER_TRANSPORT"
+else
+  export MCP_GEO_DOCKER_TRANSPORT="http"
+fi
+export MCP_GEO_DOCKER_NETWORK="${MCP_GEO_DOCKER_NETWORK:-mcp-geo-http-demo}"
+export MCP_GEO_POSTGIS_CONTAINER="${MCP_GEO_POSTGIS_CONTAINER:-mcp-geo-postgis-http-demo}"
+export MCP_GEO_POSTGIS_VOLUME="${MCP_GEO_POSTGIS_VOLUME:-mcp-geo-postgis-http-demo}"
+export MCP_GEO_HTTP_CONTAINER_NAME="${MCP_GEO_HTTP_CONTAINER_NAME:-mcp-geo-http-demo}"
+export MCP_GEO_HTTP_HOST="${MCP_GEO_HTTP_HOST:-127.0.0.1}"
+export MCP_GEO_HTTP_PORT="${MCP_GEO_HTTP_PORT:-8000}"
+export MCP_GEO_HTTP_REPLACE="${MCP_GEO_HTTP_REPLACE:-1}"
+export MCP_HTTP_AUTH_MODE="${MCP_HTTP_AUTH_MODE:-off}"
+export MCP_2026_RC_ENABLED="${MCP_2026_RC_ENABLED:-1}"
+
+if [[ -z "${OS_API_KEY:-}" && -z "${OS_API_KEY_FILE:-}" && -r "$HOME/.secrets/os_api_key" ]]; then
+  export OS_API_KEY_FILE="$HOME/.secrets/os_api_key"
+fi
+
+if [[ -z "${MCP_GEO_HOST_DATA_REPO_ROOT:-}" && -n "${MCP_GEO_ENV_FILE:-}" ]]; then
+  env_dir="$(cd "$(dirname "$MCP_GEO_ENV_FILE")" && pwd)"
+  if [[ -d "$env_dir/data/cache" ]]; then
+    export MCP_GEO_HOST_DATA_REPO_ROOT="$env_dir"
+  fi
+fi
+
+exec "$REPO_ROOT/scripts/mcp-docker-local"

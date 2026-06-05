@@ -171,8 +171,11 @@ No data is stored or redistributed.
 
 ## MCP Specification
 
-See [Latest Specification which this MUST conform to](https://modelcontextprotocol.io/specification/2025-11-25).
-This is a preview spec; tracking and review cadence live in `docs/spec_tracking.md`.
+See [Latest stable specification target](https://modelcontextprotocol.io/specification/2025-11-25).
+The MCP 2026-07-28 release candidate is tracked, but not the default runtime
+protocol. Tracking and review cadence live in `docs/spec_tracking.md`; the
+current RC alignment ledger is
+`Plans/PLAN-MCP-2026-07-28-RC-alignment.md`.
 OpenAI's Documentation MCP guide is at
 <https://developers.openai.com/resources/docs-mcp>, with the shared server
 available at <https://developers.openai.com/mcp> (preview; tracked in
@@ -182,8 +185,14 @@ Protocol negotiation behavior:
 
 - Preferred MCP core protocol revision: `2025-11-25`
 - Supported MCP core protocol versions: `2025-11-25`, `2025-06-18`, `2025-03-26`, `2024-11-05`
+- Opt-in release-candidate protocol: `2026-07-28` when
+  `MCP_2026_RC_ENABLED=1` or `MCP_PROTOCOL_2026_07_28_ENABLED=1`
 - Streamable HTTP enforces `MCP-Protocol-Version` when provided and returns negotiated
   `mcp-protocol-version` on responses
+- In RC mode, `/mcp` supports `server/discover`, stateless requests without
+  `Mcp-Session-Id`, per-request `_meta`, strict `Mcp-Method` / `Mcp-Name`
+  validation, cache metadata on list/read results, MRTR-style input-required
+  responses for supported elicitation flows, and JSON Schema 2020-12 guardrails
 - MCP-Apps extension tracked at `2026-01-26` (`io.modelcontextprotocol/ui`)
 
 ## Key Features
@@ -386,11 +395,16 @@ directly or rerun the check with `--rebuild`:
 Optional HTTP transport:
 
 ```bash
-docker run --rm -p 8000:8000 \
-  -e OS_API_KEY=your-api-key-here \
-  mcp-geo-server \
-  uvicorn server.main:app --host 0.0.0.0 --port 8000
+./scripts/mcp-http-demo-local
 ```
+
+The HTTP demo launcher uses the same Docker wrapper hydration as the STDIO
+client wrappers: it reads `OS_API_KEY` / `OS_API_KEY_FILE`, mounts ONS/OS cache
+directories when present, enables the MCP 2026 release-candidate flag by
+default, and starts `http://127.0.0.1:8000/mcp` for HTTP-capable clients such as
+Codex, VS Code, Inspector, and Claude Code HTTP connections. If you are running
+from a clean worktree but want to reuse an existing checkout's `.env` and cache
+paths, set `MCP_GEO_ENV_FILE=/absolute/path/to/mcp-geo/.env` before launching.
 
 > Tip: Replace `mcp-geo-server` with `ghcr.io/chris-page-gov/mcp-geo:latest`
 > in any Docker command to use the pre-built image instead of a local build.
@@ -964,6 +978,9 @@ share the same auth boundary as `/mcp`.
   `MCP_HTTP_JWT_REQUIRED_SCOPES` constrain accepted tokens.
 - `MCP_HTTP_SESSION_TTL` and `MCP_HTTP_SESSION_TOOL_CALL_LIMIT` bound session
   lifetime and tool-call volume.
+- `MCP_2026_RC_ENABLED=1` or `MCP_PROTOCOL_2026_07_28_ENABLED=1` enables the
+  feature-gated MCP `2026-07-28` release-candidate path for interop testing.
+  Leave these unset for normal stable clients.
 - `OS_API_KEY_FILE`, `OS_API_ACCESS_TOKEN_FILE`, `NOMIS_UID_FILE`, and
   `NOMIS_SIGNATURE_FILE` support secret-file delivery without committing live
   secrets.

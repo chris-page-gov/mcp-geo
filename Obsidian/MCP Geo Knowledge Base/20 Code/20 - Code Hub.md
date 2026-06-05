@@ -66,8 +66,11 @@ source_paths:
   - "playground/trials/tests/map_story_gallery.spec.js"
   - "playground/trials/tests/support/host_simulation.js"
   - "playground/vite.config.js"
+  - "resources/__init__.py"
   - "resources/address_classification_codes.json"
+  - "resources/addressbase_epoch_schedule.json"
   - "resources/admin_boundaries.json"
+  - "resources/area_summary_workflows.json"
   - "resources/boundaries_wards.json"
   - "resources/boundary_pack_sources.json"
   - "resources/boundary_packs_index.json"
@@ -92,6 +95,8 @@ source_paths:
   - "resources/prompts/evaluation_prompts.json"
   - "resources/protected_landscapes_england.json"
   - "scripts/__init__.py"
+  - "scripts/addressbase_build_xref.py"
+  - "scripts/benchmark_env.py"
   - "scripts/boundary_autofix.py"
   - "scripts/boundary_cache_ingest.py"
   - "scripts/boundary_cache_schema.sql"
@@ -102,9 +107,11 @@ source_paths:
   - "scripts/build_obsidian_kb.py"
   - "scripts/check_claude_startup_scope.sh"
   - "scripts/check_codex_startup_scope.sh"
+  - "scripts/check_gemini_startup_scope.sh"
   - "scripts/check_lmr_host4.py"
   - "scripts/check_non_runtime_quality.sh"
   - "scripts/check_shared_benchmark_cache.sh"
+  - "scripts/check_spec_drift.py"
   - "scripts/claude-mcp-local"
   - "scripts/claude_serve_map.py"
   - "scripts/codex-mcp-local"
@@ -113,6 +120,7 @@ source_paths:
   - "scripts/devcontainer_post_start.sh"
   - "scripts/docx_hygiene.py"
   - "scripts/export_spec_package.sh"
+  - "scripts/gemini-mcp-local"
   - "scripts/generate_mcp_geo_analytical_index.py"
   - "scripts/generate_mcp_geo_functionality_showcase.py"
   - "scripts/generate_owasp_mcp_tool_manifest.py"
@@ -129,6 +137,7 @@ source_paths:
   - "scripts/landis_schema.sql"
   - "scripts/latest_reports.py"
   - "scripts/live_missing_tools_probe.py"
+  - "scripts/llm_wiki_postmortem_inventory.py"
   - "scripts/map_trials/export_notebook_scenario_pack.py"
   - "scripts/map_trials/host_simulation_profiles.py"
   - "scripts/map_trials/map_quality_checks.py"
@@ -145,10 +154,13 @@ source_paths:
   - "scripts/ons_catalog_refresh.py"
   - "scripts/ons_catalog_validate.py"
   - "scripts/ons_geo_cache_refresh.py"
+  - "scripts/ons_geo_live_validate.py"
   - "scripts/os-mcp"
   - "scripts/os_catalog_refresh.py"
   - "scripts/os_mcp.py"
   - "scripts/pack_cache_refresh.py"
+  - "scripts/prepare-for-demo"
+  - "scripts/prepare_for_demo.py"
   - "scripts/pytest-local"
   - "scripts/rate_limit_assessor.py"
   - "scripts/replicate_claude_tutorial.py"
@@ -171,6 +183,7 @@ source_paths:
   - "scripts/trace_report.py"
   - "scripts/trace_session.py"
   - "scripts/trace_utils.py"
+  - "scripts/unattended_client_eval.py"
   - "scripts/validate-owasp-mcp-local"
   - "scripts/validate_obsidian_kb.py"
   - "scripts/validate_owasp_mcp_server.py"
@@ -198,6 +211,7 @@ source_paths:
   - "server/audit/schemas/source_access.schema.json"
   - "server/audit/source_register.py"
   - "server/boundary_cache.py"
+  - "server/boundary_run_paths.py"
   - "server/circuit_breaker.py"
   - "server/config.py"
   - "server/dataset_cache.py"
@@ -213,6 +227,7 @@ source_paths:
   - "server/mcp/http_transport.py"
   - "server/mcp/playground.py"
   - "server/mcp/prompts.py"
+  - "server/mcp/rc2026.py"
   - "server/mcp/resource_access.py"
   - "server/mcp/resource_catalog.py"
   - "server/mcp/resource_handoff.py"
@@ -221,6 +236,8 @@ source_paths:
   - "server/mcp/tools.py"
   - "server/observability.py"
   - "server/ons_geo_cache.py"
+  - "server/ons_geo_catalog.py"
+  - "server/ons_geo_freshness.py"
   - "server/owasp_mcp_validation.py"
   - "server/protocol.py"
   - "server/route_graph.py"
@@ -311,11 +328,23 @@ source_paths:
   - "tests/fixtures/council_tax/sw1a1aa_results.html"
   - "tests/fixtures/council_tax/yo17hp_results.html"
   - "tests/fixtures/council_tax_band_gold.json"
+  - "tests/fixtures/council_tax_uprn_abp_example.json"
+  - "tests/fixtures/ons_geo/chd_sample.csv"
+  - "tests/fixtures/ons_geo/nspl_legacy.csv"
+  - "tests/fixtures/ons_geo/nsul_sample.csv"
+  - "tests/fixtures/ons_geo/onspd_arcgis_metadata.json"
+  - "tests/fixtures/ons_geo/onspd_arcgis_page_1.json"
+  - "tests/fixtures/ons_geo/onspd_modern.csv"
+  - "tests/fixtures/ons_geo/onsud_sample.csv"
+  - "tests/fixtures/ons_geo/portal_package_show.json"
+  - "tests/fixtures/ons_geo/portal_release_page.html"
+  - "tests/fixtures/ons_geo/rgc_current_sample.csv"
   - "tests/fixtures/psr_peat_floor_question.json"
   - "tests/helpers.py"
   - "tests/outputs/CV312JF-oa-example.html"
   - "tests/outputs/northolt.html"
   - "tests/test_accessors.py"
+  - "tests/test_addressbase_build_xref.py"
   - "tests/test_admin_lookup.py"
   - "tests/test_admin_lookup_cache.py"
   - "tests/test_admin_lookup_extended.py"
@@ -324,10 +353,16 @@ source_paths:
   - "tests/test_audit_api.py"
   - "tests/test_audit_normalise.py"
   - "tests/test_audit_pack_builder.py"
+  - "tests/test_benchmark_env.py"
+  - "tests/test_boundary_autofix.py"
   - "tests/test_boundary_cache.py"
   - "tests/test_boundary_pipeline_variant_policy.py"
+  - "tests/test_boundary_run_paths.py"
   - "tests/test_check_codex_startup_scope.py"
+  - "tests/test_check_gemini_startup_scope.py"
   - "tests/test_check_lmr_host4.py"
+  - "tests/test_check_shared_benchmark_cache.py"
+  - "tests/test_check_spec_drift.py"
   - "tests/test_circuit_breaker.py"
   - "tests/test_client_capabilities.py"
   - "tests/test_codex_long_horizon_summary.py"
@@ -335,6 +370,7 @@ source_paths:
   - "tests/test_config_secret_file.py"
   - "tests/test_council_tax_band.py"
   - "tests/test_council_tax_gold_eval.py"
+  - "tests/test_council_tax_uprn_query.py"
   - "tests/test_coverage_guardrails.py"
   - "tests/test_cross_platform_container_policy.py"
   - "tests/test_dataset_cache.py"
@@ -348,6 +384,7 @@ source_paths:
   - "tests/test_evaluation_expected_errors.py"
   - "tests/test_evaluation_harness_full.py"
   - "tests/test_evaluation_harness_live_api.py"
+  - "tests/test_gemini_mcp_local.py"
   - "tests/test_generate_mcp_geo_analytical_index.py"
   - "tests/test_generate_mcp_geo_functionality_showcase.py"
   - "tests/test_golden_scenarios.py"
@@ -368,6 +405,7 @@ source_paths:
   - "tests/test_map_trials_summary.py"
   - "tests/test_map_trials_verify.py"
   - "tests/test_maps_proxy.py"
+  - "tests/test_mcp_2026_rc.py"
   - "tests/test_mcp_client_if_none_match.py"
   - "tests/test_mcp_client_resources_get.py"
   - "tests/test_mcp_docker_local.py"
@@ -392,6 +430,9 @@ source_paths:
   - "tests/test_ons_geo.py"
   - "tests/test_ons_geo_cache.py"
   - "tests/test_ons_geo_cache_refresh.py"
+  - "tests/test_ons_geo_catalog.py"
+  - "tests/test_ons_geo_freshness.py"
+  - "tests/test_ons_geo_live_validate.py"
   - "tests/test_ons_new_tools.py"
   - "tests/test_ons_search_fallback.py"
   - "tests/test_ons_select.py"
@@ -406,12 +447,15 @@ source_paths:
   - "tests/test_os_features_helpers.py"
   - "tests/test_os_invalid_inputs.py"
   - "tests/test_os_landscape.py"
+  - "tests/test_os_map_helpers_extra.py"
   - "tests/test_os_map_tools.py"
+  - "tests/test_os_maps_helpers.py"
   - "tests/test_os_mcp_descriptor.py"
   - "tests/test_os_mcp_internals.py"
   - "tests/test_os_mcp_route_query.py"
   - "tests/test_os_names_success.py"
   - "tests/test_os_new_capability_tools.py"
+  - "tests/test_os_ngd_spring_2026_live.py"
   - "tests/test_os_no_api_key.py"
   - "tests/test_os_offline_tools.py"
   - "tests/test_os_peat.py"
@@ -431,6 +475,7 @@ source_paths:
   - "tests/test_playground.py"
   - "tests/test_playground_events.py"
   - "tests/test_postcode_tool.py"
+  - "tests/test_prepare_for_demo.py"
   - "tests/test_prompts.py"
   - "tests/test_protocol_versions.py"
   - "tests/test_psr_peat_e2e.py"
@@ -476,6 +521,7 @@ source_paths:
   - "tests/test_trace_session.py"
   - "tests/test_trace_utils.py"
   - "tests/test_typing_utils.py"
+  - "tests/test_unattended_client_eval.py"
   - "tests/test_unknown_tool.py"
   - "tests/test_validation.py"
   - "tools/__init__.py"
@@ -525,8 +571,10 @@ source_paths:
   - "tools/registry.py"
   - "tools/types.py"
   - "tools/typing_utils.py"
+  - "ui/__init__.py"
   - "ui/boundary_explorer.html"
   - "ui/feature_inspector.html"
+  - "ui/fora_york_house_map.html"
   - "ui/geography_selector.html"
   - "ui/route_planner.html"
   - "ui/shared/compact_contract.css"
@@ -539,46 +587,46 @@ source_paths:
   - "ui/vendor/maplibre-gl.css"
   - "ui/vendor/maplibre-gl.js"
   - "ui/vendor/shp.min.js"
-source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/app.py"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/index.html"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/package-lock.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/package.json"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/playwright.compact-matrix.config.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/playwright.compact.config.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/playwright.config.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/playwright.full.config.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/playwright.live.config.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/playwright.trials.config.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/src/App.svelte"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/src/components/AuditWorkbench.svelte"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/src/components/BenchmarkWorkbench.svelte"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/src/components/DebugWorkbench.svelte"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/src/components/ExplorerWorkbench.svelte"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/src/components/RoutingWorkbench.svelte"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/src/components/UiPreviewPanel.svelte"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/src/lib/debug.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/src/lib/playgroundApi.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/src/lib/uiBridge.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/src/main.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/tests/audit_workbench.spec.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/tests/benchmark_workbench.spec.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/tests/boundary_explorer_controls.spec.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/tests/boundary_explorer_host_harness.spec.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/tests/boundary_explorer_local_layers.spec.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/tests/boundary_explorer_option_matrix.spec.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/tests/bridge_security.spec.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/tests/compact_windows/README.md"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/tests/compact_windows/compact_matrix.spec.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/tests/compact_windows/smoke.spec.js"
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/playground/tests/compact_windows/support/compact_assertions.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/app.py"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/index.html"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/package-lock.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/package.json"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/playwright.compact-matrix.config.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/playwright.compact.config.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/playwright.config.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/playwright.full.config.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/playwright.live.config.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/playwright.trials.config.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/App.svelte"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/components/AuditWorkbench.svelte"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/components/BenchmarkWorkbench.svelte"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/components/DebugWorkbench.svelte"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/components/ExplorerWorkbench.svelte"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/components/RoutingWorkbench.svelte"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/components/UiPreviewPanel.svelte"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/lib/debug.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/lib/playgroundApi.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/lib/uiBridge.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/src/main.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/audit_workbench.spec.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/benchmark_workbench.spec.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/boundary_explorer_controls.spec.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/boundary_explorer_host_harness.spec.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/boundary_explorer_local_layers.spec.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/boundary_explorer_option_matrix.spec.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/bridge_security.spec.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/compact_windows/README.md"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/compact_windows/compact_matrix.spec.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/compact_windows/smoke.spec.js"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/playground/tests/compact_windows/support/compact_assertions.js"
 source_hashes:
   playground/app.py: "sha256:756203ad-e4c461a3-57bd10dc-ad734e91-5849464b-a46f2fc4-082d3888-c4220a50"
   playground/index.html: "sha256:761ae4e6-c9556f3a-25a15773-3933254d-59fa81f1-b877c6ca-31329157-49134125"
-  playground/package-lock.json: "sha256:3ec73929-a176f10f-1c325b28-64411fc3-f9381ae7-433342f5-f294b0d1-b2fe60e9"
-  playground/package.json: "sha256:8b1dabf7-afc744b9-f1a9bed1-763e397b-5bae5af8-8a3f69d2-433a39ff-ba39bfc6"
+  playground/package-lock.json: "sha256:5af83094-943416fb-7139c15b-c64e5935-4fe7cb73-b9d02748-175f82b0-a8a0d311"
+  playground/package.json: "sha256:eb3b6cf8-7850e537-1b112563-e1a2bb61-51dcce9e-ca52b5a5-a1d10141-b518cad7"
   playground/playwright.compact-matrix.config.js: "sha256:9e392b76-853cd3fd-bc011d92-6c099c57-4c5370b9-d0889004-6a0963e1-ae0c82c9"
   playground/playwright.compact.config.js: "sha256:42af0b17-a5a37b70-fce70e19-fe6e0b88-755f36c3-864ed1a3-9d1af8d9-243df807"
   playground/playwright.config.js: "sha256:d94ee3fa-a3a552a6-8b65d609-50b9747a-045a20e8-5a680188-75970d91-2eb0802a"
@@ -607,17 +655,17 @@ source_hashes:
   playground/tests/compact_windows/compact_matrix.spec.js: "sha256:801bb816-188454f3-59d49fe0-1eb1aaa5-23d02895-1d1532fe-5eb61b04-e3b738be"
   playground/tests/compact_windows/smoke.spec.js: "sha256:09f47f81-41f73db7-7cec8d93-bb136bc7-ce6384d9-577ab910-a7349966-029a23a0"
   playground/tests/compact_windows/support/compact_assertions.js: "sha256:f3f7312d-659d1390-abb42598-0c88db4d-e62ca857-54f1ab2f-36478757-0e952580"
-generated_at: "2026-04-06T14:09:00Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2025-08-20"
-last_validated_at: "2026-04-06T14:09:00Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Code Hub
 
 ## Coverage
 
-- Tracked source files in scope: 537
-- Generated code notes: 102
+- Tracked source files in scope: 585
+- Generated code notes: 109
 
 ## Subsystem Notes
 
@@ -633,6 +681,8 @@ last_validated_at: "2026-04-06T14:09:00Z"
 - [[Repo Extent Complexity Report]]
 - [[Resources and Data Assets]]
 - [[Resources]]
+- [[Script Family - addressbase]]
+- [[Script Family - benchmark]]
 - [[Script Family - boundary]]
 - [[Script Family - check]]
 - [[Script Family - claude mcp local]]
@@ -642,11 +692,13 @@ last_validated_at: "2026-04-06T14:09:00Z"
 - [[Script Family - docker compose map sidecar]]
 - [[Script Family - docx]]
 - [[Script Family - export]]
+- [[Script Family - gemini mcp local]]
 - [[Script Family - generate]]
 - [[Script Family - host benchmark]]
 - [[Script Family - landis]]
 - [[Script Family - latest]]
 - [[Script Family - live]]
+- [[Script Family - llm]]
 - [[Script Family - map trials]]
 - [[Script Family - mcp docker local]]
 - [[Script Family - mcp]]
@@ -658,6 +710,8 @@ last_validated_at: "2026-04-06T14:09:00Z"
 - [[Script Family - os mcp]]
 - [[Script Family - os]]
 - [[Script Family - pack cache]]
+- [[Script Family - prepare for demo]]
+- [[Script Family - prepare]]
 - [[Script Family - pytest local]]
 - [[Script Family - rate limit]]
 - [[Script Family - replicate]]
@@ -673,6 +727,7 @@ last_validated_at: "2026-04-06T14:09:00Z"
 - [[Script Family - stakeholder]]
 - [[Script Family - start]]
 - [[Script Family - trace]]
+- [[Script Family - unattended]]
 - [[Script Family - validate owasp mcp local]]
 - [[Script Family - validate]]
 - [[Script Family - vendor]]

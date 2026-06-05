@@ -3,16 +3,16 @@ title: "Script Family - export"
 kb_kind: "code_family"
 source_paths:
   - "scripts/export_spec_package.sh"
-source_commit: "004e7d4748422b44133399279803c8cb2b766a1c"
+source_commit: "923807292e3a134ad8214be3de523caa7fdce7c5"
 source_commit_dirty: true
 source_urls:
-  - "https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/export_spec_package.sh"
+  - "https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/export_spec_package.sh"
 source_hashes:
   scripts/export_spec_package.sh: "sha256:953889b9-562d1b81-0539e022-368fb382-afa0b9c0-7b721520-2051d7f9-a2ea0a84"
-generated_at: "2026-04-06T14:09:00Z"
+generated_at: "2026-06-01T02:28:24Z"
 evidence_scope: "canon"
 first_seen_date: "2026-02-02"
-last_validated_at: "2026-04-06T14:09:00Z"
+last_validated_at: "2026-06-01T02:28:24Z"
 ---
 # Script Family - export
 
@@ -29,4 +29,4 @@ last_validated_at: "2026-04-06T14:09:00Z"
 
 ## Pinned Sources
 
-- [`scripts/export_spec_package.sh`](https://github.com/chris-page-gov/mcp-geo/blob/004e7d4748422b44133399279803c8cb2b766a1c/scripts/export_spec_package.sh)
+- [`scripts/export_spec_package.sh`](https://github.com/chris-page-gov/mcp-geo/blob/923807292e3a134ad8214be3de523caa7fdce7c5/scripts/export_spec_package.sh)

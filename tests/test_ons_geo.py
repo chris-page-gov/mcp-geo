@@ -7,6 +7,7 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 import tools.ons_geo as ons_geo_tools
+from server import ons_geo_freshness
 from server.config import settings
 from server.main import app
 from server.ons_geo_cache import ONSGeoCacheReadError, ensure_schema
@@ -467,6 +468,17 @@ def _configure_cache_settings(
     monkeypatch.setattr(settings, "ONS_GEO_CACHE_DIR", str(cache_dir), raising=False)
     monkeypatch.setattr(settings, "ONS_GEO_CACHE_DB", db_name, raising=False)
     monkeypatch.setattr(settings, "ONS_GEO_CACHE_INDEX_PATH", str(index_path), raising=False)
+    fixture_schedule = [
+        {"epoch": 123, "publication_date": "2025-12-01", "scheduled": False},
+        {"epoch": 126, "publication_date": "2026-02-01", "scheduled": False},
+        {"epoch": 127, "publication_date": "2026-12-01", "scheduled": True},
+    ]
+    monkeypatch.setattr(
+        ons_geo_freshness,
+        "load_addressbase_epoch_schedule",
+        lambda path=ons_geo_freshness.DEFAULT_ADDRESSBASE_EPOCH_SCHEDULE_PATH: fixture_schedule,
+        raising=False,
+    )
 
 
 def test_ons_geo_by_postcode_exact_mode(tmp_path: Path, monkeypatch) -> None:

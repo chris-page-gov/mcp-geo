@@ -466,6 +466,33 @@ Rebuild the STDIO image (include the training dot):
 docker build -t mcp-geo-server .
 ```
 
+## Appendix: HTTP demo launcher
+
+For HTTP-capable MCP clients, including Codex HTTP connectors, VS Code,
+Inspector, and Claude Code HTTP connections, prefer the demo launcher over a
+hand-written `docker run` command:
+
+```bash
+./scripts/mcp-http-demo-local
+```
+
+It starts `http://127.0.0.1:8000/mcp`, hydrates the OS API key from
+`OS_API_KEY` or `OS_API_KEY_FILE`, and mounts existing ONS/OS caches into the
+container so postcode and geography demos can use the same data as the STDIO
+wrappers. When launching from a clean worktree that does not contain the
+maintained `.env`, point the launcher at the original environment file:
+
+```bash
+MCP_GEO_ENV_FILE=/absolute/path/to/mcp-geo/.env ./scripts/mcp-http-demo-local
+```
+
+Useful overrides:
+
+- `MCP_GEO_HTTP_PORT=8787` to avoid a busy local port.
+- `MCP_GEO_HTTP_CONTAINER_NAME=mcp-geo-demo` to run a named demo instance.
+- `MCP_GEO_DOCKER_BUILD=always` to rebuild the app image before launch.
+- `MCP_2026_RC_ENABLED=0` to demonstrate only the stable protocol path.
+
 Run STDIO:
 
 ```bash
@@ -585,6 +612,23 @@ If you need deterministic non-interactive routing, set
 `MCP_STDIO_ELICITATION_ENABLED=0` to disable STDIO form elicitation prompts
 (`os_mcp.stats_routing`, `ons_select.search`). For Streamable HTTP (`/mcp`), set
 `MCP_HTTP_ELICITATION_ENABLED=0`.
+
+### MCP 2026-07-28 RC interop mode
+
+The default runtime protocol remains `2025-11-25`. To test the 2026-07-28
+release-candidate path, set one of:
+
+```bash
+MCP_2026_RC_ENABLED=1
+# or
+MCP_PROTOCOL_2026_07_28_ENABLED=1
+```
+
+RC HTTP requests must carry `MCP-Protocol-Version: 2026-07-28` and
+`Mcp-Method`; `Mcp-Name` is also required for named methods such as
+`tools/call`, `resources/read`, and `prompts/get`. RC mode is stateless and
+does not issue or require `Mcp-Session-Id`. Stable clients should leave the RC
+flags unset.
 
 ## Appendix: Codex local wrapper (PostGIS + cache)
 
