@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",
-    "svelte": "^5.53.10",
+    "svelte": "^5.56.1",
     "zod": "^3.24.1"
   },
   "devDependencies": {
@@ -30,9 +30,14 @@
   "overrides": {
     "@hono/node-server": "1.19.13",
     "ajv": "8.18.0",
+    "devalue": "5.8.1",
     "esbuild": "0.27.3",
     "express-rate-limit": "8.3.1",
-    "hono": "4.12.12",
+    "fast-uri": "3.1.2",
+    "hono": "4.12.23",
+    "ip-address": "10.1.1",
+    "postcss": "8.5.15",
+    "qs": "6.15.2",
     "rollup": "4.59.0"
   },
   "engines": {
