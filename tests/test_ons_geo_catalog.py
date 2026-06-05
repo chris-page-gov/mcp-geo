@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from datetime import date
 from types import SimpleNamespace
 
 import pytest
 
 import server.ons_geo_catalog as ons_geo_catalog
+import server.ons_geo_freshness as ons_geo_freshness
 from server.ons_geo_catalog import (
     _classify_notice_state,
     _extract_relevant_notice_texts,
@@ -16,6 +18,29 @@ from server.ons_geo_catalog import (
     fetch_geoportal_dataset_latest,
     fetch_geoportal_rss_status,
 )
+
+
+def _freeze_release_audit_today(monkeypatch: pytest.MonkeyPatch, today: date) -> None:
+    monkeypatch.setattr(
+        ons_geo_catalog,
+        "latest_published_epoch",
+        lambda schedule: ons_geo_freshness.latest_published_epoch(schedule, today=today),
+    )
+    monkeypatch.setattr(
+        ons_geo_catalog,
+        "next_scheduled_epoch",
+        lambda schedule: ons_geo_freshness.next_scheduled_epoch(schedule, today=today),
+    )
+
+    def summarize_with_fixed_today(**kwargs):
+        kwargs.setdefault("today", today)
+        return ons_geo_freshness.summarize_uprn_dataset_freshness(**kwargs)
+
+    monkeypatch.setattr(
+        ons_geo_catalog,
+        "summarize_uprn_dataset_freshness",
+        summarize_with_fixed_today,
+    )
 
 
 def test_extract_relevant_notice_texts_filters_uprn_messages() -> None:
@@ -173,6 +198,7 @@ def test_fetch_geoportal_rss_status_requires_channel(monkeypatch) -> None:
 
 
 def test_build_release_audit_combines_schedule_probe_and_geoportal(monkeypatch) -> None:
+    _freeze_release_audit_today(monkeypatch, date(2026, 4, 9))
     monkeypatch.setattr(
         ons_geo_catalog,
         "load_manifest",
@@ -190,7 +216,7 @@ def test_build_release_audit_combines_schedule_probe_and_geoportal(monkeypatch) 
         "load_addressbase_epoch_schedule",
         lambda: [
             {"epoch": 126, "publication_date": "2026-04-02", "scheduled": False},
-            {"epoch": 127, "publication_date": "2026-05-14", "scheduled": True},
+            {"epoch": 127, "publication_date": "2026-07-14", "scheduled": True},
         ],
     )
     monkeypatch.setattr(
@@ -254,6 +280,7 @@ def test_build_release_audit_uses_publication_dates_for_latest_published(monkeyp
 def test_build_release_audit_falls_back_to_catalog_metadata_when_probe_cannot_ingest(
     monkeypatch,
 ) -> None:
+    _freeze_release_audit_today(monkeypatch, date(2026, 4, 9))
     dataset = SimpleNamespace(
         dataset_id="ONSUD",
         title="ONS UPRN Directory",
@@ -278,7 +305,7 @@ def test_build_release_audit_falls_back_to_catalog_metadata_when_probe_cannot_in
         "load_addressbase_epoch_schedule",
         lambda: [
             {"epoch": 126, "publication_date": "2026-04-02", "scheduled": False},
-            {"epoch": 127, "publication_date": "2026-05-14", "scheduled": True},
+            {"epoch": 127, "publication_date": "2026-07-14", "scheduled": True},
         ],
     )
     monkeypatch.setattr(
@@ -319,7 +346,7 @@ def test_build_release_audit_falls_back_to_catalog_metadata_when_probe_cannot_in
                 }
             }
 
-        def __enter__(self) -> "DummyResponse":
+        def __enter__(self) -> DummyResponse:
             return self
 
         def __exit__(self, exc_type, exc, tb) -> None:
