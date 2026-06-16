@@ -2,6 +2,10 @@ OS NGD API – Tiles
     https://api.os.uk/maps/vector/ngd/ota/v1?key=
 OS NGD API – Features
     https://api.os.uk/features/ngd/ofa/v1?key=
+    Postcode Unit Area v1 collection:
+    https://api.os.uk/features/ngd/ofa/v1/collections/asu-gbpcd-postcodeunitarea-1/items
+    For BigQuery loading guidance, see:
+    docs/Geography/os-ngd-postcode-boundaries-bigquery.md
 OS Net API
     https://api.os.uk/positioning/osnet/v1?key=
 OS Names API
