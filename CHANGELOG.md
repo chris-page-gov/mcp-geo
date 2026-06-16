@@ -5,6 +5,48 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-06-16
+
+### Added
+- Added a public-safe MCP-Geo conversation LLM Wiki for the 2026-05-13 LandIS,
+  Nottinghamshire coverage, PostGIS, ExtSSD, and LEACS access thread.
+- Documented the LandIS LEACS access probe so future pipe-risk coverage
+  requests can distinguish available LEACS metadata from unavailable
+  downloadable payloads.
+- Added a repeatable LLM-wiki postmortem workflow, private inventory script,
+  public capture-selection registers, and restartable Stage 2 curation
+  documentation.
+- Added a full spatial LandIS warehouse setup guide covering the recommended
+  MCP-Geo plus PostGIS topology, wrapper-managed bootstrap path, archive
+  validation, row-count checks, repeatable clean tests, and when a separate
+  LandIS MCP server would be justified.
+
+### Changed
+- Refreshed vendored MCP core, MCP Apps, auth, Inspector, Agent Skills, and
+  OpenAI Apps SDK example submodules for the 2026-07-28 MCP release-candidate
+  review, and added the associated feature-gated RC handling.
+- Added `scripts/mcp-http-demo-local`, a Docker-backed HTTP demo launcher that
+  hydrates OS API credentials and mounts ONS/OS caches for HTTP MCP clients.
+- Documented the OS NGD Postcode Unit Area API call, CRS84 versus EPSG:4326
+  axis-order guidance, and BigQuery loading pattern for postcode boundary
+  GeoJSON.
+
+### Fixed
+- Added explicit MCP-App handoff guidance to `os_apps.render_*` responses so
+  clients preserve `ui://` app resources instead of fabricating standalone map
+  artifacts when host rendering is unavailable.
+- Refreshed the strict OWASP MCP attestation evidence window and baseline
+  report, and fixed fixture validation dates so compliance tests remain stable
+  as wall-clock time advances.
+- Replaced broken governance infographic references with embedded Mermaid
+  diagrams and replaced session-local citation handles with stable local links.
+- Corrected first-run Docker STDIO smoke-test docs to send JSON-RPC requests
+  with IDs and documented Docker credential-helper hangs seen during clean
+  public-image pulls.
+- Added public OS Data Hub setup and `.env` guidance covering API project
+  creation, secret-file configuration, quote handling, cache paths, PostGIS
+  settings, OS Places entitlement caveats, and LandIS setup levels.
+
 ## [0.8.1] - 2026-04-23
 
 ### Fixed
