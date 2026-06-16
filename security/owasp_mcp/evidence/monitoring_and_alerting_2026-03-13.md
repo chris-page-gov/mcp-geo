@@ -2,6 +2,10 @@
 
 Verified on 2026-03-13 for the strict OWASP MCP profile.
 
+Revalidated on 2026-06-16. The attestation refresh checked the current
+repository artifacts named below and renewed the evidence window without
+changing the control scope.
+
 - `server/main.py` exports application, tool, and MCP HTTP auth/session metrics on `/metrics`.
 - `ops/monitoring/prometheus.yml` scrapes the internal metrics endpoint only from the private monitoring plane.
 - `ops/monitoring/prometheus-alert-rules.yml` alerts on auth failures, session quota exhaustion, rate-limit spikes, and elevated tool errors.

@@ -2,6 +2,10 @@
 
 Verified on 2026-03-13 for the strict OWASP MCP profile.
 
+Revalidated on 2026-06-16. The attestation refresh checked the current
+repository artifacts named below and renewed the evidence window without
+changing the control scope.
+
 - `server/mcp/http_transport.py` enforces bearer authentication modes, HS256 signature verification, issuer/audience/scope checks, and session subject binding.
 - `server/mcp/http_transport.py` also enforces a default session TTL of 900 seconds and a default `tools/call` quota of 100 calls per session.
 - `server/config.py` hydrates `MCP_HTTP_JWT_HS256_SECRET` from `MCP_HTTP_JWT_HS256_SECRET_FILE` so the runtime does not need raw secret values committed in config.
