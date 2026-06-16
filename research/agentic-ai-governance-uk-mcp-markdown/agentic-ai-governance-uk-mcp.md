@@ -99,25 +99,70 @@ The recommended government design is therefore: let MCP standardise connection a
 
 These diagrams are grounded in the primary MCP release-candidate and specification sources, together with the cross-vendor architecture already analysed in the original report. They are simplified discussion aids, not official diagrams from MCP or any vendor. Each separates the protocol fact from the recommended government overlay.
 
-<img src="agentic-ai-governance-uk-mcp-media/image1.png" title="Figure 1. Agentic AI governance: where the controls sit." style="width:7.25in;height:2.8717in" alt="Diagram showing user or service channel flowing into host app and agent runtime, MCP client, government tool gateway, and MCP servers or data services, with identity, policy, evidence, registry and incident-control layers around the gateway." />
+```mermaid
+flowchart LR
+    A[User or service channel] --> B[Host app and agent runtime]
+    B --> C[MCP client]
+    C --> D[Government tool gateway]
+    D --> E[MCP servers or data services]
+    I[Identity] --> D
+    P[Policy] --> D
+    R[Registry] --> D
+    D --> V[Evidence store]
+    D --> X[Incident controls]
+```
 
 Figure 1. Agentic AI governance: where the controls sit.
 
 > **Source basis and limitation:** Based on the original report’s cross-vendor synthesis of control planes, gateways and observability, and on the MCP architecture model of hosts, clients and servers. The orange gateway is a recommended UK Government control, not an MCP protocol requirement. \[35\] \[47\]
 
-<img src="agentic-ai-governance-uk-mcp-media/image2.png" title="Figure 2. MCP transport shift: session-bound to stateless requests." style="width:7.25in;height:2.73211in" alt="Before and after diagram comparing earlier MCP session-bound requests using initialise and Mcp-Session-Id with 2026-07-28 stateless requests that carry version, method, name and metadata per request." />
+```mermaid
+flowchart LR
+    subgraph Earlier["Earlier session-bound pattern"]
+        A1[initialise] --> A2[Mcp-Session-Id]
+        A2 --> A3[Subsequent request depends on session]
+    end
+    subgraph RC["2026-07-28 stateless pattern"]
+        B1[Each request] --> B2[Protocol version]
+        B1 --> B3[Method and name headers]
+        B1 --> B4[Client metadata and capabilities]
+    end
+```
 
 Figure 2. MCP transport shift: session-bound to stateless requests.
 
 > **Source basis and limitation:** Based on the MCP release-candidate blog, lifecycle and transport pages. It represents the protocol-level shift only; production systems may still keep application-level state through explicit handles. \[45\] \[48\] \[49\]
 
-<img src="agentic-ai-governance-uk-mcp-media/image3.png" title="Figure 3. A governed MCP tool call: the minimum evidence path." style="width:7.25in;height:2.68231in" alt="Sequence diagram showing agent proposed tool call, gateway validation, authorisation, policy verdict, tool execution, result return, and central trace/evidence capture." />
+```mermaid
+sequenceDiagram
+    participant Agent
+    participant Gateway
+    participant Policy
+    participant Tool
+    participant Evidence
+    Agent->>Gateway: Proposed MCP tool call
+    Gateway->>Gateway: Validate schema and headers
+    Gateway->>Policy: Authorise user, agent, scope and risk tier
+    Policy-->>Gateway: Policy verdict and approval requirement
+    Gateway->>Tool: Execute approved call
+    Tool-->>Gateway: Result or error
+    Gateway->>Evidence: Store trace, decision, approval and result hash
+    Gateway-->>Agent: Return result
+```
 
 Figure 3. A governed MCP tool call: the minimum evidence path.
 
 > **Source basis and limitation:** Combines MCP tool-call semantics with recommended government controls. MCP defines tool calls, metadata, authorisation requirements and trace propagation; the common evidence schema is a public-sector governance recommendation. \[50\] \[51\] \[59\]
 
-<img src="agentic-ai-governance-uk-mcp-media/image4.png" title="Figure 4. MCP registry and supply-chain assurance for government use." style="width:7.25in;height:3.76978in" alt="Diagram showing public MCP registry and package registries feeding into government review, private government registry and gateway allow-list." />
+```mermaid
+flowchart LR
+    A[Public MCP registry] --> C[Government review]
+    B[Package registries and source repos] --> C
+    C --> D[Private government registry]
+    D --> E[Gateway allow-list]
+    E --> F[Approved MCP clients and servers]
+    C --> G[Security and ownership evidence]
+```
 
 Figure 4. MCP registry and supply-chain assurance for government use.
 
