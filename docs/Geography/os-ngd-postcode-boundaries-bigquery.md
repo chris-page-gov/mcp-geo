@@ -7,8 +7,15 @@ the OS NGD postcode boundary polygons into BigQuery `GEOGRAPHY`.
 
 ## Summary
 
-Use the OS NGD API - Features `Postcode Unit Area v1` collection and request
-GeoJSON in `CRS84`:
+Use the OS NGD API - Features current `Postcode Unit Area` collection and
+request GeoJSON in `CRS84`. Resolve the current collection from the base id
+`asu-gbpcd-postcodeunitarea` before bulk extraction, because OS NGD collection
+ids carry a numeric schema/version suffix.
+
+As of 2026-06-16, the live OS Features collections endpoint advertises
+`asu-gbpcd-postcodeunitarea-1`; the matching `-2` collection, schema, and
+queryables endpoints returned `404`. The examples below therefore use the
+current live `-1` collection:
 
 ```text
 https://api.os.uk/features/ngd/ofa/v1/collections/asu-gbpcd-postcodeunitarea-1/items
@@ -19,13 +26,21 @@ GeoJSON and BigQuery.
 
 ## Collection
 
-- Collection ID: `asu-gbpcd-postcodeunitarea-1`
-- Title: `Postcode Unit Area v1`
+- Collection base id: `asu-gbpcd-postcodeunitarea`
+- Current collection ID at last check: `asu-gbpcd-postcodeunitarea-1`
+- Current title at last check: `Postcode Unit Area v1`
 - Product family: OS NGD Administrative and Statistical Units, OS GB Postcodes
 - Feature grain: postcode-unit area part
 - Storage CRS: `EPSG:27700` British National Grid
 - Advertised response CRSs: `EPSG:27700`, `EPSG:3857`, `EPSG:4326`, `CRS84`
 - Coverage: Great Britain
+
+For durable jobs, discover `/collections` first and select the highest available
+numeric suffix for `asu-gbpcd-postcodeunitarea`. In MCP-Geo, the
+`postcode unit areas` alias follows this pattern by resolving the latest
+available collection id at runtime. Do not hard-code a future suffix such as
+`-2` unless the OS Features collections endpoint advertises it for the tenant
+and the schema/queryables endpoints are available.
 
 OS describes these polygons as notional extents for addresses sharing a postcode
 unit, derived from georeferenced Royal Mail PAF delivery addresses. They are for
@@ -37,6 +52,12 @@ return more than one polygon part for a postcode, so dissolve/group by
 `postcode` if the downstream model needs one footprint per postcode.
 
 ## Discovery Calls
+
+Collection list for resolving the latest suffix:
+
+```http
+GET https://api.os.uk/features/ngd/ofa/v1/collections
+```
 
 Collection metadata:
 
@@ -94,25 +115,54 @@ GeoJSON response for paged extracts.
 
 ## Loading To BigQuery
 
-Store the raw FeatureCollection or one feature per row first, then create a
-persisted `GEOGRAPHY` column from each feature's `geometry` object:
+Store each raw API page as a FeatureCollection first, or stage one feature per
+row. A raw API page has the feature records under `$.features[*]`, so unnest the
+FeatureCollection before reading `$.properties` and `$.geometry`.
+
+If `source_rows.feature_collection` is a BigQuery `JSON` column containing one
+raw API response page:
+
+```sql
+WITH features AS (
+  SELECT feature
+  FROM source_rows,
+  UNNEST(JSON_QUERY_ARRAY(feature_collection, '$.features')) AS feature
+)
+SELECT
+  JSON_VALUE(feature, '$.properties.postcode') AS postcode,
+  JSON_VALUE(feature, '$.properties.featureid') AS featureid,
+  ST_GEOGFROMGEOJSON(TO_JSON_STRING(JSON_QUERY(feature, '$.geometry'))) AS geom
+FROM features;
+```
+
+If the raw API response page is held as a JSON string, parse the
+FeatureCollection first:
+
+```sql
+WITH parsed_pages AS (
+  SELECT PARSE_JSON(feature_collection_json) AS feature_collection
+  FROM source_rows
+),
+features AS (
+  SELECT feature
+  FROM parsed_pages,
+  UNNEST(JSON_QUERY_ARRAY(feature_collection, '$.features')) AS feature
+)
+SELECT
+  JSON_VALUE(feature, '$.properties.postcode') AS postcode,
+  JSON_VALUE(feature, '$.properties.featureid') AS featureid,
+  ST_GEOGFROMGEOJSON(TO_JSON_STRING(JSON_QUERY(feature, '$.geometry'))) AS geom
+FROM features;
+```
+
+If staging already stores one GeoJSON Feature per row in a `JSON` column named
+`feature`, no unnest is needed:
 
 ```sql
 SELECT
   JSON_VALUE(feature, '$.properties.postcode') AS postcode,
   JSON_VALUE(feature, '$.properties.featureid') AS featureid,
   ST_GEOGFROMGEOJSON(TO_JSON_STRING(JSON_QUERY(feature, '$.geometry'))) AS geom
-FROM source_rows;
-```
-
-If the raw feature is held as a JSON string, parse it first:
-
-```sql
-SELECT
-  JSON_VALUE(PARSE_JSON(feature_json), '$.properties.postcode') AS postcode,
-  ST_GEOGFROMGEOJSON(
-    TO_JSON_STRING(JSON_QUERY(PARSE_JSON(feature_json), '$.geometry'))
-  ) AS geom
 FROM source_rows;
 ```
 
@@ -161,6 +211,8 @@ crs=http://www.opengis.net/def/crs/EPSG/0/27700
 
 - OS NGD API - Features root:
   `https://api.os.uk/features/ngd/ofa/v1`
+- OS NGD API - Features collections:
+  `https://api.os.uk/features/ngd/ofa/v1/collections`
 - OS NGD postcode unit collection metadata:
   `https://api.os.uk/features/ngd/ofa/v1/collections/asu-gbpcd-postcodeunitarea-1`
 - OS NGD queryables for postcode unit areas:
