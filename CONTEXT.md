@@ -1,6 +1,6 @@
 # MCP Geo Context
 
-Last updated: 2026-06-01
+Last updated: 2026-06-17
 Owner: @chris-page-gov
 
 ## Purpose
@@ -52,6 +52,15 @@ assumptions change.
 
 ## Current Focus
 
+- Parish/PARNCP, OS Names routing, and House of Commons Library MSOA display
+  names are being implemented on branch `codex/parish-pんarncp-names-support`.
+  The public normalized level is `PARISH`, while raw/source fields remain
+  `PARNCP25CD`, `PARNCP25NM`, and `PARNCP25NW`; the default live boundary
+  fallback is `PARNCP_MAY_2025_EW_BGC`. House of Commons Library 2021 MSOA
+  names are display labels only (`displayName` / `displayNameWelsh`) with
+  provenance and must not replace ONS/RGC `currentName`. Gazetteer/named-place
+  wording should route to `os_names.find`; official boundary/admin wording
+  should remain on `admin_lookup.*`.
 - MCP 2026-07-28 release-candidate alignment is implemented on branch
   `codex/mcp-2026-rc-alignment` in clean worktree
   `/Users/crpage/tmp/mcp-geo-rc-align`. The original checkout had unrelated

@@ -281,7 +281,7 @@ These define **governance**, funding, and accountability.
 | County / Unitary Authority   | `CTYUA23CD` | `CTYUA23NM` | England only             |
 | London Borough               | `LAD23CD`   | `LAD23NM`   | Subtype of LAD           |
 | Metropolitan District        | `LAD23CD`   | `LAD23NM`   | Subtype of LAD           |
-| Civil Parish / Community     | `PAR23CD`   | `PAR23NM`   | England & Wales          |
+| Parish / Community / PARNCP  | `PARNCP25CD` | `PARNCP25NM` | England & Wales; MCP-Geo exposes this as `PARISH` |
 | Scottish Council Area        | `LAD23CD`   | `LAD23NM`   | Scotland                 |
 | NI Local Government District | `LGD2023CD` | `LGD2023NM` | Northern Ireland         |
 

@@ -8,6 +8,8 @@ from server.ons_geo_cache import (
     ONSGeoCacheReadError,
     ensure_schema,
     extract_geography_fields,
+    infer_area_level_from_code,
+    normalize_area_level,
     normalize_derivation_mode,
     normalize_postcode,
     normalize_uprn,
@@ -21,6 +23,10 @@ def test_normalize_postcode_and_uprn() -> None:
     assert normalize_uprn("abc123") is None
     assert normalize_derivation_mode("best_fit") == "best_fit"
     assert normalize_derivation_mode("invalid") is None
+    assert normalize_area_level("parncp") == "PARISH"
+    assert normalize_area_level("non civil parished") == "PARISH"
+    assert infer_area_level_from_code("E04000001") == "PARISH"
+    assert infer_area_level_from_code("W04000001") == "PARISH"
 
 
 def test_extract_geography_fields_handles_code_name_pairs() -> None:
@@ -30,6 +36,9 @@ def test_extract_geography_fields_handles_code_name_pairs() -> None:
             "LAD24NM": "Westminster",
             "MSOA11CD": "E02006800",
             "MSOA11NM": "Westminster 001",
+            "PARNCP25CD": "E04000001",
+            "PARNCP25NM": "Example Parish",
+            "PARNCP25NW": "Plwyf Enghreifftiol",
             "ignored": "value",
         }
     )
@@ -37,6 +46,9 @@ def test_extract_geography_fields_handles_code_name_pairs() -> None:
     assert fields["lad24"]["name"] == "Westminster"
     assert fields["msoa11"]["code"] == "E02006800"
     assert fields["msoa11"]["name"] == "Westminster 001"
+    assert fields["parncp25"]["code"] == "E04000001"
+    assert fields["parncp25"]["name"] == "Example Parish"
+    assert fields["parncp25"]["nameWelsh"] == "Plwyf Enghreifftiol"
     assert "ignored" not in fields
 
 
@@ -244,6 +256,7 @@ def test_ensure_schema_creates_uprn_index_table(tmp_path) -> None:
     conn.close()
     assert row == ("100023336959", "E08000026", "Coventry", 1, None, None, None)
     assert "ons_geo_code_reference" in tables
+    assert "ons_geo_msoa_display_names" in tables
 
 
 def test_ensure_schema_migrates_legacy_uprn_index_before_creating_new_indexes(tmp_path) -> None:
@@ -319,6 +332,9 @@ def test_ensure_schema_migrates_legacy_uprn_index_before_creating_new_indexes(tm
     expected_columns = {
         "ward_code",
         "ward_name",
+        "parish_code",
+        "parish_name",
+        "parish_name_welsh",
         "country_code",
         "country_name",
         "region_code",
@@ -326,6 +342,7 @@ def test_ensure_schema_migrates_legacy_uprn_index_before_creating_new_indexes(tm
     }
     assert expected_columns <= set(columns)
     assert "idx_ons_geo_uprn_by_mode_ward" in indexes
+    assert "idx_ons_geo_uprn_by_mode_parish" in indexes
     assert "idx_ons_geo_uprn_by_mode_country" in indexes
     assert "idx_ons_geo_uprn_by_mode_region" in indexes
 

@@ -177,6 +177,9 @@ def _seed_cache(tmp_path: Path) -> tuple[Path, str, Path]:
             "LSOA21NM": "Example LSOA",
             "MSOA21CD": "E02000001",
             "MSOA21NM": "Example MSOA",
+            "PARNCP25CD": "E04000001",
+            "PARNCP25NM": "Example Parish",
+            "PARNCP25NW": "Plwyf Enghreifftiol",
             "LAD24CD": "E09000033",
             "LAD24NM": "Westminster",
             "WD24CD": "E05000001",
@@ -193,6 +196,7 @@ def _seed_cache(tmp_path: Path) -> tuple[Path, str, Path]:
                 "oa_code": "E00000111",
                 "lsoa_code": "E01000001",
                 "msoa_code": "E02000001",
+                "parish_code": "E04000001",
                 "lad_code": "E09000033",
                 "ward_code": "E05000001",
                 "country_code": "E92000001",
@@ -211,6 +215,16 @@ def _seed_cache(tmp_path: Path) -> tuple[Path, str, Path]:
                     "code": "E02000001",
                     "currentCode": "E02000001",
                     "currentName": "Example MSOA",
+                    "status": "current",
+                    "sourceDataset": "RGC",
+                },
+                "parish": {
+                    "code": "E04000001",
+                    "name": "Example Parish",
+                    "nameWelsh": "Plwyf Enghreifftiol",
+                    "currentCode": "E04000001",
+                    "currentName": "Example Parish",
+                    "currentNameWelsh": "Plwyf Enghreifftiol",
                     "status": "current",
                     "sourceDataset": "RGC",
                 },
@@ -244,7 +258,7 @@ def _seed_cache(tmp_path: Path) -> tuple[Path, str, Path]:
                     "sourceDataset": "RGC",
                 },
             },
-            "codeStatusSummary": {"current": 6},
+            "codeStatusSummary": {"current": 7},
         },
     )
     _insert_row(
@@ -277,10 +291,49 @@ def _seed_cache(tmp_path: Path) -> tuple[Path, str, Path]:
         key_norm="100023336959",
         derivation_mode="exact",
         source_name="ONSUD",
-        payload={"LAD24CD": "E08000026", "LAD24NM": "Coventry"},
+        payload={
+            "LAD24CD": "E08000026",
+            "LAD24NM": "Coventry",
+            "MSOA21CD": "E02000001",
+            "MSOA21NM": "Example MSOA",
+            "PARNCP25CD": "E04000001",
+            "PARNCP25NM": "Example Parish",
+            "PARNCP25NW": "Plwyf Enghreifftiol",
+        },
         normalized_payload={
-            "semanticFields": {"uprn": "100023336959", "lad_code": "E08000026"},
+            "semanticFields": {
+                "uprn": "100023336959",
+                "msoa_code": "E02000001",
+                "parish_code": "E04000001",
+                "lad_code": "E08000026",
+            },
             "geographies": {
+                "msoa": {
+                    "code": "E02000001",
+                    "currentCode": "E02000001",
+                    "currentName": "Example MSOA",
+                    "displayName": "Readable MSOA",
+                    "displayNameWelsh": "MSOA Darllenadwy",
+                    "displayNameSource": {
+                        "datasetId": "HOC_MSOA_NAMES_2021",
+                        "source": "House of Commons Library MSOA Names",
+                        "version": "2.3",
+                        "publishedDate": "2026-02-13",
+                        "license": "Open Parliament Licence",
+                    },
+                    "status": "current",
+                    "sourceDataset": "RGC",
+                },
+                "parish": {
+                    "code": "E04000001",
+                    "name": "Example Parish",
+                    "nameWelsh": "Plwyf Enghreifftiol",
+                    "currentCode": "E04000001",
+                    "currentName": "Example Parish",
+                    "currentNameWelsh": "Plwyf Enghreifftiol",
+                    "status": "current",
+                    "sourceDataset": "RGC",
+                },
                 "lad": {
                     "code": "E08000026",
                     "name": "Coventry",
@@ -290,7 +343,7 @@ def _seed_cache(tmp_path: Path) -> tuple[Path, str, Path]:
                     "sourceDataset": "RGC",
                 }
             },
-            "codeStatusSummary": {"current": 1},
+            "codeStatusSummary": {"current": 3},
         },
     )
     _insert_row(
@@ -326,6 +379,9 @@ def _seed_cache(tmp_path: Path) -> tuple[Path, str, Path]:
             oa_code,
             lsoa_code,
             msoa_code,
+            parish_code,
+            parish_name,
+            parish_name_welsh,
             lad_code,
             lad_name,
             ward_code,
@@ -337,7 +393,7 @@ def _seed_cache(tmp_path: Path) -> tuple[Path, str, Path]:
             postal_delivery,
             geographies_json,
             cached_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         [
             (
@@ -348,6 +404,9 @@ def _seed_cache(tmp_path: Path) -> tuple[Path, str, Path]:
                 "E00000111",
                 "E01000001",
                 "E02000001",
+                "E04000001",
+                "Example Parish",
+                "Plwyf Enghreifftiol",
                 "E09000033",
                 "Westminster",
                 "E05000001",
@@ -357,7 +416,15 @@ def _seed_cache(tmp_path: Path) -> tuple[Path, str, Path]:
                 "E12000007",
                 "London",
                 1,
-                json.dumps({"oa": {"code": "E00000111"}}),
+                json.dumps(
+                    {
+                        "oa": {"code": "E00000111"},
+                        "parish": {
+                            "currentCode": "E04000001",
+                            "currentName": "Example Parish",
+                        },
+                    }
+                ),
                 "2026-02-22T00:00:00Z",
             ),
             (
@@ -368,6 +435,9 @@ def _seed_cache(tmp_path: Path) -> tuple[Path, str, Path]:
                 "E00000111",
                 "E01000001",
                 "E02000001",
+                "E04000001",
+                "Example Parish",
+                "Plwyf Enghreifftiol",
                 "E09000033",
                 "Westminster",
                 "E05000001",
@@ -377,7 +447,15 @@ def _seed_cache(tmp_path: Path) -> tuple[Path, str, Path]:
                 "E12000007",
                 "London",
                 1,
-                json.dumps({"oa": {"code": "E00000111"}}),
+                json.dumps(
+                    {
+                        "oa": {"code": "E00000111"},
+                        "parish": {
+                            "currentCode": "E04000001",
+                            "currentName": "Example Parish",
+                        },
+                    }
+                ),
                 "2026-02-22T00:00:00Z",
             ),
             (
@@ -388,6 +466,9 @@ def _seed_cache(tmp_path: Path) -> tuple[Path, str, Path]:
                 "E00000111",
                 "E01000001",
                 "E02000001",
+                "E04000001",
+                "Example Parish",
+                "Plwyf Enghreifftiol",
                 "E09000033",
                 "Westminster",
                 "E05000001",
@@ -397,7 +478,15 @@ def _seed_cache(tmp_path: Path) -> tuple[Path, str, Path]:
                 "E12000007",
                 "London",
                 0,
-                json.dumps({"oa": {"code": "E00000111"}}),
+                json.dumps(
+                    {
+                        "oa": {"code": "E00000111"},
+                        "parish": {
+                            "currentCode": "E04000001",
+                            "currentName": "Example Parish",
+                        },
+                    }
+                ),
                 "2026-02-22T00:00:00Z",
             ),
         ],
@@ -502,6 +591,9 @@ def test_ons_geo_by_postcode_exact_mode(tmp_path: Path, monkeypatch) -> None:
     assert body["query"]["derivationMode"] == "exact"
     assert body["geographies"]["lad24"]["name"] == "Westminster"
     assert body["normalizedGeographies"]["lad"]["currentCode"] == "E09000033"
+    assert body["normalizedGeographies"]["parish"]["currentCode"] == "E04000001"
+    assert body["normalizedGeographies"]["parish"]["currentName"] == "Example Parish"
+    assert body["normalizedGeographies"]["parish"]["currentNameWelsh"] == "Plwyf Enghreifftiol"
     assert body["semanticFields"]["postcode"] == "SW1A1AA"
     assert body["lookup"]["schemaFingerprint"] == "schema-onspd"
     assert "raw" in body
@@ -551,6 +643,10 @@ def test_ons_geo_by_uprn_exact_mode(tmp_path: Path, monkeypatch) -> None:
     assert body["lookup"]["product"] == "ONSUD"
     assert body["geographies"]["lad24"]["code"] == "E08000026"
     assert body["normalizedGeographies"]["lad"]["status"] == "current"
+    assert body["normalizedGeographies"]["parish"]["currentCode"] == "E04000001"
+    assert body["normalizedGeographies"]["msoa"]["currentName"] == "Example MSOA"
+    assert body["normalizedGeographies"]["msoa"]["displayName"] == "Readable MSOA"
+    assert body["normalizedGeographies"]["msoa"]["displayNameSource"]["version"] == "2.3"
     assert body["lookup"]["freshness"]["status"] == "current"
 
 
@@ -644,6 +740,63 @@ def test_ons_geo_area_summary_from_postcode_uses_compact_helpers(
     assert body["profileDatasets"][0]["category"] == "population"
     inventory_calls = [payload for name, payload in seen_calls if name == "os_map.inventory"]
     assert inventory_calls and inventory_calls[0]["responseMode"] == "summary"
+
+
+def test_ons_geo_area_summary_resolves_parish_from_uprn(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    cache_dir, db_name, index_path = _seed_cache(tmp_path)
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=cache_dir,
+        db_name=db_name,
+        index_path=index_path,
+    )
+
+    seen_payloads: list[dict[str, object]] = []
+
+    def fake_get_tool(name: str):  # type: ignore[no-untyped-def]
+        if name == "admin_lookup.area_geometry":
+            return _FakeTool(
+                lambda payload: (
+                    seen_payloads.append(dict(payload)),
+                    (
+                        200,
+                        {
+                            "id": "E04000001",
+                            "name": "Example Parish",
+                            "bbox": [-1.6, 52.3, -1.5, 52.4],
+                            "live": False,
+                            "meta": {"level": "PARISH"},
+                        },
+                    ),
+                )[1]
+            )
+        return None
+
+    monkeypatch.setattr(ons_geo_tools, "get_tool", fake_get_tool)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_geo.area_summary",
+            "uprn": "100023336959",
+            "targetLevel": "PARISH",
+            "includeInventory": False,
+            "includePopulation": False,
+            "includeProfileDatasets": False,
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["area"]["id"] == "E04000001"
+    assert body["area"]["level"] == "PARISH"
+    assert body["area"]["name"] == "Example Parish"
+    assert body["counts"]["uprnCount"] == 3
+    assert body["counts"]["postcodeCount"] == 2
+    assert body["counts"]["postalDeliveryUprnCount"] == 2
+    assert seen_payloads and seen_payloads[0]["id"] == "E04000001"
 
 
 def test_ons_geo_area_summary_requires_anchor_or_explicit_context(

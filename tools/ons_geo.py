@@ -24,6 +24,7 @@ _AREA_SUMMARY_LEVELS = {
     "OA": {"normalizedKey": "oa", "semanticKey": "oa_code"},
     "LSOA": {"normalizedKey": "lsoa", "semanticKey": "lsoa_code"},
     "MSOA": {"normalizedKey": "msoa", "semanticKey": "msoa_code"},
+    "PARISH": {"normalizedKey": "parish", "semanticKey": "parish_code"},
     "WARD": {"normalizedKey": "ward", "semanticKey": "ward_code"},
     "DISTRICT": {"normalizedKey": "lad", "semanticKey": "lad_code"},
     "COUNTRY": {"normalizedKey": "country", "semanticKey": "country_code"},
@@ -33,10 +34,11 @@ _AREA_SUMMARY_LEVEL_RANK = {
     "OA": 0,
     "LSOA": 1,
     "MSOA": 2,
-    "WARD": 3,
-    "DISTRICT": 4,
-    "REGION": 5,
-    "COUNTRY": 6,
+    "PARISH": 3,
+    "WARD": 4,
+    "DISTRICT": 5,
+    "REGION": 6,
+    "COUNTRY": 7,
 }
 _DEFAULT_PROFILE_CATEGORIES = ["population", "sex", "ethnicity", "country_of_birth", "tenure"]
 _AREA_SUMMARY_WORKFLOW_URI = "resource://mcp-geo/area-summary-workflows"
@@ -732,7 +734,7 @@ def _area_summary(payload: dict[str, Any]) -> ToolResult:
         },
         "workflowProfileUri": _AREA_SUMMARY_WORKFLOW_URI,
         "guidance": [
-            "Use ons_geo.area_summary for compact OA/LSOA/MSOA/ward summaries.",
+            "Use ons_geo.area_summary for compact OA/LSOA/MSOA/parish/ward summaries.",
             "Prefer inventoryResponseMode='summary' or 'counts' for narrative "
             "summaries instead of raw map inventories.",
             "Use profileDatasets for deeper NOMIS follow-up queries by topic.",
@@ -1000,7 +1002,7 @@ register(
     Tool(
         name="ons_geo.area_summary",
         description=(
-            "Resolve a compact OA/LSOA/MSOA/ward/profile summary from an area code, "
+            "Resolve a compact OA/LSOA/MSOA/parish/ward/profile summary from an area code, "
             "postcode, or UPRN using cached ONS geographies, compact inventory counts, "
             "and curated NOMIS follow-up datasets."
         ),

@@ -3,7 +3,17 @@
 This file tracks how the implementation compares to the original proposal and
 later documentation as the MCP specification evolved.
 
-Last updated: 2026-06-01
+Last updated: 2026-06-17
+
+## Parish, PARNCP, OS Names, and MSOA display names (2026-06-17)
+
+Legend: pending, in_progress, done, blocked
+
+| Workstream | Status | Dependencies | Notes |
+| --- | --- | --- | --- |
+| PARISH-NAMES-1 ONS cache semantics | done | none | Added normalized `PARISH`/PARNCP aliases, code inference, parish semantic fields, migration-safe UPRN index columns, `PARISH` area summaries, and House of Commons Library 2021 MSOA display-name sidecar ingestion with provenance. |
+| PARISH-NAMES-2 Admin boundary and routing support | done | PARISH-NAMES-1 | Added the `PARNCP_MAY_2025_EW_BGC` live boundary source, cache-first parish name lookup, cached parish geometry coverage, and OS Names gazetteer routing for named-place wording while preserving admin/boundary routing for generic area phrases. |
+| PARISH-NAMES-3 Documentation and validation | done | PARISH-NAMES-1, PARISH-NAMES-2 | Updated README/getting-started/tutorial/source-resolution guidance and added a branch-local changelog fragment. Validation passed via `./scripts/ruff-local`, `./scripts/mypy-local`, `./scripts/pytest-local -q`, and `./scripts/validate-owasp-mcp-local`. |
 
 ## MCP 2026-07-28 RC submodule refresh and alignment (2026-06-01)
 

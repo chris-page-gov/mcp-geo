@@ -13,12 +13,21 @@ KEY_TYPES = {"postcode", "uprn"}
 DERIVATION_MODES = {"exact", "best_fit"}
 POSTCODE_REGEX = re.compile(r"^[A-Z]{1,2}[0-9][0-9A-Z]?[0-9][A-Z]{2}$")
 
-_GEOGRAPHY_SUFFIX_RE = re.compile(r"^(?P<stem>[A-Za-z0-9_]+?)(?P<suffix>CD|NM)$")
+_GEOGRAPHY_SUFFIX_RE = re.compile(r"^(?P<stem>[A-Za-z0-9_]+?)(?P<suffix>CD|NM|NMW|NW)$")
 _AREA_LEVEL_ALIASES = {
     "OA": "OA",
     "OUTPUT_AREA": "OA",
     "LSOA": "LSOA",
     "MSOA": "MSOA",
+    "PARISH": "PARISH",
+    "PARISHES": "PARISH",
+    "PARNCP": "PARISH",
+    "PARNCP_AREA": "PARISH",
+    "PARNCP_AREAS": "PARISH",
+    "CIVIL_PARISH": "PARISH",
+    "CIVIL_PARISHED": "PARISH",
+    "NON_CIVIL_PARISHED": "PARISH",
+    "NON_CIVIL_PARISHED_AREA": "PARISH",
     "WARD": "WARD",
     "WD": "WARD",
     "DISTRICT": "DISTRICT",
@@ -35,6 +44,7 @@ AREA_LEVEL_COLUMN_MAP = {
     "OA": "oa_code",
     "LSOA": "lsoa_code",
     "MSOA": "msoa_code",
+    "PARISH": "parish_code",
     "WARD": "ward_code",
     "DISTRICT": "lad_code",
     "COUNTRY": "country_code",
@@ -91,6 +101,8 @@ def infer_area_level_from_code(value: str) -> str | None:
         return "LSOA"
     if re.fullmatch(r"[EW]02\d{6}", code):
         return "MSOA"
+    if re.fullmatch(r"[EW]04\d{6}", code):
+        return "PARISH"
     if re.fullmatch(r"[EW]05\d{6}", code):
         return "WARD"
     if re.fullmatch(r"(E06|E07|E08|E09|W06)\d{6}", code):
@@ -169,6 +181,9 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
             oa_code TEXT,
             lsoa_code TEXT,
             msoa_code TEXT,
+            parish_code TEXT,
+            parish_name TEXT,
+            parish_name_welsh TEXT,
             lad_code TEXT,
             lad_name TEXT,
             ward_code TEXT,
@@ -201,6 +216,27 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
 
         CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_lad
         ON ons_geo_uprn_index (derivation_mode, lad_code);
+
+        CREATE TABLE IF NOT EXISTS ons_geo_msoa_display_names (
+            dataset_id TEXT NOT NULL,
+            msoa_code TEXT NOT NULL,
+            official_name TEXT,
+            official_name_welsh TEXT,
+            display_name TEXT NOT NULL,
+            display_name_welsh TEXT,
+            local_authority_name TEXT,
+            name_type TEXT,
+            source_version TEXT,
+            published_date TEXT,
+            license TEXT,
+            source_url TEXT,
+            record_json TEXT NOT NULL,
+            ingested_at TEXT NOT NULL,
+            PRIMARY KEY (dataset_id, msoa_code)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_ons_geo_msoa_display_names_code
+        ON ons_geo_msoa_display_names (msoa_code);
 
         CREATE TABLE IF NOT EXISTS ons_geo_code_reference (
             dataset_id TEXT NOT NULL,
@@ -246,6 +282,9 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
         {
             "ward_code": "TEXT",
             "ward_name": "TEXT",
+            "parish_code": "TEXT",
+            "parish_name": "TEXT",
+            "parish_name_welsh": "TEXT",
             "country_code": "TEXT",
             "country_name": "TEXT",
             "region_code": "TEXT",
@@ -257,6 +296,9 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
         """
         CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_ward
         ON ons_geo_uprn_index (derivation_mode, ward_code);
+
+        CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_parish
+        ON ons_geo_uprn_index (derivation_mode, parish_code);
 
         CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_country
         ON ons_geo_uprn_index (derivation_mode, country_code);
@@ -492,6 +534,8 @@ def extract_geography_fields(row: dict[str, Any]) -> dict[str, dict[str, str]]:
         entry = geographies.setdefault(stem, {})
         if suffix == "CD":
             entry["code"] = text_value
-        else:
+        elif suffix == "NM":
             entry["name"] = text_value
+        else:
+            entry["nameWelsh"] = text_value
     return geographies

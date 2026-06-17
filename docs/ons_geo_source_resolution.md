@@ -17,6 +17,13 @@ thing as "fresh against the AddressBase schedule".
   ONS.
 - `RGC`: Register of Geographic Codes. Current geography-code reference from
   ONS.
+- `PARNCP`: Parish and non-civil-parished area. MCP-Geo normalizes this to
+  the public `PARISH` level, covering civil parishes, Welsh communities, and
+  non-civil-parished areas while retaining raw source fields such as
+  `PARNCP25CD`, `PARNCP25NM`, and `PARNCP25NW`.
+- `House of Commons Library MSOA names`: optional non-official 2021 MSOA
+  display labels. MCP-Geo stores them as `displayName` / `displayNameWelsh`
+  sidecar values and keeps ONS/RGC `currentName` as the official name.
 - `GSS code`: Geography code used across UK statistical geography products.
 - `CKAN`: Open-source data catalogue software used by many government open-data
   portals, including data.gov.uk. See [CKAN](https://ckan.org/) and the
@@ -103,10 +110,34 @@ The output is designed to answer:
 normalized into stable semantic geography families instead of silently falling
 out of the lookup path.
 
+## Parish/PARNCP and MSOA display-name semantics
+
+`PARISH` is the public level name used by `ons_geo.*` and `admin_lookup.*`.
+It maps to ONS parish and non-civil-parished area sources, currently including
+`PARNCP_MAY_2025_EW_BGC` for generalized England/Wales boundary fallback.
+Use `PARISH` in requests such as `admin_lookup.find_by_name` and
+`ons_geo.area_summary`; preserve `PARNCP25CD`, `PARNCP25NM`, and `PARNCP25NW`
+when inspecting raw rows or source manifests.
+
+House of Commons Library 2021 MSOA names are ingested from
+`https://houseofcommonslibrary.github.io/msoanames/MSOA-Names-Latest2.csv`
+as display-name sidecar metadata. The current configured source is version
+`2.3`, published `2026-02-13`, under the Open Parliament Licence. These labels
+are suitable for readable display but are not official ONS replacements:
+`currentName` remains the ONS/RGC name, while `displayName`,
+`displayNameWelsh`, and `displayNameSource` carry the Library label and
+provenance. If this optional sidecar is unavailable during refresh, core
+postcode/UPRN geography readiness is not degraded; the affected MSOA display
+labels are simply absent.
+
 ## Practical guidance
 
 - Use `ons_geo.by_postcode` and `ons_geo.by_uprn` for lookups against the local
   normalized cache.
+- Use `normalizedGeographies.parish` when the cache source contains PARNCP
+  fields and a parish/community/non-civil-parished area is needed.
+- Use `normalizedGeographies.msoa.displayName` only as a display label; keep
+  `normalizedGeographies.msoa.currentName` for official ONS/RGC naming.
 - Use `ons_geo.cache_status` to check whether the cache is populated and
   whether primary/support datasets are degraded.
 - Use `ons_geo.release_audit` when you need to know whether the published ONS

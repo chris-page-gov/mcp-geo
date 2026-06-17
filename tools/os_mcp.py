@@ -29,6 +29,7 @@ class QueryIntent(StrEnum):
     AREA_PROFILE = "area_profile"
     PROPERTY_TAX = "property_tax"
     POI_LOOKUP = "poi_lookup"
+    NAMED_PLACE_LOOKUP = "named_place_lookup"
     PLACE_LOOKUP = "place_lookup"
     STATISTICS = "statistics"
     AREA_COMPARISON = "area_comparison"
@@ -310,6 +311,11 @@ LEVEL_KEYWORDS = {
     "oa": [r"\boa\b", r"\boutput areas?\b"],
     "lsoa": [r"\blsoa\b", r"\blower (layer )?super output areas?\b"],
     "msoa": [r"\bmsoa\b", r"\bmiddle (layer )?super output areas?\b"],
+    "parish": [
+        r"\bparishes?\b",
+        r"\bparncp\b",
+        r"\bnon[- ]civil[- ]parished\b",
+    ],
     "ward": [r"\bwards?\b"],
     "parl_const": [r"\bconstituenc(y|ies)\b", r"\bparliamentary\b", r"\bmp\b"],
     "local_auth": [r"\blocal authority\b", r"\bcouncil\b", r"\bdistrict\b", r"\bborough\b"],
@@ -321,27 +327,30 @@ LEVEL_RANK = {
     "oa": 0,
     "lsoa": 1,
     "msoa": 2,
-    "ward": 3,
-    "parl_const": 4,
-    "local_auth": 5,
-    "built_up_area": 6,
-    "postcode": 7,
+    "parish": 3,
+    "ward": 4,
+    "parl_const": 5,
+    "local_auth": 6,
+    "built_up_area": 7,
+    "postcode": 8,
 }
 
 AREA_PROFILE_LEVEL_RANK = {
     "OA": 0,
     "LSOA": 1,
     "MSOA": 2,
-    "WARD": 3,
-    "DISTRICT": 4,
-    "REGION": 5,
-    "COUNTRY": 6,
+    "PARISH": 3,
+    "WARD": 4,
+    "DISTRICT": 5,
+    "REGION": 6,
+    "COUNTRY": 7,
 }
 
 ADMIN_LEVEL_MAP = {
     "oa": "OA",
     "lsoa": "LSOA",
     "msoa": "MSOA",
+    "parish": "PARISH",
     "ward": "WARD",
     "local_auth": "DISTRICT",
     "parl_const": None,
@@ -356,6 +365,9 @@ AREA_PROFILE_LEVEL_PATTERNS = (
     (r"\blower (layer )?super output areas?\b", "LSOA"),
     (r"\bmsoa\b", "MSOA"),
     (r"\bmiddle (layer )?super output areas?\b", "MSOA"),
+    (r"\bparishes?\b", "PARISH"),
+    (r"\bparncp\b", "PARISH"),
+    (r"\bnon[- ]civil[- ]parished\b", "PARISH"),
     (r"\bwards?\b", "WARD"),
     (r"\blocal authority\b", "DISTRICT"),
     (r"\bdistricts?\b", "DISTRICT"),
@@ -407,6 +419,7 @@ INTENT_TOOLSET_MAP: dict[QueryIntent, list[str]] = {
     QueryIntent.AREA_PROFILE: ["core_router", "ons_geo_lookup"],
     QueryIntent.PROPERTY_TAX: ["core_router", "property_tax"],
     QueryIntent.POI_LOOKUP: ["core_router", "places_names"],
+    QueryIntent.NAMED_PLACE_LOOKUP: ["core_router", "places_names"],
     QueryIntent.PLACE_LOOKUP: ["core_router", "admin_boundaries"],
     QueryIntent.STATISTICS: ["core_router", "ons_data"],
     QueryIntent.AREA_COMPARISON: ["core_router", "apps_ui", "ons_data"],
@@ -470,8 +483,10 @@ def _is_geography_lookup_query(query_lower: str) -> bool:
         r"\bexact\b.*\bmode\b",
         r"\bbest[- ]?fit\b",
         (
-            r"\bwhich\b.*\b(ward|lsoa|msoa|oa|local authority|district|borough|region|"
-            r"constituenc(y|ies))\b"
+            r"\bwhich\b.*\b("
+            r"ward|parish|parncp|lsoa|msoa|oa|local authority|district|borough|region|"
+            r"constituenc(y|ies)"
+            r")\b"
         ),
     ]
     return any(re.search(pattern, query_lower) for pattern in patterns)
@@ -581,6 +596,37 @@ def _looks_like_landis_survey_query(query_lower: str) -> bool:
             query_lower,
         )
     )
+
+
+def _looks_like_named_place_lookup_query(query_lower: str) -> bool:
+    if re.search(
+        (
+            r"\bgazetteer\b|\bos names?\b|\bnamed (place|feature)s?\b|"
+            r"\bsettlements?\b|\bhamlets?\b|\bvillages?\b"
+        ),
+        query_lower,
+    ):
+        return not re.search(
+            r"\bboundar(y|ies)\b|\badmin(istrative)?\b|\blocal authority\b|\bward\b|\bparish\b",
+            query_lower,
+        )
+    return False
+
+
+def _extract_named_place_text(query: str, place_name: str | None) -> str:
+    patterns = [
+        r"\b(?:gazetteer|os names?)\b.*?\b(?:for|named|called)\s+(.+)$",
+        r"\bnamed (?:place|feature)s?\b.*?\b(?:for|named|called)\s+(.+)$",
+        r"\b(?:settlement|hamlet|village)\b\s+(?:called|named)?\s*(.+)$",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, query, re.IGNORECASE)
+        if not match:
+            continue
+        candidate = match.group(1).strip(" .,:;\"'")
+        if candidate:
+            return candidate
+    return place_name or query.strip()
 
 
 def _extract_place_name(query: str) -> str | None:
@@ -784,13 +830,16 @@ def _looks_like_area_profile_query(query: str, query_lower: str, level_mentions:
     if _extract_postcode(query) or _extract_uprn(query):
         return True
     if re.search(
-        r"\bthat (oa|lsoa|msoa|ward|district|local authority|region|country)\b",
+        r"\bthat (oa|lsoa|msoa|parish|ward|district|local authority|region|country)\b",
         query_lower,
     ):
         return True
     if re.search(r"\b(postcode area|area around postcode|this postcode area)\b", query_lower):
         return True
-    return any(level in {"oa", "lsoa", "msoa", "ward", "local_auth"} for level in level_mentions)
+    return any(
+        level in {"oa", "lsoa", "msoa", "parish", "ward", "local_auth"}
+        for level in level_mentions
+    )
 
 
 def _requested_area_profile_level(query_lower: str, level_mentions: list[str]) -> str | None:
@@ -1044,6 +1093,15 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
         text_match = re.search(r"\bfor\s+(.+)$", query, re.IGNORECASE)
         poi_text = text_match.group(1).strip() if text_match else query
         return QueryIntent.POI_LOOKUP, 0.88, {"text": poi_text}, context
+
+    if _looks_like_named_place_lookup_query(query_lower):
+        context["place_mode"] = "os_names"
+        return (
+            QueryIntent.NAMED_PLACE_LOOKUP,
+            0.9,
+            {"text": _extract_named_place_text(query, place_name)},
+            context,
+        )
 
     if any(re.search(pattern, query_lower) for pattern in DATASET_PATTERNS):
         if "nomis" in query_lower:
@@ -1502,7 +1560,7 @@ def _get_tool_for_intent(
         if follow_up:
             explanation = (
                 "Use ons_geo.area_summary for the follow-up area profile. If the host keeps "
-                "prior tool context, reuse the previously returned OA/LSOA/MSOA code; "
+                "prior tool context, reuse the previously returned OA/LSOA/MSOA/parish code; "
                 "otherwise pass that code, postcode, or UPRN explicitly."
             )
         return (
@@ -1522,6 +1580,12 @@ def _get_tool_for_intent(
             "os_poi.search",
             ["os_poi.search", "os_poi.nearest", "os_poi.within"],
             "Search OS Points of Interest for amenities and nearby services.",
+        )
+    if intent == QueryIntent.NAMED_PLACE_LOOKUP:
+        return (
+            "os_names.find",
+            ["os_names.find", "os_names.nearest"],
+            "Search the OS Names gazetteer for named places and features.",
         )
     if intent == QueryIntent.LINKED_IDS:
         linked_mode = str(context.get("linked_mode") or "")
@@ -1847,6 +1911,11 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
             "os_places.search",
         ],
         QueryIntent.POI_LOOKUP: ["os_poi.nearest", "os_poi.within", "os_places.search"],
+        QueryIntent.NAMED_PLACE_LOOKUP: [
+            "os_names.nearest",
+            "admin_lookup.find_by_name",
+            "os_places.search",
+        ],
         QueryIntent.LINKED_IDS: [
             "os_linked_ids.identifiers",
             "os_linked_ids.feature_types",
@@ -1912,6 +1981,11 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
         QueryIntent.POI_LOOKUP: (
             "Use os_poi.search/nearest/within for amenities and points of interest. "
             "Use nearest for a point lookup and within for bbox-constrained queries."
+        ),
+        QueryIntent.NAMED_PLACE_LOOKUP: (
+            "Use os_names.find for gazetteer and named-feature lookup. Use "
+            "admin_lookup.find_by_name instead when the user asks for administrative "
+            "areas, boundaries, hierarchy, or geometry."
         ),
         QueryIntent.LINKED_IDS: (
             "Use os_linked_ids.get for identifier type lookups, "

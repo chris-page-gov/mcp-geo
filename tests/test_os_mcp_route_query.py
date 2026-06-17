@@ -25,6 +25,27 @@ def test_route_query_place_lookup():
     assert body["recommended_parameters"]["text"] == "Westminster"
 
 
+def test_route_query_gazetteer_lookup_routes_to_os_names():
+    body = _route("Search the OS Names gazetteer for Leamington Spa")
+    assert body["intent"] == "named_place_lookup"
+    assert body["recommended_tool"] == "os_names.find"
+    assert body["recommended_parameters"]["text"] == "Leamington Spa"
+    assert body["workflow_steps"] == ["os_names.find", "os_names.nearest"]
+
+
+def test_route_query_named_place_lookup_routes_to_os_names():
+    body = _route("Find named place settlement Harold Wood")
+    assert body["intent"] == "named_place_lookup"
+    assert body["recommended_tool"] == "os_names.find"
+    assert body["recommended_parameters"]["text"] == "Harold Wood"
+
+
+def test_route_query_admin_boundary_wording_stays_on_admin_lookup():
+    body = _route("Find Westminster boundary")
+    assert body["intent"] == "boundary_fetch"
+    assert body["recommended_tool"] == "admin_lookup.area_geometry"
+
+
 def test_route_query_harold_wood_prompt_ignores_question_openers():
     body = _route("What can MCP-Geo tell me about Harold Wood, Essex?")
     assert body["intent"] == "place_lookup"
@@ -93,6 +114,14 @@ def test_route_query_area_profile_from_area_code_preserves_explicit_higher_level
     assert body["recommended_tool"] == "ons_geo.area_summary"
     assert body["recommended_parameters"]["id"] == "E01009617"
     assert body["recommended_parameters"]["targetLevel"] == "REGION"
+
+
+def test_route_query_area_profile_from_parish_code():
+    body = _route("Quick profile for parish E04000001")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "ons_geo.area_summary"
+    assert body["recommended_parameters"]["id"] == "E04000001"
+    assert body["recommended_parameters"]["targetLevel"] == "PARISH"
 
 
 def test_route_query_area_profile_from_area_code_rejects_narrower_target_level():
@@ -696,6 +725,25 @@ def test_select_toolsets_poi_query_infers_places_names():
     assert "admin_boundaries" not in include
     matched = body.get("matchedTools", [])
     assert "os_poi.search" in matched
+
+
+def test_select_toolsets_named_place_query_infers_places_names_only():
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.select_toolsets",
+            "query": "Search the gazetteer for Leamington Spa",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    inference = body.get("inference", {})
+    assert inference.get("intent") == "named_place_lookup"
+    include = body.get("effectiveFilters", {}).get("includeToolsets", [])
+    assert "places_names" in include
+    assert "admin_boundaries" not in include
+    matched = body.get("matchedTools", [])
+    assert "os_names.find" in matched
 
 
 def test_select_toolsets_property_tax_band_query_infers_property_tax_and_places():
