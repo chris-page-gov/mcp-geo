@@ -40,6 +40,21 @@ def test_route_query_named_place_lookup_routes_to_os_names():
     assert body["recommended_parameters"]["text"] == "Harold Wood"
 
 
+def test_route_query_named_place_feature_type_strips_prompt_wording():
+    cases = [
+        ("Find the village of Barston", "Barston"),
+        ("OS Names for village of Barston", "Barston"),
+        ("Search the gazetteer for settlement called Harold Wood", "Harold Wood"),
+        ("Find named place hamlet of Shrewley", "Shrewley"),
+    ]
+
+    for query, expected_text in cases:
+        body = _route(query)
+        assert body["intent"] == "named_place_lookup"
+        assert body["recommended_tool"] == "os_names.find"
+        assert body["recommended_parameters"]["text"] == expected_text
+
+
 def test_route_query_admin_boundary_wording_stays_on_admin_lookup():
     body = _route("Find Westminster boundary")
     assert body["intent"] == "boundary_fetch"
