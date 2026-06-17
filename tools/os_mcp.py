@@ -41,6 +41,7 @@ class QueryIntent(StrEnum):
     VECTOR_TILES = "vector_tiles"
     LINKED_IDS = "linked_ids"
     ENVIRONMENTAL_SURVEY = "environmental_survey"
+    OPERATIONAL_WORKFLOW = "operational_workflow"
     UNKNOWN = "unknown"
 
 
@@ -424,6 +425,7 @@ INTENT_TOOLSET_MAP: dict[QueryIntent, list[str]] = {
         "admin_boundaries",
         "protected_landscapes",
     ],
+    QueryIntent.OPERATIONAL_WORKFLOW: ["core_router", "operational_workflows", "places_names"],
     QueryIntent.UNKNOWN: ["starter"],
 }
 
@@ -955,6 +957,39 @@ def _classify_linked_identifier_query(
     return QueryIntent.LINKED_IDS, 0.9, linked_params, context
 
 
+def _detect_operational_workflow(query_lower: str) -> str | None:
+    incident_terms = bool(
+        re.search(r"\bincident\b|\bflood\b|\bemergency\b|\baffected\b", query_lower)
+    )
+    premises_terms = bool(
+        re.search(
+            r"\bpremises\b|\bhouseholds?\b|\bvulnerable\b|\bsupport[- ]?relevant\b",
+            query_lower,
+        )
+    )
+    if incident_terms and premises_terms:
+        return "incident_impact"
+    if re.search(
+        (
+            r"\bbatch\b.*\b(address|uprn|match|matching)\b|"
+            r"\b(address|free[- ]?text)\b.*\b(batch|uprn|matching)\b|"
+            r"\breview queue\b.*\b(address|uprn)\b"
+        ),
+        query_lower,
+    ):
+        return "batch_address_match"
+    if re.search(
+        (
+            r"\bplanning\b.*\b(constraints?|site|policy|local plan)\b|"
+            r"\bsite\b.*\b(constraints?|planning|listed building|conservation|flood risk)\b|"
+            r"\bconstraints?\b.*\b(planning|listed building|conservation|flood risk)\b"
+        ),
+        query_lower,
+    ):
+        return "planning_constraints"
+    return None
+
+
 def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dict[str, Any]]:
     query_lower = query.lower()
     context: dict[str, Any] = {}
@@ -997,6 +1032,11 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
     if re.search(r"\b(find|search|list|show)\b.*\btools?\b", query_lower):
         context["unknown_mode"] = "descriptor"
         return QueryIntent.UNKNOWN, 0.9, {}, context
+
+    workflow_id = _detect_operational_workflow(query_lower)
+    if workflow_id:
+        context["workflow_id"] = workflow_id
+        return QueryIntent.OPERATIONAL_WORKFLOW, 0.94, {"workflowId": workflow_id}, context
 
     if any(re.search(pattern, query_lower) for pattern in SURVEY_PATTERNS):
         focus = _extract_landscape_focus(query) or place_name
@@ -1687,6 +1727,22 @@ def _get_tool_for_intent(
                 "Run an AOI-first environmental survey flow: resolve "
                 "protected-landscape boundary, derive peat evidence paths "
                 "(direct + proxy), profile counts, then fetch bounded geometry."
+                ),
+            )
+    if intent == QueryIntent.OPERATIONAL_WORKFLOW:
+        workflow_id = str(context.get("workflow_id") or "").strip()
+        workflow_labels = {
+            "batch_address_match": "batch address matching and review queue workflow",
+            "incident_impact": "incident affected-premises and support-count workflow",
+            "planning_constraints": "planning constraints workflow",
+        }
+        label = workflow_labels.get(workflow_id, "stakeholder workflow")
+        return (
+            "os_workflows.query",
+            ["os_workflows.descriptor", "os_workflows.query"],
+            (
+                f"Use the native MCP-Geo {label}. Supply records, geometry, "
+                "or site details as required by os_workflows.descriptor."
             ),
         )
     if intent == QueryIntent.STATISTICS:
@@ -1863,6 +1919,12 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
             "os_features.collections",
             "admin_lookup.find_by_name",
         ],
+        QueryIntent.OPERATIONAL_WORKFLOW: [
+            "os_workflows.descriptor",
+            "os_places.search",
+            "admin_lookup.containing_areas",
+            "os_apps.render_boundary_explorer",
+        ],
         QueryIntent.STATISTICS: ["ons_data.dimensions", "ons_select.search", "nomis.query"],
         QueryIntent.AREA_COMPARISON: ["ons_data.query"],
         QueryIntent.INTERACTIVE_SELECTION: [
@@ -1935,6 +1997,12 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "os_peat.evidence_paths -> os_features.query (hits/thin/geometry-last). "
             "This separates direct peat evidence sources from proxy indicators and "
             "reduces large-response risk."
+        ),
+        QueryIntent.OPERATIONAL_WORKFLOW: (
+            "Use os_workflows.descriptor to inspect the workflow contract, then call "
+            "os_workflows.query with workflowId and caller-supplied records, geometry "
+            "or site details. The workflow returns review queues, caveats and export "
+            "contracts; unresolved identifiers must still be resolved with OS Places."
         ),
         QueryIntent.STATISTICS: (
             "Use NOMIS for labour/census or deep local geographies; otherwise use ONS datasets. "

@@ -2,7 +2,7 @@
   "manifest_type": "owasp-mcp-tool-lock",
   "project": "mcp-geo",
   "schema_version": 1,
-  "tool_count": 103,
+  "tool_count": 105,
   "tools": [
     {
       "description": "Return bbox and optional full boundary geometry for a given area id",
@@ -826,6 +826,22 @@
       "input_schema_sha256": "6ee726dc89b630e8e80b218debb3cf4c25c72a3e56e55c9591708774990ef03a",
       "name": "os_vector_tiles.descriptor",
       "output_schema_sha256": "819c60f721fcad5e38908be8a320f01e10be093026150295be4780d811374096",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Describe native MCP-Geo stakeholder and PoC workflow contracts.",
+      "description_sha256": "9c73a228d642582e1beb273e881c20f8c3c456c0299d31a1f757d9ec3bdf8a8e",
+      "input_schema_sha256": "5e409c10743f9cd899e3f365455027fc5d4df8a308565a46cf11aec847b1648a",
+      "name": "os_workflows.descriptor",
+      "output_schema_sha256": "db4e61a9871a0c5e47f9c97a451be5a33d77780af611b723cd5a42b2f5aff5b5",
+      "version": "0.1.0"
+    },
+    {
+      "description": "Run native MCP-Geo workflow contracts for batch address matching, incident impact review, and planning constraints.",
+      "description_sha256": "fc55f047aabdbc044d750a6a445ccd09ff91426b3efaa8237aa2752c1bed314d",
+      "input_schema_sha256": "2741baa1cc3dd1afbc4ffbf67aa839998a306d4920998ad0b8a30db6626a688d",
+      "name": "os_workflows.query",
+      "output_schema_sha256": "a3227f93bf7425ace9ce7de6ba119d6ef15aaf49be5508431458f82199f18b35",
       "version": "0.1.0"
     }
   ]

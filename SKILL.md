@@ -12,6 +12,8 @@ quick, reliable guide to tool selection.
 - ONS dataset discovery and observation queries (live dataset search).
 - NOMIS labour/census statistics (deep local geographies).
 - Administrative area lookups from live ONS geography (ArcGIS).
+- Native stakeholder workflows for incident impact, batch address matching, and
+  planning constraints.
 - MCP-Apps widgets for interactive selection and inspection.
 - Tool search metadata for large tool catalogs.
 
@@ -74,6 +76,18 @@ Route planning:
 - For free-text prompts such as "best emergency route from ... to ... avoid ... if
   possible", start with `os_mcp.route_query` and then follow its
   `recommended_parameters`.
+
+Operational workflows:
+- Use `os_workflows.descriptor` to inspect supported workflow contracts.
+- Use `os_workflows.query` with `workflowId: "incident_impact"` for affected
+  premises and support-relevant counts from an incident polygon.
+- Use `os_workflows.query` with `workflowId: "batch_address_match"` for
+  address-to-UPRN matching, duplicate detection, review queues and export fields.
+- Use `os_workflows.query` with `workflowId: "planning_constraints"` for
+  planning or flood/heritage constraint review; missing public-data connectors
+  are returned explicitly as review rows.
+- Set `resolveAddresses: true` when a live OS Places key is available and the
+  workflow should resolve address rows internally.
 
 Maps and tiles:
 - Use `os_maps.render` for static map image URLs (served by MCP Geo proxy).

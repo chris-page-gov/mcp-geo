@@ -12,6 +12,7 @@ import re
 import time
 from collections import Counter, defaultdict
 from copy import deepcopy
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -22,6 +23,7 @@ from server.config import settings
 from server.main import app
 
 DATE_STAMP = benchmark_pack.DATE_STAMP
+LIVE_RUN_DATE_STAMP = os.environ.get("MCP_GEO_LIVE_RUN_DATE") or date.today().isoformat()
 REPO_ROOT = Path(__file__).resolve().parents[1]
 LIVE_JSON_PATH = benchmark_pack.PACK_ROOT / f"live_run_{DATE_STAMP}.json"
 LIVE_REPORT_PATH = REPO_ROOT / "docs" / "reports" / f"mcp_geo_stakeholder_live_run_{DATE_STAMP}.md"
@@ -318,6 +320,8 @@ def infer_source(tool: str, body: Any, ok: bool) -> str:
         return "Routing engine"
     if tool.startswith("os_apps."):
         return "UI shell"
+    if tool.startswith("os_workflows."):
+        return "Workflow engine"
     if tool == "os_mcp.route_query":
         return "Router"
     return "local"
@@ -330,6 +334,9 @@ def infer_live_evidence(tool: str, body: Any, ok: bool) -> bool:
         return True
     if tool.startswith("admin_lookup.") and isinstance(body, dict):
         return bool(body.get("live"))
+    if tool.startswith("os_workflows.") and isinstance(body, dict):
+        evidence = body.get("results", {}).get("resolutionEvidence", [])
+        return any(isinstance(item, dict) and item.get("status") == "resolved" for item in evidence)
     return False
 
 
@@ -495,6 +502,17 @@ def summarize_response(tool: str, body: Any) -> dict[str, Any]:
             if isinstance(body.get("warnings"), list)
             else 0,
             "graphVersion": graph.get("graphVersion"),
+        }
+    if tool == "os_workflows.query":
+        results = body.get("results", {}) if isinstance(body.get("results"), dict) else {}
+        return {
+            "workflowId": body.get("workflowId"),
+            "answerStatus": body.get("answerStatus"),
+            "productSurfaceReady": body.get("productSurfaceReady"),
+            "reviewQueueCount": len(body.get("reviewQueue", [])),
+            "inputRecords": results.get("inputRecords"),
+            "affectedRecords": results.get("affectedRecords"),
+            "highConfidenceMatches": results.get("highConfidenceMatches"),
         }
     if tool == "ons_geo.by_uprn":
         return {
@@ -765,73 +783,69 @@ def run_sg01(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
     rows = _load_csv(
         "data/benchmarking/stakeholder_eval/fixtures/scenario_01_vulnerable_households.csv"
     )
-    polygon = _load_polygon_from_wkt(
-        "data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt"
-    )
+    incident_wkt = (
+        REPO_ROOT / "data/benchmarking/stakeholder_eval/fixtures/scenario_01_incident_zone.wkt"
+    ).read_text(encoding="utf-8")
     tool_calls: list[dict[str, Any]] = []
-    matches = []
-    for row in rows:
-        call, match = resolve_address(runner, row["address_text"])
-        tool_calls.append(call)
-        matches.append({**row, **match})
-    inside_rows = [
-        row
-        for row in matches
-        if row.get("matched")
-        and row.get("lat") is not None
-        and row.get("lon") is not None
-        and point_in_polygon(float(row["lon"]), float(row["lat"]), polygon)
-    ]
+    workflow_call, workflow_body = runner.call(
+        "os_workflows.query",
+        workflowId="incident_impact",
+        geometryWkt=incident_wkt,
+        records=rows,
+        resolveAddresses=True,
+    )
+    tool_calls.append(workflow_call)
+    workflow_results = workflow_body.get("results", {}) if isinstance(workflow_body, dict) else {}
+    inside_rows = workflow_results.get("affectedRows", [])
     boundary_name = None
     if inside_rows:
+        first_inside = inside_rows[0]
         call, body = runner.call(
             "admin_lookup.containing_areas",
-            lat=float(inside_rows[0]["lat"]),
-            lon=float(inside_rows[0]["lon"]),
+            lat=float(first_inside["lat"]),
+            lon=float(first_inside["lon"]),
         )
         tool_calls.append(call)
         boundary_name = _district_from_containing_areas(body)
-    duplicate_uprns = sorted(
-        uprn for uprn, count in Counter(row["uprn"] for row in inside_rows if row.get("uprn")).items() if count > 1
-    )
+    duplicate_groups = workflow_results.get("duplicateGroups", [])
     evidence = {
         "inputRecords": len(rows),
-        "resolvedRecords": sum(1 for row in matches if row.get("matched")),
+        "workflowAnswerStatus": workflow_body.get("answerStatus"),
+        "workflowProductSurfaceReady": workflow_body.get("productSurfaceReady"),
+        "resolvedRecords": sum(
+            1
+            for item in workflow_results.get("resolutionEvidence", [])
+            if isinstance(item, dict) and item.get("status") in {"resolved", "already_resolved"}
+        ),
         "insidePolygonRecords": len(inside_rows),
-        "insideUniquePremises": len({row["uprn"] for row in inside_rows if row.get("uprn")}),
-        "duplicateInsideUprns": duplicate_uprns,
-        "districtFromLiveLookup": boundary_name,
-        "matchedRows": [
-            {
-                "recordId": row["record_id"],
-                "uprn": row.get("uprn"),
-                "matchType": row.get("matchType"),
-                "score": row.get("score"),
-                "insidePolygon": row in inside_rows,
-            }
-            for row in matches
+        "insideUniquePremises": workflow_results.get("affectedPremises"),
+        "duplicateInsideUprns": [
+            item.get("uprn") for item in duplicate_groups if item.get("uprn")
         ],
+        "districtFromLiveLookup": boundary_name,
+        "matchedRows": workflow_results.get("affectedRows", []),
+        "reviewQueueCount": len(workflow_body.get("reviewQueue", [])),
     }
     summary = (
-        "Live OS Places resolved all 7 benchmark addresses, but only 2 records fall strictly inside the "
-        "clipped benchmark polygon when the returned address points are used directly. That is materially lower "
-        "than the benchmark reference answer, so the live rerun reinforces that MCP-Geo still lacks the native "
-        "flood-geometry, building-footprint, and record-join workflow needed to treat the benchmark total as "
-        "authoritative live truth."
+        "MCP-Geo now exposes SG01 as a native incident-impact workflow: it resolves "
+        "address rows, applies point-in-polygon filtering, deduplicates premises and "
+        "returns a review/export queue. The vulnerability data remains synthetic, so "
+        "the output is still decision-support evidence rather than authoritative "
+        "emergency truth."
     )
     return build_scenario_result(
         scenario,
         live_outcome="partial",
-        first_class_ready=False,
+        first_class_ready=bool(workflow_body.get("productSurfaceReady")),
         summary=summary,
         evidence=evidence,
         confirmed_capabilities=[
-            "Live OS Places address resolution works for the benchmark addresses.",
+            "Native os_workflows.query incident_impact workflow now covers SG01 orchestration.",
             "Live containing-area lookup confirms the affected sample sits in Bassetlaw.",
         ],
         confirmed_gaps=[
             "The vulnerable-household data remains synthetic and external to MCP-Geo.",
-            "Point-in-polygon filtering and record dedupe still require external orchestration.",
+            "Operational use still needs access-controlled real support data and incident perimeter QA.",
         ],
         tool_calls=tool_calls,
     )
@@ -840,57 +854,46 @@ def run_sg01(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
 def run_sg02(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
     rows = _load_csv("data/benchmarking/stakeholder_eval/fixtures/scenario_02_address_batch.csv")
     tool_calls: list[dict[str, Any]] = []
-    matches = []
-    for row in rows:
-        call, match = resolve_address(runner, row["address_text"])
-        tool_calls.append(call)
-        matches.append({**row, **match})
-    uprn_counts = Counter(row["uprn"] for row in matches if row.get("uprn"))
-    review_rows = []
-    for row in matches:
-        reason = row.get("reviewReason") or ""
-        if row.get("uprn") and uprn_counts[row["uprn"]] > 1:
-            row["duplicateInput"] = True
-            if row.get("matchType") == "high_confidence":
-                row["matchType"] = "review"
-            reason = "duplicate_input_same_uprn"
-        if row.get("matchType") != "high_confidence":
-            review_rows.append({"sourceId": row["source_id"], "uprn": row.get("uprn"), "reason": reason or row.get("matchType")})
+    workflow_call, workflow_body = runner.call(
+        "os_workflows.query",
+        workflowId="batch_address_match",
+        records=rows,
+        resolveAddresses=True,
+    )
+    tool_calls.append(workflow_call)
+    workflow_results = workflow_body.get("results", {}) if isinstance(workflow_body, dict) else {}
     evidence = {
         "inputRecords": len(rows),
-        "highConfidenceMatches": sum(1 for row in matches if row.get("matchType") == "high_confidence"),
-        "reviewMatches": sum(1 for row in matches if row.get("matchType") == "review"),
-        "unmatched": sum(1 for row in matches if row.get("matchType") == "unmatched"),
-        "duplicateUprnInputs": sorted(uprn for uprn, count in uprn_counts.items() if count > 1),
-        "reviewQueue": review_rows,
-        "matchedRows": [
-            {
-                "sourceId": row["source_id"],
-                "uprn": row.get("uprn"),
-                "matchType": row.get("matchType"),
-                "score": row.get("score"),
-            }
-            for row in matches
+        "workflowAnswerStatus": workflow_body.get("answerStatus"),
+        "workflowProductSurfaceReady": workflow_body.get("productSurfaceReady"),
+        "highConfidenceMatches": workflow_results.get("highConfidenceMatches"),
+        "reviewMatches": workflow_results.get("reviewMatches"),
+        "unmatched": workflow_results.get("unmatched"),
+        "duplicateUprnInputs": [
+            item.get("uprn")
+            for item in workflow_results.get("duplicateGroups", [])
+            if item.get("uprn")
         ],
+        "reviewQueue": workflow_body.get("reviewQueue", []),
+        "matchedRows": workflow_results.get("matchedRows", []),
     }
     summary = (
-        "Live OS Places can now batch-resolve the benchmark address file record by record. "
-        "The run produced candidate UPRNs for all 10 rows, but the conservative scorer only cleared 2 as "
-        "high-confidence, pushed 6 into review, and left 2 unmatched. Native MCP-Geo support remains partial "
-        "because the batch loop, confidence labelling, and review/export queue are still external orchestration."
+        "MCP-Geo now exposes SG02 as a native batch address-matching workflow. "
+        "The workflow resolves rows through OS Places when enabled, applies confidence "
+        "bands, flags duplicate UPRNs and returns review/export queues."
     )
     return build_scenario_result(
         scenario,
         live_outcome="partial",
-        first_class_ready=False,
+        first_class_ready=bool(workflow_body.get("productSurfaceReady")),
         summary=summary,
         evidence=evidence,
         confirmed_capabilities=[
-            "Live OS Places matching works on the full 10-row benchmark input.",
-            "Duplicate input rows can be detected reliably once candidate UPRNs are resolved.",
+            "Native os_workflows.query batch_address_match workflow now covers SG02.",
+            "Duplicate and low-confidence rows are surfaced in a first-class review queue.",
         ],
         confirmed_gaps=[
-            "MCP-Geo still lacks a first-class batch matcher with confidence buckets and review exports.",
+            "Operational acceptance still depends on user-tuned confidence thresholds.",
         ],
         tool_calls=tool_calls,
     )
@@ -1116,6 +1119,12 @@ def run_sg05(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
     tool_calls: list[dict[str, Any]] = []
     site_call, site_match = resolve_address(runner, "Goodwin Hall, Chancery Lane, Retford, DN22 6DF")
     tool_calls.append(site_call)
+    workflow_call, workflow_body = runner.call(
+        "os_workflows.query",
+        workflowId="planning_constraints",
+        site="Goodwin Hall, Chancery Lane, Retford, DN22 6DF",
+    )
+    tool_calls.append(workflow_call)
     containing_body: Any = {}
     if site_match.get("matched") and site_match.get("lat") is not None and site_match.get("lon") is not None:
         areas_call, containing_body = runner.call(
@@ -1138,13 +1147,17 @@ def run_sg05(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
     evidence = {
         "siteUprn": site_match.get("uprn"),
         "district": _district_from_containing_areas(containing_body),
+        "workflowAnswerStatus": workflow_body.get("answerStatus"),
+        "workflowProductSurfaceReady": workflow_body.get("productSurfaceReady"),
+        "workflowReviewQueueCount": len(workflow_body.get("reviewQueue", [])),
         "planningKeywordCollections": relevant_collections[:20],
         "planningKeywordCollectionCount": len(relevant_collections),
     }
     summary = (
-        "The site itself can be resolved live and placed in its containing administrative areas, but the constraint "
-        "answer remains partial because MCP-Geo still does not expose planning.data or local-plan policy layers as "
-        "first-class spatial evidence sources."
+        "MCP-Geo now exposes a native planning-constraints workflow contract for SG05. "
+        "The site itself can be resolved live and placed in its containing administrative "
+        "areas, but the answer remains partial until planning.data and local-plan layers "
+        "are ingested as live connector-backed evidence."
     )
     return build_scenario_result(
         scenario,
@@ -1155,6 +1168,7 @@ def run_sg05(runner: ToolRunner, scenario: dict[str, Any]) -> dict[str, Any]:
         confirmed_capabilities=[
             "Live site resolution works for the benchmark planning site.",
             "Administrative context can be recovered live from coordinates.",
+            "A native planning_constraints workflow now records the connector gap explicitly.",
         ],
         confirmed_gaps=[
             "Planning-constraint and local-plan policy layers are still missing from the MCP-Geo tool surface.",
@@ -2291,10 +2305,13 @@ def build_overall_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
 
 def render_markdown(pack: dict[str, Any], run_data: dict[str, Any]) -> str:
     scenario_count = run_data["overall"]["scenarioCount"]
+    generated = run_data.get("generated", LIVE_RUN_DATE_STAMP)
+    benchmark_reference_date = run_data.get("benchmarkReferenceDate", DATE_STAMP)
     lines = [
         "# MCP-Geo Stakeholder Evaluation Live Rerun",
         "",
-        f"Generated: {DATE_STAMP}",
+        f"Generated: {generated}",
+        f"Benchmark reference date: {benchmark_reference_date}",
         "",
         f"This report reruns the {scenario_count} stakeholder scenarios against the live MCP-Geo surface in the current Codex session.",
         "It is separate from the benchmark pack so the gold/reference answers remain stable while the live tool evidence changes.",
@@ -2380,7 +2397,8 @@ def run_live_evaluation() -> dict[str, Any]:
             runner_fn = SCENARIO_RUNNERS[scenario["id"]]
             results.append(runner_fn(runner, scenario))
         run_data = {
-            "generated": DATE_STAMP,
+            "generated": LIVE_RUN_DATE_STAMP,
+            "benchmarkReferenceDate": DATE_STAMP,
             "runtime": {
                 "osApiKeyPresent": bool(settings.OS_API_KEY),
                 "osApiKeyFile": os.environ.get("OS_API_KEY_FILE", ""),
