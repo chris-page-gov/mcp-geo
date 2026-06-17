@@ -1,0 +1,36 @@
+{
+  "id": "client_interop_naming_compat_v1",
+  "title": "Client interop naming compatibility scenarios",
+  "description": "Focused client interop pack for MCP-Geo tool naming, discovery, resource reads, and schema compatibility across 0.8.1-to-0.8.2 style changes.",
+  "version": "2026-06-17",
+  "extendsScenarioPack": "codex_vs_claude_host_scenarios_v1.json",
+  "scenarioIds": [
+    "ambiguous_westminster_data",
+    "tool_search_postcode",
+    "skills_guide_resource",
+    "address_lookup_postcode",
+    "static_map_render"
+  ],
+  "scenarioOverrides": {
+    "ambiguous_westminster_data": {
+      "riskTags": ["tool_naming", "routing", "discovery"],
+      "compatibilityFocus": "Checks whether the client discovers the routing/descriptor surface without relying on dotted names only."
+    },
+    "tool_search_postcode": {
+      "riskTags": ["tool_naming", "tool-search", "discovery"],
+      "compatibilityFocus": "Checks whether the client can use tool search/listing and understand sanitized names."
+    },
+    "skills_guide_resource": {
+      "riskTags": ["resource_contract", "resources_read", "name_or_uri"],
+      "compatibilityFocus": "Checks resource reads through URI/name-compatible client behavior."
+    },
+    "address_lookup_postcode": {
+      "riskTags": ["tool_naming", "schema", "live_os_lookup"],
+      "compatibilityFocus": "Checks canonical dotted, sanitized, and client-prefixed tool-call evidence for a live OS-backed lookup."
+    },
+    "static_map_render": {
+      "riskTags": ["tool_naming", "schema", "map_descriptor"],
+      "compatibilityFocus": "Checks whether schema and naming compatibility still leads to the map render descriptor."
+    }
+  }
+}

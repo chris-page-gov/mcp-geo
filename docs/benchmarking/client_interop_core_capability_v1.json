@@ -1,0 +1,35 @@
+{
+  "id": "client_interop_core_capability_v1",
+  "title": "Client interop core capability scenarios",
+  "description": "Core MCP-Geo client interop pack for address lookup, resources, maps, UI fallback/runtime behavior, and structured error recovery.",
+  "version": "2026-06-17",
+  "extendsScenarioPack": "codex_vs_claude_host_scenarios_v1.json",
+  "scenarioIds": [
+    "address_lookup_postcode",
+    "skills_guide_resource",
+    "static_map_render",
+    "geography_selector_widget",
+    "boundary_explorer_widget",
+    "boundary_not_found_recovery"
+  ],
+  "scenarioOverrides": {
+    "address_lookup_postcode": {
+      "riskTags": ["live_os_lookup", "tool_naming", "schema"]
+    },
+    "skills_guide_resource": {
+      "riskTags": ["resource_contract", "resources_read"]
+    },
+    "static_map_render": {
+      "riskTags": ["map_descriptor", "schema"]
+    },
+    "geography_selector_widget": {
+      "riskTags": ["ui", "ui_fallback", "resource_contract"]
+    },
+    "boundary_explorer_widget": {
+      "riskTags": ["ui", "ui_fallback", "resource_contract"]
+    },
+    "boundary_not_found_recovery": {
+      "riskTags": ["error_recovery", "admin_lookup"]
+    }
+  }
+}

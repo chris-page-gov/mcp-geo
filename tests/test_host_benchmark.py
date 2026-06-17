@@ -66,6 +66,27 @@ def test_scenario_pack_matches_evaluation_questions() -> None:
     } <= scenario_ids
 
 
+def test_derived_client_interop_pack_materializes_base_scenarios() -> None:
+    pack = load_scenario_pack(
+        host_benchmark.REPO_ROOT / "docs" / "benchmarking" / "client_interop_naming_compat_v1.json"
+    )
+    scenario_ids = [scenario["id"] for scenario in pack["scenarios"]]
+    address = next(
+        scenario for scenario in pack["scenarios"] if scenario["id"] == "address_lookup_postcode"
+    )
+
+    assert pack["id"] == "client_interop_naming_compat_v1"
+    assert pack["baseScenarioPack"] == "codex_vs_claude_host_v1"
+    assert scenario_ids == [
+        "ambiguous_westminster_data",
+        "tool_search_postcode",
+        "skills_guide_resource",
+        "address_lookup_postcode",
+        "static_map_render",
+    ]
+    assert "tool_naming" in address["riskTags"]
+
+
 def test_score_session_classifies_fallback_only_cli_run(tmp_path: Path) -> None:
     pack = load_scenario_pack()
     scenario = next(s for s in pack["scenarios"] if s["id"] == "geography_selector_widget")
@@ -313,6 +334,100 @@ def test_score_session_requires_expected_method_signals(tmp_path: Path) -> None:
     assert score["categories"]["toolSelection"]["score"] == 0.0
     assert score["categories"]["toolSelection"]["matchedMethods"] == []
     assert score["categories"]["toolSelection"]["expectedMethods"] == ["tools/search"]
+
+
+def test_score_session_normalizes_server_prefixed_tool_names(tmp_path: Path) -> None:
+    pack = load_scenario_pack()
+    scenario = next(s for s in pack["scenarios"] if s["id"] == "address_lookup_postcode")
+    session_dir = _make_session_dir(
+        tmp_path,
+        "opencode-prefixed-tools",
+        {
+            "sessionId": "opencode-prefixed-tools",
+            "mode": "stdio",
+            "source": "opencode",
+            "surface": "cli",
+            "hostProfile": "opencode_cli_stdio",
+            "scenarioId": scenario["id"],
+            "scenarioPack": pack["id"],
+        },
+        [
+            _request(1.0, 1, "initialize", {"capabilities": {}}),
+            _response(1.1, 1, {"protocolVersion": "2025-11-25"}),
+            _request(
+                1.2,
+                2,
+                "tools/call",
+                {
+                    "name": "mcp_geo_benchmark_os_mcp_route_query",
+                    "arguments": {"query": scenario["prompt"]},
+                },
+            ),
+            _response(1.3, 2, {"ok": True, "data": {"recommended_tool": "os_places.by_postcode"}}),
+            _request(
+                1.4,
+                3,
+                "tools/call",
+                {
+                    "name": "mcp_geo_benchmark_os_places_by_postcode",
+                    "arguments": {"postcode": "SW1A 1AA"},
+                },
+            ),
+            _response(1.5, 3, {"ok": True, "data": {"postcode": "SW1A 1AA", "results": []}}),
+        ],
+    )
+
+    evidence, score = score_session(session_dir, scenario)
+
+    assert "os_mcp.route_query" in evidence["toolCalls"]
+    assert "os_places.by_postcode" in evidence["toolCalls"]
+    assert evidence["toolNameEvidence"][0]["serverPrefixed"] is True
+    assert score["categories"]["toolSelection"]["status"] == "pass"
+    assert score["categories"]["toolSelection"]["matchedTools"] == [
+        "os_mcp.route_query",
+        "os_places.by_postcode",
+    ]
+
+
+def test_score_session_normalizes_namespaced_sanitized_tool_alias(tmp_path: Path) -> None:
+    pack = load_scenario_pack()
+    scenario = next(s for s in pack["scenarios"] if s["id"] == "address_lookup_postcode")
+    session_dir = _make_session_dir(
+        tmp_path,
+        "namespaced-sanitized-tool",
+        {
+            "sessionId": "namespaced-sanitized-tool",
+            "mode": "stdio",
+            "source": "codex",
+            "surface": "cli",
+            "hostProfile": "codex_cli_stdio",
+            "scenarioId": scenario["id"],
+            "scenarioPack": pack["id"],
+        },
+        [
+            _request(1.0, 1, "initialize", {"capabilities": {}}),
+            _response(1.1, 1, {"protocolVersion": "2025-11-25"}),
+            _request(
+                1.2,
+                2,
+                "tools/call",
+                {"name": "mcp-geo:os_mcp_route_query", "arguments": {"query": scenario["prompt"]}},
+            ),
+            _response(1.3, 2, {"ok": True, "data": {"recommended_tool": "os_places.by_postcode"}}),
+            _request(
+                1.4,
+                3,
+                "tools/call",
+                {"name": "mcp-geo:os_places_by_postcode", "arguments": {"postcode": "SW1A 1AA"}},
+            ),
+            _response(1.5, 3, {"ok": True, "data": {"postcode": "SW1A 1AA", "results": []}}),
+        ],
+    )
+
+    evidence, score = score_session(session_dir, scenario)
+
+    assert evidence["toolCalls"] == ["os_mcp.route_query", "os_places.by_postcode"]
+    assert score["categories"]["toolSelection"]["status"] == "pass"
 
 
 def test_build_temp_stdio_server_keeps_host_ui_event_path_for_codex_wrapper(tmp_path: Path) -> None:

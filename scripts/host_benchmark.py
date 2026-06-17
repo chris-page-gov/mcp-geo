@@ -96,8 +96,40 @@ def _scenario_entries(pack: dict[str, Any]) -> list[dict[str, Any]]:
     return entries
 
 
+def _materialize_derived_scenario_pack(pack: dict[str, Any], path: Path) -> dict[str, Any]:
+    extends = pack.get("extendsScenarioPack")
+    if not isinstance(extends, str) or not extends:
+        return pack
+    base_path = (path.parent / extends).resolve()
+    base_pack = load_scenario_pack(base_path)
+    requested_ids = pack.get("scenarioIds")
+    if not isinstance(requested_ids, list) or not all(
+        isinstance(item, str) for item in requested_ids
+    ):
+        raise ValueError(f"Derived scenario pack missing string scenarioIds: {path}")
+    base_by_id = {scenario["id"]: scenario for scenario in _scenario_entries(base_pack)}
+    overrides = pack.get("scenarioOverrides") or {}
+    if not isinstance(overrides, dict):
+        raise ValueError(f"Derived scenario pack scenarioOverrides must be an object: {path}")
+    scenarios: list[dict[str, Any]] = []
+    for scenario_id in requested_ids:
+        if scenario_id not in base_by_id:
+            raise ValueError(f"Derived scenario pack references unknown scenario: {scenario_id}")
+        scenario = dict(base_by_id[scenario_id])
+        override = overrides.get(scenario_id)
+        if override is not None:
+            if not isinstance(override, dict):
+                raise ValueError(f"Scenario override must be an object for {scenario_id}: {path}")
+            scenario.update(override)
+        scenarios.append(scenario)
+    materialized = dict(pack)
+    materialized["scenarios"] = scenarios
+    materialized["baseScenarioPack"] = base_pack.get("id")
+    return materialized
+
+
 def load_scenario_pack(path: Path = DEFAULT_SCENARIO_PACK) -> dict[str, Any]:
-    pack = _load_json(path)
+    pack = _materialize_derived_scenario_pack(_load_json(path), path)
     for scenario in _scenario_entries(pack):
         question_id = scenario.get("sourceQuestionId")
         if not isinstance(question_id, str):
@@ -137,7 +169,19 @@ def _normalize_tool_name(name: str | None) -> str | None:
         return None
     tool_naming_module: Any = importlib.import_module("server.tool_naming")
     resolve_tool_name = tool_naming_module.resolve_tool_name
-    return str(resolve_tool_name(name, _registered_tool_names()))
+    originals = _registered_tool_names()
+    resolved = str(resolve_tool_name(name, originals))
+    if resolved != name:
+        return resolved
+    parts = name.strip().split("_")
+    for index in range(1, len(parts)):
+        candidate = "_".join(parts[index:])
+        if not candidate:
+            continue
+        candidate_resolved = str(resolve_tool_name(candidate, originals))
+        if candidate_resolved != candidate or candidate_resolved in originals:
+            return candidate_resolved
+    return resolved
 
 
 def _load_session_meta(session_dir: Path) -> dict[str, Any]:
@@ -331,6 +375,22 @@ def collect_session_evidence(session_dir: Path) -> dict[str, Any]:
         for request in requests
         if request.get("method") == "tools/call" and isinstance(request.get("toolNormalized"), str)
     ]
+    tool_name_evidence = [
+        {
+            "raw": request.get("tool"),
+            "normalized": request.get("toolNormalized"),
+            "serverPrefixed": (
+                isinstance(request.get("tool"), str)
+                and isinstance(request.get("toolNormalized"), str)
+                and request.get("tool") != request.get("toolNormalized")
+                and str(request.get("tool")).endswith(
+                    str(request.get("toolNormalized")).replace(".", "_")
+                )
+            ),
+        }
+        for request in requests
+        if request.get("method") == "tools/call"
+    ]
     ui_event_types: defaultdict[str, int] = defaultdict(int)
     if ui_summary:
         for event in ui_summary["events"]:
@@ -373,6 +433,7 @@ def collect_session_evidence(session_dir: Path) -> dict[str, Any]:
         "startupDiscoveryPattern": classify_startup_discovery(requests),
         "toolSearchUsage": classify_tool_search_usage(requests),
         "toolCalls": tool_calls,
+        "toolNameEvidence": tool_name_evidence,
         "toolResponses": tool_response_pairs,
         "methodCounts": summary["mcp"]["methodCounts"],
         "resourceReads": extract_resource_reads(requests),
@@ -551,6 +612,7 @@ def score_session(
             matchedMethods=matched_methods,
             expectedMethods=expected_methods,
             observedTools=tool_calls,
+            toolNameEvidence=evidence.get("toolNameEvidence") or [],
             observedMethods=sorted(method_counts),
         ),
         "errorRecovery": _category(
