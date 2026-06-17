@@ -232,6 +232,7 @@ def test_normalize_levels_and_infer():
         "PARISH",
         "PARISH",
     ]
+    assert admin_lookup._normalize_levels(["country", "nation"]) == ["NATION", "NATION"]
     assert admin_lookup._normalize_levels(123) is None
     assert admin_lookup._infer_levels_from_text("LSOA unemployment rate") == ["LSOA"]
     assert admin_lookup._infer_levels_from_text("MSOA population") == ["MSOA"]
@@ -243,6 +244,7 @@ def test_normalize_levels_and_infer():
     assert admin_lookup._infer_levels_from_text("County services") == ["COUNTY"]
     assert admin_lookup._infer_levels_from_text("UK region data") == ["REGION"]
     assert admin_lookup._infer_levels_from_text("Nationwide statistics") == ["NATION"]
+    assert admin_lookup._infer_levels_from_text("Country boundary") == ["NATION"]
 
 
 def test_default_admin_sources_include_current_parncp_source():

@@ -19,6 +19,13 @@ def test_os_apps_render_geography_selector(monkeypatch):
     assert body["uiResourceUris"] == ["ui://mcp-geo/geography-selector"]
     assert body["status"] == "ready"
     assert body["config"]["level"] == "ward"
+    levels = body["config"]["supportedLevels"]
+    assert any(level["value"] == "parish" and level["mapFocusLevel"] == "PARISH" for level in levels)
+    assert any(level["value"] == "country" and level["mapFocusLevel"] == "NATION" for level in levels)
+    assert any(
+        level["value"] == "msoa" and "displayName" in level.get("displayNamePolicy", "")
+        for level in levels
+    )
     assert body["resourceUri"] == "ui://mcp-geo/geography-selector"
     assert body["_meta"]["ui"]["resourceUri"] == "ui://mcp-geo/geography-selector"
     assert body["_meta"]["uiResourceUris"] == ["ui://mcp-geo/geography-selector"]
@@ -52,6 +59,9 @@ def test_os_apps_render_geography_selector_embedded(monkeypatch):
     html = resource.get("text", "")
     assert "extractToolPayload" in html
     assert "result.data" in html
+    assert 'value="parish"' in html
+    assert 'mapFocusLevel: "PARISH"' in html
+    assert 'mapFocusLevel: "NATION"' in html
 
 
 def test_os_apps_render_geography_selector_text_only_override(monkeypatch):

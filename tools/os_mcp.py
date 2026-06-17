@@ -5,6 +5,17 @@ from enum import StrEnum
 from typing import Any
 
 from server import __version__ as SERVER_VERSION
+from server.geography_levels import (
+    ADMIN_LEVEL_MAP,
+    GEOGRAPHY_LEVELS,
+    LEVEL_KEYWORDS,
+    LEVEL_RANK,
+    NOMIS_LOCAL_LEVEL_KEYS,
+    STATS_COMPARISON_LEVELS,
+)
+from server.geography_levels import (
+    AREA_SUMMARY_LEVEL_RANK as AREA_PROFILE_LEVEL_RANK,
+)
 from server.mcp.resource_catalog import MCP_APPS_MIME, SKILLS_RESOURCE
 from server.mcp.tool_search import (
     apply_default_toolset_filters,
@@ -91,13 +102,13 @@ NOMIS_PATTERNS = [
 
 def _build_stats_routing_explanation(query_lower: str, level_mentions: list[str]) -> dict[str, Any]:
     matched = [pattern for pattern in NOMIS_PATTERNS if re.search(pattern, query_lower)]
-    matched_levels = [level for level in level_mentions if level in {"oa", "lsoa", "msoa"}]
+    matched_levels = [level for level in level_mentions if level in NOMIS_LOCAL_LEVEL_KEYS]
     nomis_preferred = bool(matched or matched_levels)
     reasons: list[str] = []
     if matched:
         reasons.append("Matched labour/census keyword(s).")
     if matched_levels:
-        reasons.append("Detected deep local geography (OA/LSOA/MSOA).")
+        reasons.append("Detected NOMIS-native local geography (OA/LSOA/MSOA).")
     if not reasons:
         reasons.append("Defaulted to ONS (no labour/census keywords or deep local geographies).")
     return {
@@ -312,75 +323,11 @@ _PLACE_NAME_STOP_WORDS = {
     "workflow",
 }
 
-LEVEL_KEYWORDS = {
-    "oa": [r"\boa\b", r"\boutput areas?\b"],
-    "lsoa": [r"\blsoa\b", r"\blower (layer )?super output areas?\b"],
-    "msoa": [r"\bmsoa\b", r"\bmiddle (layer )?super output areas?\b"],
-    "parish": [
-        r"\bparish(es)?\b",
-        r"\bparncp\b",
-        r"\bnon[- ]civil[- ]parished\b",
-    ],
-    "ward": [r"\bwards?\b"],
-    "parl_const": [r"\bconstituenc(y|ies)\b", r"\bparliamentary\b", r"\bmp\b"],
-    "local_auth": [r"\blocal authority\b", r"\bcouncil\b", r"\bdistrict\b", r"\bborough\b"],
-    "built_up_area": [r"\bbuilt[- ]?up area\b", r"\bbua\b"],
-    "postcode": [r"\bpostcode\b"],
-}
-
-LEVEL_RANK = {
-    "oa": 0,
-    "lsoa": 1,
-    "msoa": 2,
-    "parish": 3,
-    "ward": 4,
-    "parl_const": 5,
-    "local_auth": 6,
-    "built_up_area": 7,
-    "postcode": 8,
-}
-
-AREA_PROFILE_LEVEL_RANK = {
-    "OA": 0,
-    "LSOA": 1,
-    "MSOA": 2,
-    "PARISH": 3,
-    "WARD": 4,
-    "DISTRICT": 5,
-    "REGION": 6,
-    "COUNTRY": 7,
-}
-
-ADMIN_LEVEL_MAP = {
-    "oa": "OA",
-    "lsoa": "LSOA",
-    "msoa": "MSOA",
-    "parish": "PARISH",
-    "ward": "WARD",
-    "local_auth": "DISTRICT",
-    "parl_const": None,
-    "built_up_area": None,
-    "postcode": None,
-}
-
-AREA_PROFILE_LEVEL_PATTERNS = (
-    (r"\boa\b", "OA"),
-    (r"\boutput areas?\b", "OA"),
-    (r"\blsoa\b", "LSOA"),
-    (r"\blower (layer )?super output areas?\b", "LSOA"),
-    (r"\bmsoa\b", "MSOA"),
-    (r"\bmiddle (layer )?super output areas?\b", "MSOA"),
-    (r"\bparish(es)?\b", "PARISH"),
-    (r"\bparncp\b", "PARISH"),
-    (r"\bnon[- ]civil[- ]parished\b", "PARISH"),
-    (r"\bwards?\b", "WARD"),
-    (r"\blocal authority\b", "DISTRICT"),
-    (r"\bdistricts?\b", "DISTRICT"),
-    (r"\bboroughs?\b", "DISTRICT"),
-    (r"\blad\b", "DISTRICT"),
-    (r"\bregions?\b", "REGION"),
-    (r"\bcountr(y|ies)\b", "COUNTRY"),
-    (r"\bnational\b", "COUNTRY"),
+AREA_PROFILE_LEVEL_PATTERNS = tuple(
+    (pattern, level.area_level)
+    for level in GEOGRAPHY_LEVELS
+    if level.area_summary and level.area_level
+    for pattern in level.keyword_patterns
 )
 
 FEATURE_COLLECTIONS = {
@@ -812,7 +759,7 @@ def _pick_admin_level(levels: list[str]) -> str | None:
     ordered = sorted(levels, key=lambda level: LEVEL_RANK.get(level, 99))
     for level in ordered:
         mapped = ADMIN_LEVEL_MAP.get(level)
-        if mapped:
+        if isinstance(mapped, str) and mapped:
             return mapped
     return None
 
@@ -820,7 +767,7 @@ def _pick_admin_level(levels: list[str]) -> str | None:
 def _should_route_nomis(query_lower: str, level_mentions: list[str]) -> bool:
     if any(re.search(pattern, query_lower) for pattern in NOMIS_PATTERNS):
         return True
-    if any(level in {"oa", "lsoa", "msoa"} for level in level_mentions):
+    if any(level in NOMIS_LOCAL_LEVEL_KEYS for level in level_mentions):
         return True
     return False
 
@@ -864,7 +811,7 @@ def _requested_area_profile_level(query_lower: str, level_mentions: list[str]) -
         return matches[-1][1]
     for level in sorted(level_mentions, key=lambda item: LEVEL_RANK.get(item, 99)):
         mapped = ADMIN_LEVEL_MAP.get(level)
-        if mapped in AREA_PROFILE_LEVEL_RANK:
+        if isinstance(mapped, str) and mapped in AREA_PROFILE_LEVEL_RANK:
             return mapped
     return None
 
@@ -872,7 +819,7 @@ def _requested_area_profile_level(query_lower: str, level_mentions: list[str]) -
 def _area_profile_target_is_compatible(anchor_level: str, target_level: str) -> bool:
     anchor_rank = AREA_PROFILE_LEVEL_RANK.get(anchor_level)
     target_rank = AREA_PROFILE_LEVEL_RANK.get(target_level)
-    if anchor_rank is None or target_rank is None:
+    if not isinstance(anchor_rank, int) or not isinstance(target_rank, int):
         return False
     return target_rank >= anchor_rank
 
@@ -944,7 +891,7 @@ def _build_interactive_params(query: str, place_name: str | None) -> dict[str, A
     if focus_level == selection_level:
         focus_level = None
 
-    if selection_level in {"oa", "lsoa", "msoa", "ward"} and not focus_level:
+    if selection_level in {"oa", "lsoa", "msoa", "parish", "ward"} and not focus_level:
         focus_level = "local_auth"
 
     if place_name:
@@ -1977,7 +1924,7 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "(NSPL/NSUL) derivation modes."
         ),
         QueryIntent.AREA_PROFILE: (
-            "Use ons_geo.area_summary for compact OA/LSOA/MSOA/ward summaries and "
+            "Use ons_geo.area_summary for compact OA/LSOA/MSOA/parish/ward summaries and "
             "follow-up prompts such as 'that OA'. Prefer its compact inventory/profile "
             "surface over raw os_map.inventory calls when the user only wants a narrative summary. "
             "Workflow guidance is available via os_resources.get or resources/read at "
@@ -2469,11 +2416,12 @@ def _stats_routing(payload: dict[str, Any]) -> ToolResult:
                 "message": "comparisonLevel must be a string",
             }
         comparison_level = comparison_level.strip().upper()
-        if comparison_level not in {"WARD", "LSOA", "MSOA"}:
+        if comparison_level not in STATS_COMPARISON_LEVELS:
+            supported_levels = ", ".join(STATS_COMPARISON_LEVELS)
             return 400, {
                 "isError": True,
                 "code": "INVALID_INPUT",
-                "message": "comparisonLevel must be one of WARD, LSOA, MSOA",
+                "message": f"comparisonLevel must be one of {supported_levels}",
             }
     provider_preference = payload.get("providerPreference", "AUTO")
     if not isinstance(provider_preference, str):
@@ -2533,6 +2481,11 @@ def _stats_routing(payload: dict[str, Any]) -> ToolResult:
         notes.append(
             "If dataset discovery is needed, call nomis.datasets with q and limit "
             "(for example q='employment', limit=10)."
+        )
+    if comparison_level == "PARISH":
+        notes.append(
+            "For parish/PARNCP comparisons, resolve parish codes or geometry first; "
+            "use NOMIS only where the chosen dataset exposes parish/community geography."
         )
     return 200, {
         "query": query,
@@ -2634,7 +2587,7 @@ register(
             "properties": {
                 "tool": {"type": "string", "const": "os_mcp.stats_routing"},
                 "query": {"type": "string"},
-                "comparisonLevel": {"type": "string", "enum": ["WARD", "LSOA", "MSOA"]},
+                "comparisonLevel": {"type": "string", "enum": list(STATS_COMPARISON_LEVELS)},
                 "providerPreference": {"type": "string", "enum": ["AUTO", "NOMIS", "ONS"]},
             },
             "required": ["query"],

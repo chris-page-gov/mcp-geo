@@ -138,6 +138,9 @@ labels are simply absent.
   fields and a parish/community/non-civil-parished area is needed.
 - Use `normalizedGeographies.msoa.displayName` only as a display label; keep
   `normalizedGeographies.msoa.currentName` for official ONS/RGC naming.
+- When adding another geography level or display-name sidecar, start with the
+  shared contract in `docs/agent_context/geography-extension-contract.md` and
+  the registry in `server/geography_levels.py`; do not patch one surface only.
 - Use `ons_geo.cache_status` to check whether the cache is populated and
   whether primary/support datasets are degraded.
 - Use `ons_geo.release_audit` when you need to know whether the published ONS

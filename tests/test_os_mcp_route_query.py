@@ -294,6 +294,16 @@ def test_route_query_interactive_selection():
     assert params.get("focusName") == "Coventry West"
 
 
+def test_route_query_interactive_selection_parish_uses_supported_selector_level():
+    body = _route("Open a map so I can select parishes around Warwick")
+    assert body["intent"] == "interactive_selection"
+    assert body["recommended_tool"] == "os_apps.render_geography_selector"
+    params = body["recommended_parameters"]
+    assert params["level"] == "parish"
+    assert params.get("focusName") == "Warwick"
+    assert params.get("focusLevel") == "local_auth"
+
+
 def test_route_query_boundary_explorer_for_layer_inventory():
     body = _route("Show me buildings and road links within Westminster ward")
     assert body["intent"] == "interactive_selection"
@@ -705,6 +715,28 @@ def test_stats_routing_respects_provider_preference_and_level():
         if isinstance(step, dict) and step.get("tool") == "admin_lookup.find_by_name"
     )
     assert "level=LSOA" in admin_step.get("note", "")
+
+
+def test_stats_routing_accepts_parish_comparison_level():
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.stats_routing",
+            "query": "Compare population between Warwick and Leamington Spa",
+            "providerPreference": "ONS",
+            "comparisonLevel": "PARISH",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["userSelections"]["comparisonLevel"] == "PARISH"
+    admin_step = next(
+        step
+        for step in body.get("nextSteps", [])
+        if isinstance(step, dict) and step.get("tool") == "admin_lookup.find_by_name"
+    )
+    assert "level=PARISH" in admin_step.get("note", "")
+    assert any("dataset exposes parish/community geography" in note for note in body["notes"])
 
 
 def test_stats_routing_rejects_invalid_provider_preference():

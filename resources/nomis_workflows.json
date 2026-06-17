@@ -11,13 +11,14 @@
         "nomis.query"
       ],
       "steps": [
-        "Resolve area names to the target geography level (WARD/LSOA/MSOA).",
+        "Resolve area names to the target geography level (WARD/PARISH/LSOA/MSOA).",
         "Find a suitable dataset with nomis.datasets using q + limit.",
         "Query selected dataset with geography/time/measures filters in nomis.query."
       ],
       "notes": [
         "Prefer NOMIS for labour-market and census-style questions.",
-        "If query includes very local geographies (OA/LSOA/MSOA), keep NOMIS as default provider."
+        "If query includes very local NOMIS-native geographies (OA/LSOA/MSOA), keep NOMIS as default provider.",
+        "For PARISH/PARNCP comparisons, resolve parish codes or geometry first and use NOMIS only when the selected dataset exposes parish/community geography."
       ]
     },
     {

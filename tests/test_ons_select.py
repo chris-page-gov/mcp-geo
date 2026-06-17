@@ -73,6 +73,49 @@ def test_ons_select_ranks_from_catalog(client, monkeypatch, tmp_path):
     assert data["needsElicitation"] is False
 
 
+def test_ons_select_normalizes_parncp_geography_level(client, monkeypatch, tmp_path):
+    catalog = _write_catalog(
+        tmp_path,
+        [
+            {
+                "id": "parish-population",
+                "title": "Parish population",
+                "description": "Population estimates by parish and community.",
+                "keywords": ["population", "parish"],
+                "geography": {"levels": ["parish"]},
+                "time": {"granularity": "year"},
+                "state": "published",
+            },
+            {
+                "id": "national-population",
+                "title": "National population",
+                "description": "Population estimates for England and Wales.",
+                "keywords": ["population"],
+                "geography": {"levels": ["nation"]},
+                "time": {"granularity": "year"},
+                "state": "published",
+            },
+        ],
+    )
+    monkeypatch.setattr(settings, "ONS_CATALOG_PATH", str(catalog), raising=False)
+    monkeypatch.setattr(settings, "ONS_SELECT_LIVE_ENABLED", False, raising=False)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_select.search",
+            "query": "population",
+            "geographyLevel": "PARNCP",
+            "timeGranularity": "year",
+        },
+    )
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["candidates"][0]["datasetId"] == "parish-population"
+    assert "Geography level matches" in data["candidates"][0]["scoreReasons"]
+
+
 def test_ons_select_returns_elicitation_questions(client, monkeypatch, tmp_path):
     catalog = _write_catalog(
         tmp_path,

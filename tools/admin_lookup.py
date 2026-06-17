@@ -21,6 +21,11 @@ except ImportError:  # pragma: no cover - optional dependency fallback
 from server.config import settings
 from server.boundary_cache import get_boundary_cache, reset_boundary_cache
 from server.error_taxonomy import classify_error
+from server.geography_levels import (
+    boundary_search_priority_levels,
+    infer_admin_levels_from_text,
+    normalize_admin_level,
+)
 from server.logging import log_upstream_error
 from tools.ons_common import TTLCache
 from tools.registry import Tool, register, ToolResult
@@ -120,37 +125,17 @@ ADMIN_SOURCES: list[AdminSource] = [
 LEVEL_ORDER = [source.level for source in ADMIN_SOURCES]
 LEVEL_INDEX = {level: idx for idx, level in enumerate(LEVEL_ORDER)}
 
-SEARCH_PRIORITY_LEVELS = [
-    "WARD",
-    "PARISH",
-    "DISTRICT",
-    "COUNTY",
-    "REGION",
-    "NATION",
-    "MSOA",
-    "LSOA",
-    "OA",
-]
+SEARCH_PRIORITY_LEVELS = list(boundary_search_priority_levels())
 SEARCH_PRIORITY_INDEX = {level: idx for idx, level in enumerate(SEARCH_PRIORITY_LEVELS)}
 _MATCH_TYPES = {"contains", "starts_with", "exact"}
-_LEVEL_ALIASES = {
-    "PARISHES": "PARISH",
-    "PARNCP": "PARISH",
-    "PARNCP_AREA": "PARISH",
-    "PARNCP_AREAS": "PARISH",
-    "CIVIL_PARISH": "PARISH",
-    "NON_CIVIL_PARISHED": "PARISH",
-    "NON_CIVIL_PARISHED_AREA": "PARISH",
-}
 
 
 def _normalize_level_name(value: Any) -> str | None:
     if value is None:
         return None
-    normalized = str(value).strip().upper().replace(" ", "_").replace("-", "_")
-    if not normalized:
+    normalized = normalize_admin_level(value)
+    if normalized is None:
         return None
-    normalized = _LEVEL_ALIASES.get(normalized, normalized)
     return normalized if normalized in LEVEL_INDEX else None
 
 
@@ -173,32 +158,7 @@ def _normalize_levels(value: Any) -> list[str] | None:
 
 
 def _infer_levels_from_text(text: str) -> list[str] | None:
-    lowered = text.lower()
-    if "lsoa" in lowered:
-        return ["LSOA"]
-    if "msoa" in lowered:
-        return ["MSOA"]
-    if (
-        "parish" in lowered
-        or "parishes" in lowered
-        or "parncp" in lowered
-        or "non civil parished" in lowered
-        or "non-civil-parished" in lowered
-    ):
-        return ["PARISH"]
-    if "oa" in lowered or "output area" in lowered:
-        return ["OA"]
-    if "ward" in lowered:
-        return ["WARD"]
-    if "district" in lowered or "borough" in lowered or "council" in lowered:
-        return ["DISTRICT"]
-    if "county" in lowered:
-        return ["COUNTY"]
-    if "region" in lowered:
-        return ["REGION"]
-    if "nation" in lowered or "country" in lowered:
-        return ["NATION"]
-    return None
+    return infer_admin_levels_from_text(text)
 
 
 def _ordered_sources(levels: list[str] | None) -> list[AdminSource]:

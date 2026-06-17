@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from server.config import settings
+from server.geography_levels import selector_level_options, selector_level_values
 from server.mcp.resource_catalog import MCP_APPS_MIME, load_ui_content, resolve_ui_resource
 from server.route_planning import normalize_route_profile, normalize_stop
 from tools.registry import Tool, ToolResult, register
@@ -83,6 +84,8 @@ _MCP_APP_RENDERING_GUIDANCE = (
     "substitute Leaflet/OpenStreetMap/Postcodes.io artifacts. "
     "If the host cannot render MCP-Apps, report the resourceHandoff details instead."
 )
+_GEOGRAPHY_SELECTOR_LEVELS = selector_level_options()
+_GEOGRAPHY_SELECTOR_LEVEL_VALUES = set(selector_level_values())
 
 
 def _with_mcp_app_rendering_guidance(instructions: str) -> str:
@@ -442,12 +445,16 @@ def _render_geography_selector(payload: dict[str, Any]) -> ToolResult:
       "required": ["status"]
     }
     """
-    config: dict[str, Any] = {}
+    config: dict[str, Any] = {"supportedLevels": _GEOGRAPHY_SELECTOR_LEVELS}
     level = payload.get("level")
     if level is not None and not isinstance(level, str):
         return _error("level must be a string")
     if level:
-        config["level"] = level
+        normalized_level = level.strip().lower()
+        if normalized_level not in _GEOGRAPHY_SELECTOR_LEVEL_VALUES:
+            supported = ", ".join(sorted(_GEOGRAPHY_SELECTOR_LEVEL_VALUES))
+            return _error(f"level must be one of: {supported}")
+        config["level"] = normalized_level
     search_term = payload.get("searchTerm")
     if search_term is not None and not isinstance(search_term, str):
         return _error("searchTerm must be a string")

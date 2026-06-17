@@ -8,48 +8,17 @@ from pathlib import Path
 from typing import Any
 
 from server.config import settings
+from server.geography_levels import (
+    AREA_LEVEL_COLUMN_MAP,
+    infer_area_level_from_code as _infer_area_level_from_code,
+    normalize_area_level,
+)
 
 KEY_TYPES = {"postcode", "uprn"}
 DERIVATION_MODES = {"exact", "best_fit"}
 POSTCODE_REGEX = re.compile(r"^[A-Z]{1,2}[0-9][0-9A-Z]?[0-9][A-Z]{2}$")
 
 _GEOGRAPHY_SUFFIX_RE = re.compile(r"^(?P<stem>[A-Za-z0-9_]+?)(?P<suffix>CD|NM|NMW|NW)$")
-_AREA_LEVEL_ALIASES = {
-    "OA": "OA",
-    "OUTPUT_AREA": "OA",
-    "LSOA": "LSOA",
-    "MSOA": "MSOA",
-    "PARISH": "PARISH",
-    "PARISHES": "PARISH",
-    "PARNCP": "PARISH",
-    "PARNCP_AREA": "PARISH",
-    "PARNCP_AREAS": "PARISH",
-    "CIVIL_PARISH": "PARISH",
-    "CIVIL_PARISHED": "PARISH",
-    "NON_CIVIL_PARISHED": "PARISH",
-    "NON_CIVIL_PARISHED_AREA": "PARISH",
-    "WARD": "WARD",
-    "WD": "WARD",
-    "DISTRICT": "DISTRICT",
-    "LAD": "DISTRICT",
-    "LOCAL_AUTHORITY": "DISTRICT",
-    "LOCAL_AUTHORITY_DISTRICT": "DISTRICT",
-    "COUNTRY": "COUNTRY",
-    "CTRY": "COUNTRY",
-    "NATION": "COUNTRY",
-    "REGION": "REGION",
-    "RGN": "REGION",
-}
-AREA_LEVEL_COLUMN_MAP = {
-    "OA": "oa_code",
-    "LSOA": "lsoa_code",
-    "MSOA": "msoa_code",
-    "PARISH": "parish_code",
-    "WARD": "ward_code",
-    "DISTRICT": "lad_code",
-    "COUNTRY": "country_code",
-    "REGION": "region_code",
-}
 
 
 def _resolve_path(raw: str | None, default: str) -> Path:
@@ -88,30 +57,8 @@ def normalize_derivation_mode(value: str) -> str | None:
     return mode if mode in DERIVATION_MODES else None
 
 
-def normalize_area_level(value: str) -> str | None:
-    raw = value.strip().upper().replace(" ", "_").replace("-", "_")
-    return _AREA_LEVEL_ALIASES.get(raw)
-
-
 def infer_area_level_from_code(value: str) -> str | None:
-    code = value.strip().upper()
-    if re.fullmatch(r"[EW]00\d{6}", code):
-        return "OA"
-    if re.fullmatch(r"[EW]01\d{6}", code):
-        return "LSOA"
-    if re.fullmatch(r"[EW]02\d{6}", code):
-        return "MSOA"
-    if re.fullmatch(r"([EW]04|E43)\d{6}", code):
-        return "PARISH"
-    if re.fullmatch(r"[EW]05\d{6}", code):
-        return "WARD"
-    if re.fullmatch(r"(E06|E07|E08|E09|W06)\d{6}", code):
-        return "DISTRICT"
-    if re.fullmatch(r"[EW]12\d{6}", code):
-        return "REGION"
-    if re.fullmatch(r"[EWNS]92\d{6}", code):
-        return "COUNTRY"
-    return None
+    return _infer_area_level_from_code(value)
 
 
 def _table_columns(conn: sqlite3.Connection, table_name: str) -> set[str]:

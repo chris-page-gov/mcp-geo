@@ -599,7 +599,7 @@
     {
       "description": "Explain whether stats queries route to ONS or NOMIS.",
       "description_sha256": "b9b05fd3f89a1e33b1f5c6b055d7ea857ff17e0ffff1e4fe1c63385a385979ed",
-      "input_schema_sha256": "848c8b8ed80206b2980139aa7110f7ff5150cc71389bfc6f6a1215d1a72ff562",
+      "input_schema_sha256": "9526dbf711f6895ceceb3118293b5876b6641b635ac84b15aef24124f5b77375",
       "name": "os_mcp.stats_routing",
       "output_schema_sha256": "2ff329195619aa96e125d13bed7dcfd7bf1a5397b2db97ec57f209ee3af672ae",
       "version": "0.1.0"

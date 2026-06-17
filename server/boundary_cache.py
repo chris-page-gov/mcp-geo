@@ -7,6 +7,7 @@ from typing import Any
 
 from server.config import settings
 from server.error_taxonomy import classify_error
+from server.geography_levels import boundary_search_priority_levels
 from server.logging import log_upstream_error
 
 try:
@@ -19,17 +20,7 @@ except ImportError:  # pragma: no cover - optional dependency fallback
     dict_row = None  # type: ignore[assignment]
 
 _MATCH_TYPES = {"contains", "starts_with", "exact"}
-_SEARCH_PRIORITY_LEVELS = (
-    "WARD",
-    "PARISH",
-    "DISTRICT",
-    "COUNTY",
-    "REGION",
-    "NATION",
-    "MSOA",
-    "LSOA",
-    "OA",
-)
+_SEARCH_PRIORITY_LEVELS = boundary_search_priority_levels()
 
 
 @dataclass(frozen=True)

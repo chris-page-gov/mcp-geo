@@ -3,6 +3,12 @@ from __future__ import annotations
 import json
 import sqlite3
 
+from server.geography_levels import (
+    NOMIS_GEOGRAPHY_TYPE_MATCHERS,
+    boundary_search_priority_levels,
+    infer_admin_levels_from_text,
+    normalize_admin_level,
+)
 from server.ons_geo_cache import (
     ONSGeoCache,
     ONSGeoCacheReadError,
@@ -28,6 +34,16 @@ def test_normalize_postcode_and_uprn() -> None:
     assert infer_area_level_from_code("E04000001") == "PARISH"
     assert infer_area_level_from_code("W04000001") == "PARISH"
     assert infer_area_level_from_code("E43000246") == "PARISH"
+
+
+def test_shared_geography_level_registry_covers_parish_and_country_aliases() -> None:
+    assert normalize_admin_level("parncp") == "PARISH"
+    assert normalize_admin_level("non civil parished") == "PARISH"
+    assert normalize_admin_level("country") == "NATION"
+    assert infer_admin_levels_from_text("Nationwide statistics") == ["NATION"]
+    assert infer_admin_levels_from_text("PARNCP boundary") == ["PARISH"]
+    assert boundary_search_priority_levels()[:3] == ("WARD", "PARISH", "DISTRICT")
+    assert "parish" in NOMIS_GEOGRAPHY_TYPE_MATCHERS["PARISH"]
 
 
 def test_extract_geography_fields_handles_code_name_pairs() -> None:

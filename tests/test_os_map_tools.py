@@ -1083,8 +1083,9 @@ def _seed_ons_geo_uprn_index(cache_dir: Path, db_name: str) -> Path:
         """
         INSERT INTO ons_geo_uprn_index (
             product_id, derivation_mode, uprn, postcode, oa_code, lsoa_code, msoa_code,
-            lad_code, lad_name, postal_delivery, geographies_json, cached_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            parish_code, parish_name, lad_code, lad_name, postal_delivery, geographies_json,
+            cached_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             "ONSUD",
@@ -1094,6 +1095,8 @@ def _seed_ons_geo_uprn_index(cache_dir: Path, db_name: str) -> Path:
             "E0001",
             "E0101",
             "E0201",
+            "E04000001",
+            "Example Parish",
             "E08000026",
             "Coventry",
             1,
@@ -1105,8 +1108,9 @@ def _seed_ons_geo_uprn_index(cache_dir: Path, db_name: str) -> Path:
         """
         INSERT INTO ons_geo_uprn_index (
             product_id, derivation_mode, uprn, postcode, oa_code, lsoa_code, msoa_code,
-            lad_code, lad_name, postal_delivery, geographies_json, cached_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            parish_code, parish_name, lad_code, lad_name, postal_delivery, geographies_json,
+            cached_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             "ONSUD",
@@ -1116,6 +1120,8 @@ def _seed_ons_geo_uprn_index(cache_dir: Path, db_name: str) -> Path:
             "E0002",
             "E0102",
             "E0202",
+            "E04000002",
+            "Other Parish",
             "E08000026",
             "Coventry",
             0,
@@ -1185,8 +1191,8 @@ def test_os_map_selection_export_async_csv_and_status_polling(client, monkeypatc
     contents = read.json()["contents"][0]
     assert contents["mimeType"] == "text/csv"
     csv_text = contents["text"]
-    assert "uprn,postcode,oa_code,local_authority_name" in csv_text
-    assert "100023336959,CV12GT,E0001,Coventry" in csv_text
+    assert "uprn,postcode,oa_code,local_authority_name,lsoa_code,msoa_code,parish_code" in csv_text
+    assert "100023336959,CV12GT,E0001,Coventry,E0101,E0201,E04000001" in csv_text
 
 
 def test_os_map_selection_export_without_membership_columns(client, monkeypatch, tmp_path) -> None:  # type: ignore[no-untyped-def]
@@ -1239,10 +1245,39 @@ def test_os_map_selection_export_without_membership_columns(client, monkeypatch,
     assert read.status_code == 200
     csv_text = read.json()["contents"][0]["text"]
     assert (
-        "uprn,postcode,oa_code,local_authority_name,lsoa_code,msoa_code,lad_code"
+        "uprn,postcode,oa_code,local_authority_name,lsoa_code,msoa_code,parish_code,"
+        "parish_name,lad_code"
         in csv_text
     )
     assert "selected_by_oa" not in csv_text
+
+
+def test_os_map_selection_rows_support_parish_gss_selector(monkeypatch, tmp_path) -> None:
+    from server.config import settings
+    from tools import os_map
+
+    cache_dir = tmp_path / "ons_geo_cache"
+    db_name = "ons_geo_cache.sqlite"
+    _seed_ons_geo_uprn_index(cache_dir, db_name)
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DIR", str(cache_dir), raising=False)
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DB", db_name, raising=False)
+
+    assert os_map._gss_level_to_column("PARNCP") == ("parish_code", "selected_by_parish")
+
+    rows, stats, warnings = os_map._resolve_selection_rows(
+        selection_spec={
+            "selectors": [{"type": "gss_code", "level": "PARISH", "code": "E04000001"}]
+        },
+        derivation_mode="exact",
+        postal_delivery_only=False,
+    )
+
+    assert warnings == []
+    assert stats["resolvedUprnCount"] == 1
+    assert rows[0]["uprn"] == "100023336959"
+    assert rows[0]["parish_code"] == "E04000001"
+    assert rows[0]["parish_name"] == "Example Parish"
+    assert rows[0]["selected_by_parish"] == "E04000001"
 
 
 def test_os_map_selection_export_accepts_postcode_selection_shorthand(
@@ -1423,6 +1458,8 @@ def test_os_map_parsers_cover_edge_cases() -> None:
         "local_authority_name",
         "lsoa_code",
         "msoa_code",
+        "parish_code",
+        "parish_name",
         "lad_code",
     ]
 

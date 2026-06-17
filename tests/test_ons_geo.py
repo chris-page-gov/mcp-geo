@@ -799,6 +799,58 @@ def test_ons_geo_area_summary_resolves_parish_from_uprn(
     assert seen_payloads and seen_payloads[0]["id"] == "E04000001"
 
 
+def test_ons_geo_area_summary_preserves_msoa_display_name(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    cache_dir, db_name, index_path = _seed_cache(tmp_path)
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=cache_dir,
+        db_name=db_name,
+        index_path=index_path,
+    )
+
+    def fake_get_tool(name: str):  # type: ignore[no-untyped-def]
+        if name == "admin_lookup.area_geometry":
+            return _FakeTool(
+                lambda payload: (
+                    200,
+                    {
+                        "id": payload["id"],
+                        "name": "Example MSOA",
+                        "bbox": [-1.6, 52.3, -1.5, 52.4],
+                        "live": False,
+                        "meta": {"level": "MSOA"},
+                    },
+                )
+            )
+        return None
+
+    monkeypatch.setattr(ons_geo_tools, "get_tool", fake_get_tool)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_geo.area_summary",
+            "uprn": "100023336959",
+            "targetLevel": "MSOA",
+            "includeInventory": False,
+            "includePopulation": False,
+            "includeProfileDatasets": False,
+        },
+    )
+    assert resp.status_code == 200
+    area = resp.json()["area"]
+    assert area["id"] == "E02000001"
+    assert area["name"] == "Example MSOA"
+    assert area["currentName"] == "Example MSOA"
+    assert area["displayName"] == "Readable MSOA"
+    assert area["displayNameWelsh"] == "MSOA Darllenadwy"
+    assert area["displayNameSource"]["version"] == "2.3"
+    assert "official ONS/RGC label" in area["namePolicy"]
+
+
 def test_ons_geo_area_summary_requires_anchor_or_explicit_context(
     tmp_path: Path,
     monkeypatch,
