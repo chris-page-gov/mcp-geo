@@ -4,12 +4,22 @@ import base64
 import json
 from pathlib import Path
 
+import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
 from server.mcp import resource_catalog
 
 EXPECTED_TILE_DOMAINS = frozenset({"https://tile.openstreetmap.org"})
 LEGACY_CDN_DOMAINS = frozenset({"https://unpkg.com", "https://cdn.jsdelivr.net"})
+
+
+def _symlink_or_skip(link: Path, target: Path, *, target_is_directory: bool = False) -> None:
+    try:
+        link.symlink_to(target, target_is_directory=target_is_directory)
+    except OSError as exc:
+        if getattr(exc, "winerror", None) == 1314:
+            pytest.skip("symlink creation requires additional privileges on this platform")
+        raise
 
 
 def test_boundary_latest_report_missing(monkeypatch: MonkeyPatch, tmp_path) -> None:
@@ -527,7 +537,7 @@ def test_resolve_offline_pack_download_rejects_symlink_escape(
     outside = tmp_path / "outside.pmtiles"
     outside.write_bytes(b"OUTSIDE")
     escaped = packs_dir / "demo.pmtiles"
-    escaped.symlink_to(outside)
+    _symlink_or_skip(escaped, outside)
     catalog_path = tmp_path / "offline_map_catalog.json"
     catalog_path.write_text(
         json.dumps(
@@ -1094,5 +1104,5 @@ def test_resolve_scoped_path_rejects_symlink_escape(tmp_path) -> None:
     target = outside / "secret.json"
     target.write_text("{\"secret\":true}", encoding="utf-8")
     link = root / "link"
-    link.symlink_to(outside, target_is_directory=True)
+    _symlink_or_skip(link, outside, target_is_directory=True)
     assert resource_catalog._resolve_scoped_path(root, "link/secret.json") is None

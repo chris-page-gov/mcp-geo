@@ -24,6 +24,7 @@ if os.environ.get("MCP_GEO_SKIP_VENV_REEXEC") != "1":
 owasp_validation = importlib.import_module("server.owasp_mcp_validation")
 ValidationDataError = owasp_validation.ValidationDataError
 should_fail = owasp_validation.should_fail
+parse_datetime = owasp_validation.parse_datetime
 validate_repo = owasp_validation.validate_repo
 write_outputs = owasp_validation.write_outputs
 
@@ -45,6 +46,10 @@ def build_parser() -> argparse.ArgumentParser:
         default="required",
         choices=["none", "minimum_bar", "required"],
     )
+    parser.add_argument(
+        "--now",
+        help="Optional ISO-8601 timestamp to use as the evaluation time.",
+    )
     parser.add_argument("--repo-root", default=str(Path(__file__).resolve().parent.parent))
     return parser
 
@@ -54,7 +59,8 @@ def main() -> int:
     args = parser.parse_args()
     repo_root = Path(args.repo_root).resolve()
     try:
-        report, backlog = validate_repo(repo_root, profile=args.profile)
+        evaluation_time = parse_datetime(args.now) if args.now else None
+        report, backlog = validate_repo(repo_root, profile=args.profile, now=evaluation_time)
         outputs = write_outputs(
             report,
             backlog,

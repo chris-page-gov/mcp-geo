@@ -25,7 +25,7 @@ def _sha256(path: Path) -> str:
 def _repo_relative(path: Path, repo_root: Path) -> str:
     resolved = path.resolve()
     try:
-        return str(resolved.relative_to(repo_root))
+        return resolved.relative_to(repo_root).as_posix()
     except ValueError:
         return str(resolved)
 

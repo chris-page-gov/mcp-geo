@@ -1499,8 +1499,8 @@ def build_overlay_notes(
     readme_frontmatter = {
         "title": "Local Overlay",
         "kb_kind": "overlay_hub",
-        "source_paths": [str(path.relative_to(repo_root)) for path in log_files]
-        + [str(path.relative_to(repo_root)) for path in session_dirs],
+        "source_paths": [path.relative_to(repo_root).as_posix() for path in log_files]
+        + [path.relative_to(repo_root).as_posix() for path in session_dirs],
         "source_commit": build_meta["source_commit"],
         "source_commit_dirty": build_meta.get("source_commit_dirty", False),
         "source_urls": [],
@@ -1534,7 +1534,7 @@ def build_overlay_notes(
     source_paths.extend(readme_frontmatter["source_paths"])
 
     for session_dir in session_dirs[:64]:
-        rel_session = str(session_dir.relative_to(repo_root))
+        rel_session = session_dir.relative_to(repo_root).as_posix()
         session_files = sorted(path.name for path in session_dir.iterdir() if path.is_file())
         frontmatter = {
             "title": session_dir.name,

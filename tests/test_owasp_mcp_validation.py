@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -120,14 +121,16 @@ def _sign_manifest(repo_root: Path) -> None:
     tmpdir = repo_root / ".tmp-signing"
     tmpdir.mkdir(parents=True, exist_ok=True)
     private_key = tmpdir / "tool_manifest_private.pem"
+    openssl_bin = validator.resolve_openssl_executable()
+    assert openssl_bin is not None
     subprocess.run(
         [
-            "openssl",
+            openssl_bin,
             "genpkey",
             "-algorithm",
             "RSA",
             "-out",
-            str(private_key),
+            validator.openssl_path_arg(private_key),
             "-pkeyopt",
             "rsa_keygen_bits:2048",
         ],
@@ -137,13 +140,13 @@ def _sign_manifest(repo_root: Path) -> None:
     )
     subprocess.run(
         [
-            "openssl",
+            openssl_bin,
             "rsa",
             "-pubout",
             "-in",
-            str(private_key),
+            validator.openssl_path_arg(private_key),
             "-out",
-            str(repo_root / "security/owasp_mcp/tool_manifest.pub.pem"),
+            validator.openssl_path_arg(repo_root / "security/owasp_mcp/tool_manifest.pub.pem"),
         ],
         check=True,
         capture_output=True,
@@ -151,14 +154,14 @@ def _sign_manifest(repo_root: Path) -> None:
     )
     subprocess.run(
         [
-            "openssl",
+            openssl_bin,
             "dgst",
             "-sha256",
             "-sign",
-            str(private_key),
+            validator.openssl_path_arg(private_key),
             "-out",
-            str(repo_root / "security/owasp_mcp/tool_manifest.lock.json.sig"),
-            str(repo_root / "security/owasp_mcp/tool_manifest.lock.json"),
+            validator.openssl_path_arg(repo_root / "security/owasp_mcp/tool_manifest.lock.json.sig"),
+            validator.openssl_path_arg(repo_root / "security/owasp_mcp/tool_manifest.lock.json"),
         ],
         check=True,
         capture_output=True,
@@ -389,10 +392,12 @@ def test_current_repo_snapshot_matches_committed_compliant_baseline(tmp_path: Pa
     output_dir = tmp_path / "owasp-current-repo"
     completed = subprocess.run(
         [
-            "python3",
+            sys.executable,
             "scripts/validate_owasp_mcp_server.py",
             "--profile",
             "prod-strict",
+            "--now",
+            "2026-03-13T00:00:00Z",
             "--format",
             "both",
             "--output-dir",

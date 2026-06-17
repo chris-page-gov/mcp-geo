@@ -24,7 +24,9 @@ if os.environ.get("MCP_GEO_SKIP_VENV_REEXEC") != "1":
 
 owasp_validation = importlib.import_module("server.owasp_mcp_validation")
 build_tool_manifest = owasp_validation.build_tool_manifest
+openssl_path_arg = owasp_validation.openssl_path_arg
 pretty_json = owasp_validation.pretty_json
+resolve_openssl_executable = owasp_validation.resolve_openssl_executable
 tool_snapshots_from_registry = owasp_validation.tool_snapshots_from_registry
 
 
@@ -65,20 +67,31 @@ def main() -> int:
         public_key_output = Path(args.public_key_output).resolve()
         signature_output.parent.mkdir(parents=True, exist_ok=True)
         public_key_output.parent.mkdir(parents=True, exist_ok=True)
+        openssl_bin = resolve_openssl_executable()
+        if not openssl_bin:
+            raise SystemExit("openssl is not available to sign the tool manifest")
         subprocess.run(
-            ["openssl", "rsa", "-pubout", "-in", str(signing_key), "-out", str(public_key_output)],
+            [
+                openssl_bin,
+                "rsa",
+                "-pubout",
+                "-in",
+                openssl_path_arg(signing_key),
+                "-out",
+                openssl_path_arg(public_key_output),
+            ],
             check=True,
         )
         subprocess.run(
             [
-                "openssl",
+                openssl_bin,
                 "dgst",
                 "-sha256",
                 "-sign",
-                str(signing_key),
+                openssl_path_arg(signing_key),
                 "-out",
-                str(signature_output),
-                str(output),
+                openssl_path_arg(signature_output),
+                openssl_path_arg(output),
             ],
             check=True,
         )
