@@ -16,6 +16,7 @@ fi
 python3 - "$WRAPPER" "$BUILD_MODE" "$TIMEOUT_SEC" "$EXPECT_TOOLSET" "$EXPECT_INCLUDE" <<'PY'
 import json
 import os
+import shutil
 import subprocess
 import sys
 from typing import Any
@@ -23,6 +24,52 @@ from typing import Any
 wrapper, build_mode, timeout_s, expect_toolset, expect_include = sys.argv[1:6]
 timeout = int(timeout_s)
 request = '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}\n'
+
+
+def usable_bash() -> str:
+    candidates = []
+    env_bash = os.environ.get("MCP_GEO_BASH_BIN")
+    if env_bash:
+        candidates.append(env_bash)
+    if os.name == "nt":
+        candidates.extend(
+            [
+                "C:/Program Files/Git/bin/bash.exe",
+                "C:/Program Files/Git/usr/bin/bash.exe",
+                os.path.expanduser("~/AppData/Local/Programs/Git/bin/bash.exe"),
+            ]
+        )
+    resolved = shutil.which("bash")
+    if resolved:
+        candidates.append(resolved)
+
+    seen = set()
+    for candidate in candidates:
+        if not candidate or candidate in seen:
+            continue
+        seen.add(candidate)
+        normalized = candidate.replace("\\", "/").lower()
+        if normalized.endswith("/windows/system32/bash.exe"):
+            continue
+        try:
+            probe = subprocess.run(
+                [candidate, "-lc", "exit 0"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+                check=False,
+            )
+        except (FileNotFoundError, OSError, subprocess.SubprocessError):
+            continue
+        if probe.returncode == 0:
+            return candidate
+    return "bash"
+
+
+def wrapper_command(path: str) -> list[str]:
+    if os.name == "nt" and path.lower().endswith(".sh"):
+        return [usable_bash(), path]
+    return [path]
 
 
 def run_count(toolset: str | None, include: str | None) -> tuple[int, list[str]]:
@@ -40,7 +87,7 @@ def run_count(toolset: str | None, include: str | None) -> tuple[int, list[str]]
         env["MCP_TOOLS_DEFAULT_INCLUDE_TOOLSETS"] = include
 
     proc = subprocess.run(
-        [wrapper],
+        wrapper_command(wrapper),
         input=request,
         capture_output=True,
         text=True,

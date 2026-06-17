@@ -553,13 +553,13 @@ def candidate_record(candidate: Candidate, repo_root: Path) -> dict[str, Any]:
     prompt = candidate.first_user_prompt
     prompt_excerpt = compact_prompt_excerpt(prompt)
     try:
-        source_path = str(candidate.source_path.relative_to(repo_root))
+        source_path = candidate.source_path.relative_to(repo_root).as_posix()
     except ValueError:
         try:
-            source_path = str(candidate.source_path.relative_to(Path.home()))
+            source_path = candidate.source_path.relative_to(Path.home()).as_posix()
             source_path = f"~/{source_path}"
         except ValueError:
-            source_path = str(candidate.source_path)
+            source_path = candidate.source_path.as_posix()
     return {
         "sessionId": candidate.session_id,
         "startTimestamp": candidate.start_timestamp,

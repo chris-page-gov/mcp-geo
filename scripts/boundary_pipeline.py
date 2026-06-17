@@ -805,7 +805,7 @@ def _not_published_evidence(
             "reason": reason,
         },
     )
-    return str(evidence_path.relative_to(paths.root))
+    return evidence_path.relative_to(paths.root).as_posix()
 
 
 def _default_derivation_profile(target_variant: str) -> dict[str, Any]:
@@ -1137,7 +1137,9 @@ def resolve_downloads(
                         str(pkg.get("title", "")),
                     ),
                     "vintage_id": vintage,
-                    "evidence_ref": str(evidence_path.relative_to(paths.root)) if evidence_path else None,
+                    "evidence_ref": (
+                        evidence_path.relative_to(paths.root).as_posix() if evidence_path else None
+                    ),
                 }
         return _resolve_required_variants(
             family=family,
@@ -1545,7 +1547,7 @@ def main() -> None:
                                 "url": url,
                                 "status_code": status_code,
                                 "error": str(exc),
-                                "evidence_ref": str(evidence_path.relative_to(run_paths.root)),
+                                "evidence_ref": evidence_path.relative_to(run_paths.root).as_posix(),
                             }
                         )
                 if not download_success:

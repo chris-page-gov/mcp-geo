@@ -98,7 +98,7 @@ def resolve_path(path_text: str | None, repo_root: Path) -> Path | None:
 
 def to_relative(path: Path, repo_root: Path) -> str:
     try:
-        return str(path.relative_to(repo_root))
+        return path.relative_to(repo_root).as_posix()
     except ValueError:
         return str(path)
 

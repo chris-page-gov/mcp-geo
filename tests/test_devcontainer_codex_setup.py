@@ -53,7 +53,15 @@ def test_devcontainer_setup_registers_codex_launcher(tmp_path: Path) -> None:
 
     log_text = log_path.read_text(encoding="utf-8")
     add_lines = [line for line in log_text.splitlines() if line.startswith("mcp add")]
-    assert any(str(repo_root / "scripts" / "codex-mcp-local") in line for line in add_lines)
+    expected_launcher = repo_root / "scripts" / "codex-mcp-local"
+    expected_variants = {str(expected_launcher), expected_launcher.as_posix()}
+    launcher_posix = expected_launcher.as_posix()
+    if len(launcher_posix) >= 3 and launcher_posix[1:3] == ":/":
+        expected_variants.add(f"/{launcher_posix[0].lower()}{launcher_posix[2:]}")
+    assert any(
+      any(variant in line for variant in expected_variants)
+      for line in add_lines
+    )
     assert any("--env OS_API_KEY=os-secret" in line for line in add_lines)
     assert not any("ONS_API_KEY" in line for line in add_lines)
     assert any(

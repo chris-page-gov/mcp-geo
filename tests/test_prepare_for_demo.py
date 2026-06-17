@@ -37,7 +37,7 @@ def test_entrypoint_uses_configured_python_311() -> None:
     env = {**os.environ, "MCP_GEO_PYTHON_BIN": sys.executable}
 
     result = subprocess.run(
-        [str(prepare_for_demo.REPO_ROOT / "scripts" / "prepare-for-demo"), "--help"],
+        ["bash", str(prepare_for_demo.REPO_ROOT / "scripts" / "prepare-for-demo"), "--help"],
         cwd=prepare_for_demo.REPO_ROOT,
         env=env,
         text=True,
@@ -56,7 +56,7 @@ def test_entrypoint_rejects_old_python(tmp_path: Path) -> None:
     env = {**os.environ, "MCP_GEO_PYTHON_BIN": str(python_stub)}
 
     result = subprocess.run(
-        [str(prepare_for_demo.REPO_ROOT / "scripts" / "prepare-for-demo"), "--help"],
+        ["bash", str(prepare_for_demo.REPO_ROOT / "scripts" / "prepare-for-demo"), "--help"],
         cwd=prepare_for_demo.REPO_ROOT,
         env=env,
         text=True,
@@ -234,21 +234,25 @@ def test_git_ref_helpers_peel_refs_to_commits(monkeypatch: pytest.MonkeyPatch) -
 def test_configured_docker_bin_must_be_executable(tmp_path: Path) -> None:
     docker_stub = tmp_path / "docker"
     docker_stub.write_text("#!/bin/sh\n", encoding="utf-8")
-    docker_stub.chmod(0o644)
 
     assert prepare_for_demo.configured_docker_error(
         {"MCP_GEO_DOCKER_BIN": str(docker_stub)}
     ) == f"MCP_GEO_DOCKER_BIN is not executable: {docker_stub}."
     assert prepare_for_demo.find_docker({"MCP_GEO_DOCKER_BIN": str(docker_stub)}) is None
 
-    docker_stub.chmod(0o755)
+    if os.name == "nt":
+        docker_exec = tmp_path / "docker.cmd"
+        docker_exec.write_text("@echo off\r\n", encoding="utf-8")
+    else:
+        docker_exec = docker_stub
+        docker_exec.chmod(0o755)
 
     assert (
-        prepare_for_demo.configured_docker_error({"MCP_GEO_DOCKER_BIN": str(docker_stub)})
+        prepare_for_demo.configured_docker_error({"MCP_GEO_DOCKER_BIN": str(docker_exec)})
         is None
     )
-    assert prepare_for_demo.find_docker({"MCP_GEO_DOCKER_BIN": str(docker_stub)}) == str(
-        docker_stub
+    assert prepare_for_demo.find_docker({"MCP_GEO_DOCKER_BIN": str(docker_exec)}) == str(
+        docker_exec
     )
 
 
@@ -427,7 +431,7 @@ def test_wrapper_plan_uses_timeout(monkeypatch: pytest.MonkeyPatch, tmp_path: Pa
     plan = prepare_for_demo.wrapper_plan(wrapper)
 
     assert plan == {"error": "timed out after 15s"}
-    assert seen["args"] == [str(wrapper)]
+    assert seen["args"] == prepare_for_demo.wrapper_command(wrapper)
     assert seen["check"] is False
     assert seen["timeout"] == prepare_for_demo.WRAPPER_PLAN_TIMEOUT_SECONDS
     assert isinstance(seen["env"], dict)

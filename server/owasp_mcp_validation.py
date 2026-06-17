@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import shutil
 import subprocess
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -107,6 +109,40 @@ def write_json(path: Path, payload: Any) -> None:
     path.write_text(pretty_json(payload), encoding="utf-8")
 
 
+def resolve_openssl_executable() -> str | None:
+    candidates: list[str] = []
+    configured = os.environ.get("OPENSSL_BIN", "").strip()
+    if configured:
+        candidates.append(configured)
+    resolved = shutil.which("openssl")
+    if resolved:
+        candidates.append(resolved)
+    if os.name == "nt":
+        candidates.extend(
+            [
+                "C:/Program Files/Git/usr/bin/openssl.exe",
+                "C:/Program Files/Git/mingw64/bin/openssl.exe",
+                str(Path.home() / "AppData/Local/Programs/Git/usr/bin/openssl.exe"),
+                str(Path.home() / "AppData/Local/Programs/Git/mingw64/bin/openssl.exe"),
+            ]
+        )
+    seen: set[str] = set()
+    for candidate in candidates:
+        if not candidate or candidate in seen:
+            continue
+        seen.add(candidate)
+        if Path(candidate).exists():
+            return candidate
+    return None
+
+
+def openssl_path_arg(path: str | Path) -> str:
+    candidate = Path(path)
+    if os.name == "nt":
+        return candidate.resolve().as_posix()
+    return str(candidate)
+
+
 def _read_text(path: Path) -> str:
     if not path.exists():
         return ""
@@ -164,17 +200,20 @@ def verify_signature(
     if missing:
         names = ", ".join(str(path) for path in missing)
         return False, f"Missing manifest verification artifact(s): {names}"
+    openssl_bin = resolve_openssl_executable()
+    if not openssl_bin:
+        return False, "openssl is not available to verify the signed tool manifest"
     try:
         result = subprocess.run(
             [
-                "openssl",
+                openssl_bin,
                 "dgst",
                 "-sha256",
                 "-verify",
-                str(public_key_path),
+                openssl_path_arg(public_key_path),
                 "-signature",
-                str(signature_path),
-                str(lock_path),
+                openssl_path_arg(signature_path),
+                openssl_path_arg(lock_path),
             ],
             check=False,
             capture_output=True,

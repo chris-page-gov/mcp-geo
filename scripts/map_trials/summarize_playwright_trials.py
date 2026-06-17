@@ -61,7 +61,7 @@ def to_rel(path: str | None, repo_root: Path) -> str | None:
         if text.startswith(prefix):
             return text[len(prefix) :]
     try:
-        return str(p.relative_to(repo_root))
+        return p.relative_to(repo_root).as_posix()
     except ValueError:
         return str(p)
 

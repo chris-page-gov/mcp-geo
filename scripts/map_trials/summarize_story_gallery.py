@@ -125,10 +125,10 @@ def to_relative(path_text: str | None, repo_root: Path) -> str | None:
     path = Path(value)
     if path.is_absolute():
         try:
-            return str(path.relative_to(repo_root))
+            return path.relative_to(repo_root).as_posix()
         except ValueError:
             return str(path)
-    return str(path)
+    return path.as_posix()
 
 
 def build_tool_coverage(stories: list[dict[str, Any]]) -> dict[str, list[str]]:

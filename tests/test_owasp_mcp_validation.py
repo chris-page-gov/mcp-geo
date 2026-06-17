@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -43,6 +44,8 @@ ATT_CONTROL_IDS = [
     "OMCP-GOV-002",
     "OMCP-GOV-003",
 ]
+
+FIXTURE_NOW = parse_datetime("2026-03-13T00:00:00Z")
 
 
 def _repo_root() -> Path:
@@ -118,14 +121,16 @@ def _sign_manifest(repo_root: Path) -> None:
     tmpdir = repo_root / ".tmp-signing"
     tmpdir.mkdir(parents=True, exist_ok=True)
     private_key = tmpdir / "tool_manifest_private.pem"
+    openssl_bin = validator.resolve_openssl_executable()
+    assert openssl_bin is not None
     subprocess.run(
         [
-            "openssl",
+            openssl_bin,
             "genpkey",
             "-algorithm",
             "RSA",
             "-out",
-            str(private_key),
+            validator.openssl_path_arg(private_key),
             "-pkeyopt",
             "rsa_keygen_bits:2048",
         ],
@@ -135,13 +140,13 @@ def _sign_manifest(repo_root: Path) -> None:
     )
     subprocess.run(
         [
-            "openssl",
+            openssl_bin,
             "rsa",
             "-pubout",
             "-in",
-            str(private_key),
+            validator.openssl_path_arg(private_key),
             "-out",
-            str(repo_root / "security/owasp_mcp/tool_manifest.pub.pem"),
+            validator.openssl_path_arg(repo_root / "security/owasp_mcp/tool_manifest.pub.pem"),
         ],
         check=True,
         capture_output=True,
@@ -149,14 +154,14 @@ def _sign_manifest(repo_root: Path) -> None:
     )
     subprocess.run(
         [
-            "openssl",
+            openssl_bin,
             "dgst",
             "-sha256",
             "-sign",
-            str(private_key),
+            validator.openssl_path_arg(private_key),
             "-out",
-            str(repo_root / "security/owasp_mcp/tool_manifest.lock.json.sig"),
-            str(repo_root / "security/owasp_mcp/tool_manifest.lock.json"),
+            validator.openssl_path_arg(repo_root / "security/owasp_mcp/tool_manifest.lock.json.sig"),
+            validator.openssl_path_arg(repo_root / "security/owasp_mcp/tool_manifest.lock.json"),
         ],
         check=True,
         capture_output=True,
@@ -313,9 +318,13 @@ def _control_status(report: dict[str, object], control_id: str) -> str:
     raise AssertionError(f"missing control {control_id}")
 
 
+def _validate_fixture_repo(repo_root: Path, tools: list[ToolSnapshot]) -> tuple[dict[str, Any], dict[str, Any]]:
+    return validate_repo(repo_root, registered_tools=tools, now=FIXTURE_NOW)
+
+
 def test_seeded_pass_fixture_is_compliant(tmp_path: Path):
     repo_root, tools = _make_fixture_repo(tmp_path)
-    report, backlog = validate_repo(repo_root, registered_tools=tools)
+    report, backlog = _validate_fixture_repo(repo_root, tools)
     assert report["summary"]["verdict"] == "compliant"
     assert _control_status(report, "OMCP-PI-001") == "not_applicable"
     assert backlog["items"] == []
@@ -323,7 +332,7 @@ def test_seeded_pass_fixture_is_compliant(tmp_path: Path):
 
 def test_wrapper_based_ruff_gate_counts_for_deploy_control(tmp_path: Path):
     repo_root, tools = _make_fixture_repo(tmp_path, use_wrapper_ruff_gate=True)
-    report, backlog = validate_repo(repo_root, registered_tools=tools)
+    report, backlog = _validate_fixture_repo(repo_root, tools)
     assert report["summary"]["verdict"] == "compliant"
     assert _control_status(report, "OMCP-DEPLOY-003") == "pass"
     assert backlog["items"] == []
@@ -331,14 +340,14 @@ def test_wrapper_based_ruff_gate_counts_for_deploy_control(tmp_path: Path):
 
 def test_missing_attestation_fails_in_strict_mode(tmp_path: Path):
     repo_root, tools = _make_fixture_repo(tmp_path, omit_attestations={"OMCP-AUTH-001"})
-    report, _ = validate_repo(repo_root, registered_tools=tools)
+    report, _ = _validate_fixture_repo(repo_root, tools)
     assert report["summary"]["verdict"] == "non_compliant"
     assert _control_status(report, "OMCP-AUTH-001") == "fail"
 
 
 def test_stale_attestation_fails(tmp_path: Path):
     repo_root, tools = _make_fixture_repo(tmp_path, stale_attestations={"OMCP-DEPLOY-001"})
-    report, _ = validate_repo(repo_root, registered_tools=tools)
+    report, _ = _validate_fixture_repo(repo_root, tools)
     assert _control_status(report, "OMCP-DEPLOY-001") == "fail"
 
 
@@ -348,7 +357,7 @@ def test_high_risk_tool_without_human_approval_fails(tmp_path: Path):
         high_risk_tools={"os_places.search"},
         omit_attestations={"OMCP-PI-001"},
     )
-    report, _ = validate_repo(repo_root, registered_tools=tools)
+    report, _ = _validate_fixture_repo(repo_root, tools)
     assert _control_status(report, "OMCP-PI-001") == "fail"
 
 
@@ -360,14 +369,14 @@ def test_signed_manifest_mismatch_fails(tmp_path: Path):
     manifest_path.write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
-    report, _ = validate_repo(repo_root, registered_tools=tools)
+    report, _ = _validate_fixture_repo(repo_root, tools)
     assert _control_status(report, "OMCP-TOOL-002") == "fail"
 
 
 def test_backlog_generation_is_stable(tmp_path: Path):
     repo_root, tools = _make_fixture_repo(tmp_path, token_passthrough=True)
-    report_one, backlog_one = validate_repo(repo_root, registered_tools=tools)
-    report_two, backlog_two = validate_repo(repo_root, registered_tools=tools)
+    report_one, backlog_one = _validate_fixture_repo(repo_root, tools)
+    report_two, backlog_two = _validate_fixture_repo(repo_root, tools)
     assert report_one["summary"] == report_two["summary"]
     assert backlog_one == backlog_two
     assert any(item["control_id"] == "OMCP-AUTH-002" for item in backlog_one["items"])
@@ -377,10 +386,12 @@ def test_current_repo_snapshot_matches_committed_compliant_baseline(tmp_path: Pa
     output_dir = tmp_path / "owasp-current-repo"
     completed = subprocess.run(
         [
-            "python3",
+            sys.executable,
             "scripts/validate_owasp_mcp_server.py",
             "--profile",
             "prod-strict",
+            "--now",
+            "2026-03-13T00:00:00Z",
             "--format",
             "both",
             "--output-dir",
@@ -771,7 +782,7 @@ def test_validate_repo_raises_for_unhandled_control(tmp_path: Path):
     catalog_path = repo_root / "security/owasp_mcp/control_catalog.json"
     catalog_path.write_text(json.dumps(bad_catalog, indent=2) + "\n", encoding="utf-8")
     try:
-        validate_repo(repo_root, registered_tools=tools)
+        validate_repo(repo_root, registered_tools=tools, now=FIXTURE_NOW)
     except ValidationDataError as exc:
         assert "Unhandled control id" in str(exc)
     else:

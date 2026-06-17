@@ -1815,7 +1815,7 @@ def write_fixtures() -> list[str]:
             _write_csv(path, spec["rows"])
         else:
             _write_text(path, spec["content"])
-        written.append(str(path.relative_to(REPO_ROOT)))
+        written.append(path.relative_to(REPO_ROOT).as_posix())
     return written
 
 
@@ -1825,7 +1825,7 @@ def write_reference_outputs() -> list[str]:
         path = REFERENCE_ROOT / f"{scenario_id.lower()}.json"
         _ensure_parent(path)
         path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-        written.append(str(path.relative_to(REPO_ROOT)))
+        written.append(path.relative_to(REPO_ROOT).as_posix())
     return written
 
 
