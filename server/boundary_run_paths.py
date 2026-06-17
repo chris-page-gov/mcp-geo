@@ -11,8 +11,9 @@ DEFAULT_BOUNDARY_RUNS_DIR = "data/boundary_runs"
 
 
 def _resolve_path(raw: str | Path) -> Path:
-    path = raw if isinstance(raw, Path) else Path(str(raw))
-    if not path.is_absolute():
+    raw_text = str(raw)
+    path = raw if isinstance(raw, Path) else Path(raw_text)
+    if not path.is_absolute() and not raw_text.startswith("/"):
         path = ROOT / path
     return path
 
@@ -101,7 +102,7 @@ def _missing_path_reason(path: Path) -> str:
     if len(parts) >= 3 and parts[1] == "Volumes":
         volume = Path(parts[0], parts[1], parts[2])
         if not volume.exists():
-            return f"external volume {volume} is not mounted"
+            return f"external volume /Volumes/{parts[2]} is not mounted"
     return "path does not exist"
 
 

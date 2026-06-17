@@ -113,6 +113,16 @@ resolve_host_path() {
     raw="$HOME"
   elif [[ "$raw" == ~/* ]]; then
     raw="$HOME/${raw#~/}"
+  elif [[ "$raw" =~ ^[A-Za-z]:[\\/].* ]]; then
+    if command -v cygpath >/dev/null 2>&1; then
+      cygpath -u "$raw"
+      return 0
+    fi
+    local drive_letter="${raw:0:1}"
+    local remainder="${raw:2}"
+    remainder="/${remainder//\\//}"
+    printf "/%s%s" "$(printf '%s' "$drive_letter" | tr '[:upper:]' '[:lower:]')" "$remainder"
+    return 0
   fi
   if [[ "$raw" = /* ]]; then
     printf "%s" "$raw"
@@ -123,6 +133,17 @@ resolve_host_path() {
 
 resolve_container_path() {
   local raw="$1"
+  if [[ "$raw" =~ ^[A-Za-z]:[\\/].* ]]; then
+    if command -v cygpath >/dev/null 2>&1; then
+      cygpath -u "$raw"
+      return 0
+    fi
+    local drive_letter="${raw:0:1}"
+    local remainder="${raw:2}"
+    remainder="/${remainder//\\//}"
+    printf "/%s%s" "$(printf '%s' "$drive_letter" | tr '[:upper:]' '[:lower:]')" "$remainder"
+    return 0
+  fi
   if [[ "$raw" = /* ]]; then
     printf "%s" "$raw"
     return 0

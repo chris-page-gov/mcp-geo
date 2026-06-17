@@ -155,7 +155,7 @@ def _refresh_kind(kind: str, *, timeout: float, dry_run: bool) -> dict[str, Any]
                     title=title,
                     status="cached",
                     source_url=source_url,
-                    cache_path=str(dest.relative_to(ROOT)),
+                    cache_path=dest.relative_to(ROOT).as_posix(),
                     sha256=sha,
                     bytes=byte_count,
                 )

@@ -12,6 +12,7 @@ import io
 import json
 import re
 import sqlite3
+import sys
 import time
 import zipfile
 from collections.abc import Iterable, Iterator
@@ -24,6 +25,10 @@ from urllib.parse import parse_qs, urljoin, urlparse
 
 import requests
 from openpyxl import load_workbook
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from server.ons_geo_cache import (
     KEY_TYPES,
@@ -38,8 +43,6 @@ from server.ons_geo_freshness import (
     parse_epoch_from_text,
     summarize_uprn_dataset_freshness,
 )
-
-ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SOURCES_PATH = ROOT / "resources" / "ons_geo_sources.json"
 DEFAULT_CACHE_DIR = ROOT / "data" / "cache" / "ons_geo"
 DEFAULT_INDEX_PATH = ROOT / "resources" / "ons_geo_cache_index.json"
@@ -320,7 +323,7 @@ def _sha256_file(path: Path) -> str:
 def _display_path(path: Path) -> str:
     resolved = path.resolve()
     try:
-        return str(resolved.relative_to(ROOT))
+        return resolved.relative_to(ROOT).as_posix()
     except ValueError:
         return str(resolved)
 

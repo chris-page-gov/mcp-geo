@@ -133,7 +133,7 @@ def audit_target(target: SpecTarget) -> TargetAudit:
         local_head = _run_git(submodule_root, "rev-parse", "HEAD")
         remote_head = _remote_head(submodule_root)
     missing_paths = [
-        str(Path(target.submodule_path) / relative_path)
+        (Path(target.submodule_path) / relative_path).as_posix()
         for relative_path in target.tracked_paths
         if not (submodule_root / relative_path).exists()
     ]

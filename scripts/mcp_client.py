@@ -30,8 +30,14 @@ def read_response(proc: "subprocess.Popen[Any]", skip_logs: bool = True) -> dict
         line: bytes = proc.stdout.readline()  # type: ignore[attr-defined]
         if not line:
             raise SystemExit("EOF before response headers")
-        if line in (b"\r\n", b"\n"):
+        stripped = line.strip()
+        if not stripped:
             break
+        if not headers and stripped.startswith(b"{"):
+            msg = json.loads(stripped.decode())
+            if skip_logs and msg.get("method") == "log" and "result" not in msg:
+                return read_response(proc, skip_logs=skip_logs)
+            return msg
         key, val = line.decode().split(":", 1)
         headers[key.lower()] = val.strip()
     length = int(headers.get("content-length", "0"))

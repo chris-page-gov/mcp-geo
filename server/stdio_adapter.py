@@ -165,12 +165,22 @@ def _rewrite_tool_schema(
 
 def _write_message(payload: Dict[str, Any], framing: str) -> None:
     data = json.dumps(payload, separators=(",", ":"))
+    data_bytes = data.encode("utf-8")
     try:
-        if framing == "line":
-            sys.stdout.write(f"{data}\n")
+        stream = sys.stdout
+        binary_stream = getattr(stream, "buffer", None)
+        if binary_stream is not None:
+            if framing == "line":
+                binary_stream.write(data_bytes + b"\n")
+            else:
+                header = f"Content-Length: {len(data_bytes)}\r\n\r\n".encode("ascii")
+                binary_stream.write(header + data_bytes)
+            binary_stream.flush()
+        elif framing == "line":
+            stream.write(f"{data}\n")
         else:
-            sys.stdout.write(f"Content-Length: {len(data)}\r\n\r\n{data}")
-        sys.stdout.flush()
+            stream.write(f"Content-Length: {len(data_bytes)}\r\n\r\n{data}")
+            stream.flush()
     except BrokenPipeError:  # pragma: no cover
         pass
 

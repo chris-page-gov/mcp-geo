@@ -17,6 +17,20 @@ def _plan_value(output: str, key: str) -> str:
     raise AssertionError(f"missing plan value: {key}")
 
 
+def _path_variants(path: Path | str) -> set[str]:
+    candidate = Path(path)
+    variants = {str(candidate), candidate.as_posix()}
+    posix = candidate.as_posix()
+    if len(posix) >= 3 and posix[1:3] == ":/":
+        variants.add(f"/{posix[0].lower()}{posix[2:]}")
+    return variants
+
+
+def _assert_plan_path(output: str, key: str, path: Path | str) -> None:
+    actual = _plan_value(output, key)
+    assert actual in _path_variants(path)
+
+
 def _isolated_env(tmp_path: Path) -> dict[str, str]:
     env = os.environ.copy()
     env["HOME"] = str(tmp_path)
@@ -86,7 +100,7 @@ exit 1
     )
 
     assert proc.returncode == 0, proc.stdout + proc.stderr
-    assert _plan_value(proc.stdout, "landis_host_data_root") == str(landis_root)
+    _assert_plan_path(proc.stdout, "landis_host_data_root", landis_root)
     assert _plan_value(proc.stdout, "landis_container_data_root") == "/landis-data"
     assert _plan_value(proc.stdout, "landis_mount_enabled") == "true"
 
@@ -143,14 +157,14 @@ exit 1
     )
 
     assert proc.returncode == 0, proc.stdout + proc.stderr
-    assert _plan_value(proc.stdout, "landis_host_data_root") == str(landis_root)
+    _assert_plan_path(proc.stdout, "landis_host_data_root", landis_root)
     assert _plan_value(proc.stdout, "landis_mount_enabled") == "true"
     assert _plan_value(proc.stdout, "os_api_key_present") == "true"
     assert _plan_value(proc.stdout, "os_api_key_file_present") == "true"
     assert _plan_value(proc.stdout, "boundary_runs_mount_enabled") == "true"
-    assert _plan_value(proc.stdout, "boundary_runs_search_host_paths") == str(landis_root)
-    assert _plan_value(proc.stdout, "boundary_runs_search_container_paths") == str(landis_root)
-    assert _plan_value(proc.stdout, "addressbase_xref_host_path") == str(addressbase_path)
+    _assert_plan_path(proc.stdout, "boundary_runs_search_host_paths", landis_root)
+    _assert_plan_path(proc.stdout, "boundary_runs_search_container_paths", landis_root)
+    _assert_plan_path(proc.stdout, "addressbase_xref_host_path", addressbase_path)
     assert _plan_value(proc.stdout, "addressbase_xref_container_path") == (
         "/app/data/addressbase/xref_voa_os.parquet"
     )
@@ -189,7 +203,7 @@ exit 1
     )
 
     assert proc.returncode == 0, proc.stdout + proc.stderr
-    assert _plan_value(proc.stdout, "landis_host_data_root") == str(landis_root)
+    _assert_plan_path(proc.stdout, "landis_host_data_root", landis_root)
     assert _plan_value(proc.stdout, "landis_mount_enabled") == "false"
 
 
@@ -269,10 +283,10 @@ exit 1
     )
 
     assert proc.returncode == 0, proc.stdout + proc.stderr
-    assert _plan_value(proc.stdout, "ons_geo_host_cache_dir") == str(cache_dir)
+    _assert_plan_path(proc.stdout, "ons_geo_host_cache_dir", cache_dir)
     assert _plan_value(proc.stdout, "ons_geo_container_cache_dir") == "/app/data/cache/ons_geo"
     assert _plan_value(proc.stdout, "ons_geo_cache_mount_enabled") == "true"
-    assert _plan_value(proc.stdout, "ons_geo_host_cache_index_path") == str(index_path)
+    _assert_plan_path(proc.stdout, "ons_geo_host_cache_index_path", index_path)
     assert (
         _plan_value(proc.stdout, "ons_geo_container_cache_index_path")
         == "/app/resources/ons_geo_cache_index.json"
@@ -343,13 +357,13 @@ exit 1
     assert _plan_value(proc.stdout, "http_port") == "8000"
     assert _plan_value(proc.stdout, "os_api_key_present") == "true"
     assert _plan_value(proc.stdout, "os_api_key_file_present") == "true"
-    assert _plan_value(proc.stdout, "ons_dataset_host_cache_dir") == str(ons_dataset_cache)
+    _assert_plan_path(proc.stdout, "ons_dataset_host_cache_dir", ons_dataset_cache)
     assert _plan_value(proc.stdout, "ons_dataset_cache_mount_enabled") == "true"
-    assert _plan_value(proc.stdout, "ons_geo_host_cache_dir") == str(ons_geo_cache)
+    _assert_plan_path(proc.stdout, "ons_geo_host_cache_dir", ons_geo_cache)
     assert _plan_value(proc.stdout, "ons_geo_cache_mount_enabled") == "true"
-    assert _plan_value(proc.stdout, "ons_geo_host_cache_index_path") == str(ons_geo_index)
+    _assert_plan_path(proc.stdout, "ons_geo_host_cache_index_path", ons_geo_index)
     assert _plan_value(proc.stdout, "ons_geo_cache_index_mount_enabled") == "true"
-    assert _plan_value(proc.stdout, "os_data_host_cache_dir") == str(os_data_cache)
+    _assert_plan_path(proc.stdout, "os_data_host_cache_dir", os_data_cache)
     assert _plan_value(proc.stdout, "os_data_cache_mount_enabled") == "true"
 
 
@@ -464,13 +478,13 @@ exit 1
     )
 
     assert proc.returncode == 0, proc.stdout + proc.stderr
-    assert _plan_value(proc.stdout, "ons_dataset_host_cache_dir") == str(ons_dataset_cache)
+    _assert_plan_path(proc.stdout, "ons_dataset_host_cache_dir", ons_dataset_cache)
     assert _plan_value(proc.stdout, "ons_dataset_cache_mount_enabled") == "true"
-    assert _plan_value(proc.stdout, "ons_geo_host_cache_dir") == str(ons_geo_cache)
+    _assert_plan_path(proc.stdout, "ons_geo_host_cache_dir", ons_geo_cache)
     assert _plan_value(proc.stdout, "ons_geo_cache_mount_enabled") == "true"
-    assert _plan_value(proc.stdout, "ons_geo_host_cache_index_path") == str(ons_geo_index)
+    _assert_plan_path(proc.stdout, "ons_geo_host_cache_index_path", ons_geo_index)
     assert _plan_value(proc.stdout, "ons_geo_cache_index_mount_enabled") == "true"
-    assert _plan_value(proc.stdout, "os_data_host_cache_dir") == str(os_data_cache)
+    _assert_plan_path(proc.stdout, "os_data_host_cache_dir", os_data_cache)
     assert _plan_value(proc.stdout, "os_data_cache_mount_enabled") == "true"
 
 
@@ -747,9 +761,9 @@ exit 1
     )
 
     assert proc.returncode == 0, proc.stdout + proc.stderr
-    assert _plan_value(proc.stdout, "ons_geo_host_cache_dir") == str(cache_dir)
+    _assert_plan_path(proc.stdout, "ons_geo_host_cache_dir", cache_dir)
     assert _plan_value(proc.stdout, "ons_geo_cache_mount_enabled") == "false"
-    assert _plan_value(proc.stdout, "ons_geo_host_cache_index_path") == str(index_path)
+    _assert_plan_path(proc.stdout, "ons_geo_host_cache_index_path", index_path)
     assert _plan_value(proc.stdout, "ons_geo_cache_index_mount_enabled") == "false"
 
 
@@ -795,7 +809,7 @@ exit 1
 
     assert proc.returncode == 0, proc.stdout + proc.stderr
     assert _plan_value(proc.stdout, "boundary_runs_mount_enabled") == "true"
-    assert _plan_value(proc.stdout, "boundary_runs_primary_host_path") == str(boundary_runs_dir)
+    _assert_plan_path(proc.stdout, "boundary_runs_primary_host_path", boundary_runs_dir)
     assert _plan_value(proc.stdout, "boundary_runs_primary_container_path") == (
         "/app/data/boundary_runs"
     )

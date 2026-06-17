@@ -139,8 +139,61 @@ def format_dt(value: datetime) -> str:
     return value.astimezone(UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
-def is_executable_file(path: str) -> bool:
+def _is_shell_script(path: Path) -> bool:
+    try:
+        first_line = path.read_text(encoding="utf-8", errors="replace").splitlines()[:1]
+    except OSError:
+        return False
+    return bool(first_line) and first_line[0].startswith("#!")
+
+
+def _windows_executable_suffixes() -> set[str]:
+    raw = os.environ.get("PATHEXT", ".COM;.EXE;.BAT;.CMD")
+    return {item.lower() for item in raw.split(";") if item}
+
+
+def find_bash() -> str | None:
+    configured = os.environ.get("MCP_GEO_BASH_BIN", "").strip()
+    candidates: list[str] = []
+    if configured:
+        candidates.append(configured)
+    resolved = shutil.which("bash")
+    if resolved:
+        candidates.append(resolved)
+    if os.name == "nt":
+        candidates.extend(
+            [
+                "C:/Program Files/Git/bin/bash.exe",
+                "C:/Program Files/Git/usr/bin/bash.exe",
+                str(Path.home() / "AppData/Local/Programs/Git/bin/bash.exe"),
+            ]
+        )
+    seen: set[str] = set()
+    for candidate in candidates:
+        if not candidate or candidate in seen:
+            continue
+        seen.add(candidate)
+        if Path(candidate).exists():
+            return candidate
+    return None
+
+
+def wrapper_command(path: Path) -> list[str]:
+    if os.name == "nt" and _is_shell_script(path):
+        bash = find_bash()
+        if bash:
+            return [bash, str(path)]
+    return [str(path)]
+
+
+def is_executable_file(path: str, *, allow_shell_script: bool = False) -> bool:
     candidate = Path(path)
+    if not candidate.is_file():
+        return False
+    if os.name == "nt":
+        if allow_shell_script and _is_shell_script(candidate) and find_bash():
+            return True
+        return candidate.suffix.lower() in _windows_executable_suffixes()
     return candidate.is_file() and os.access(candidate, os.X_OK)
 
 
@@ -350,7 +403,7 @@ def wrapper_plan(wrapper: Path) -> dict[str, str]:
     env["MCP_GEO_DOCKER_BUILD"] = "never"
     env["MCP_GEO_POSTGIS_BUILD"] = "never"
     proc = _run(
-        [str(wrapper)],
+        wrapper_command(wrapper),
         check=False,
         env=env,
         timeout=WRAPPER_PLAN_TIMEOUT_SECONDS,
@@ -569,7 +622,7 @@ def run_checks(args: argparse.Namespace) -> list[Check]:
         if not wrapper.exists():
             add(checks, "FAIL", f"wrapper.{client}", f"Missing wrapper: {rel_path}.")
             continue
-        if not os.access(wrapper, os.X_OK):
+        if not is_executable_file(str(wrapper), allow_shell_script=True):
             add(checks, "FAIL", f"wrapper.{client}", f"Wrapper is not executable: {rel_path}.")
             continue
         plan = wrapper_plan(wrapper)
