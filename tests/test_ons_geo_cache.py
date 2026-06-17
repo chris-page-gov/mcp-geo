@@ -27,6 +27,7 @@ def test_normalize_postcode_and_uprn() -> None:
     assert normalize_area_level("non civil parished") == "PARISH"
     assert infer_area_level_from_code("E04000001") == "PARISH"
     assert infer_area_level_from_code("W04000001") == "PARISH"
+    assert infer_area_level_from_code("E43000246") == "PARISH"
 
 
 def test_extract_geography_fields_handles_code_name_pairs() -> None:

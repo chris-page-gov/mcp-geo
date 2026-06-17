@@ -312,7 +312,7 @@ LEVEL_KEYWORDS = {
     "lsoa": [r"\blsoa\b", r"\blower (layer )?super output areas?\b"],
     "msoa": [r"\bmsoa\b", r"\bmiddle (layer )?super output areas?\b"],
     "parish": [
-        r"\bparishes?\b",
+        r"\bparish(es)?\b",
         r"\bparncp\b",
         r"\bnon[- ]civil[- ]parished\b",
     ],
@@ -365,7 +365,7 @@ AREA_PROFILE_LEVEL_PATTERNS = (
     (r"\blower (layer )?super output areas?\b", "LSOA"),
     (r"\bmsoa\b", "MSOA"),
     (r"\bmiddle (layer )?super output areas?\b", "MSOA"),
-    (r"\bparishes?\b", "PARISH"),
+    (r"\bparish(es)?\b", "PARISH"),
     (r"\bparncp\b", "PARISH"),
     (r"\bnon[- ]civil[- ]parished\b", "PARISH"),
     (r"\bwards?\b", "WARD"),

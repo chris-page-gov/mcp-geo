@@ -101,7 +101,7 @@ def infer_area_level_from_code(value: str) -> str | None:
         return "LSOA"
     if re.fullmatch(r"[EW]02\d{6}", code):
         return "MSOA"
-    if re.fullmatch(r"[EW]04\d{6}", code):
+    if re.fullmatch(r"([EW]04|E43)\d{6}", code):
         return "PARISH"
     if re.fullmatch(r"[EW]05\d{6}", code):
         return "WARD"

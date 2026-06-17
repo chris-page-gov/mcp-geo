@@ -124,6 +124,21 @@ def test_route_query_area_profile_from_parish_code():
     assert body["recommended_parameters"]["targetLevel"] == "PARISH"
 
 
+def test_route_query_area_profile_from_non_civil_parished_code():
+    body = _route("Quick profile for parish E43000246")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "ons_geo.area_summary"
+    assert body["recommended_parameters"]["id"] == "E43000246"
+    assert body["recommended_parameters"]["targetLevel"] == "PARISH"
+
+
+def test_route_query_area_profile_follow_up_parish_phrase():
+    body = _route("What do you know about that parish?")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "ons_geo.area_summary"
+    assert body["recommended_parameters"]["targetLevel"] == "PARISH"
+
+
 def test_route_query_area_profile_from_area_code_rejects_narrower_target_level():
     body = _route("Quick profile for district E09000033 at OA level")
     assert body["intent"] == "area_profile"

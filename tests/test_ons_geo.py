@@ -841,6 +841,54 @@ def test_ons_geo_area_summary_invalid_id_without_target_level_returns_validation
     assert "Could not infer targetLevel from id K04000001" in body["message"]
 
 
+def test_ons_geo_area_summary_infers_non_civil_parished_code(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    missing_dir = tmp_path / "missing"
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=missing_dir,
+        db_name="ons_geo_cache.sqlite",
+        index_path=tmp_path / "ons_geo_cache_index.json",
+    )
+
+    def fake_get_tool(name: str):  # type: ignore[no-untyped-def]
+        if name == "admin_lookup.area_geometry":
+            return _FakeTool(
+                lambda payload: (
+                    200,
+                    {
+                        "id": payload["id"],
+                        "name": "Example Non-Civil-Parished Area",
+                        "bbox": [-1.6, 52.3, -1.5, 52.4],
+                        "live": False,
+                        "meta": {"level": "PARISH"},
+                    },
+                )
+            )
+        return None
+
+    monkeypatch.setattr(ons_geo_tools, "get_tool", fake_get_tool)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_geo.area_summary",
+            "id": "E43000246",
+            "includeInventory": False,
+            "includePopulation": False,
+            "includeProfileDatasets": False,
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["input"]["targetLevel"] == "PARISH"
+    assert body["area"]["id"] == "E43000246"
+    assert body["area"]["level"] == "PARISH"
+    assert body["area"]["name"] == "Example Non-Civil-Parished Area"
+
+
 def test_ons_geo_area_summary_unknown_direct_id_returns_not_found(
     tmp_path: Path,
     monkeypatch,
