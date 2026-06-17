@@ -46,6 +46,11 @@ def test_route_query_named_place_feature_type_strips_prompt_wording():
         ("OS Names for village of Barston", "Barston"),
         ("Search the gazetteer for settlement called Harold Wood", "Harold Wood"),
         ("Find named place hamlet of Shrewley", "Shrewley"),
+        ("OS Names Barston", "Barston"),
+        ("Gazetteer Barston", "Barston"),
+        ("Find OS Names village of Barston", "Barston"),
+        ("Search the gazetteer settlement Harold Wood", "Harold Wood"),
+        ("Named place called Leamington Spa", "Leamington Spa"),
     ]
 
     for query, expected_text in cases:

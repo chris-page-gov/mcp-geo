@@ -252,10 +252,18 @@ AREA_CODE_REGEX = re.compile(r"\b([EKNSW]\d{8})\b", re.IGNORECASE)
 RESOURCE_URI_REGEX = re.compile(r"(resource://[^\s\"'<>]+)", re.IGNORECASE)
 ROAD_NUMBER_REGEX = re.compile(r"\b([ABM]\d{1,4}[A-Z]?)\b", re.IGNORECASE)
 NAMED_PLACE_FEATURE_QUALIFIER_REGEX = re.compile(
-    r"^(?:the\s+)?(?:settlement|hamlet|village)s?\s+(?:of|called|named)\s+",
+    r"^(?:the\s+)?(?:settlement|hamlet|village)s?\s+(?:(?:of|called|named)\s+)?",
     re.IGNORECASE,
 )
 NAMED_PLACE_RELATION_REGEX = re.compile(r"^(?:of|called|named)\s+", re.IGNORECASE)
+NAMED_PLACE_SOURCE_PREFIX_REGEX = re.compile(
+    (
+        r"^(?:(?:please\s+)?(?:find|search|look\s+up|lookup|show|use)\s+(?:the\s+)?)?"
+        r"(?:(?:os\s+names?)(?:\s+gazetteer)?|gazetteer|named\s+(?:place|feature)s?)"
+        r"\s+(?:(?:for|of|called|named)\s+)?"
+    ),
+    re.IGNORECASE,
+)
 
 _PLACE_NAME_STOP_WORDS = {
     "a",
@@ -579,11 +587,15 @@ def _extract_named_place_text(query: str, place_name: str | None) -> str:
         candidate = _clean_named_place_candidate(match.group(1))
         if candidate:
             return candidate
+    stripped_query = _clean_named_place_candidate(query)
+    if stripped_query and stripped_query != query.strip():
+        return stripped_query
     return place_name or query.strip()
 
 
 def _clean_named_place_candidate(candidate: str) -> str:
     cleaned = candidate.strip(" .,:;\"'")
+    cleaned = NAMED_PLACE_SOURCE_PREFIX_REGEX.sub("", cleaned).strip(" .,:;\"'")
     cleaned = NAMED_PLACE_FEATURE_QUALIFIER_REGEX.sub("", cleaned).strip(" .,:;\"'")
     cleaned = NAMED_PLACE_RELATION_REGEX.sub("", cleaned).strip(" .,:;\"'")
     return cleaned

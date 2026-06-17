@@ -9,7 +9,12 @@ from pathlib import Path
 from typing import Any
 
 from server.config import settings
-from server.geography_levels import selector_level_options, selector_level_values
+from server.geography_levels import (
+    normalize_admin_level,
+    normalize_selector_level,
+    selector_level_options,
+    selector_level_values,
+)
 from server.mcp.resource_catalog import MCP_APPS_MIME, load_ui_content, resolve_ui_resource
 from server.route_planning import normalize_route_profile, normalize_stop
 from tools.registry import Tool, ToolResult, register
@@ -450,7 +455,7 @@ def _render_geography_selector(payload: dict[str, Any]) -> ToolResult:
     if level is not None and not isinstance(level, str):
         return _error("level must be a string")
     if level:
-        normalized_level = level.strip().lower()
+        normalized_level = normalize_selector_level(level)
         if normalized_level not in _GEOGRAPHY_SELECTOR_LEVEL_VALUES:
             supported = ", ".join(sorted(_GEOGRAPHY_SELECTOR_LEVEL_VALUES))
             return _error(f"level must be one of: {supported}")
@@ -469,7 +474,7 @@ def _render_geography_selector(payload: dict[str, Any]) -> ToolResult:
     if focus_level is not None and not isinstance(focus_level, str):
         return _error("focusLevel must be a string")
     if focus_level:
-        config["focusLevel"] = focus_level
+        config["focusLevel"] = normalize_admin_level(focus_level) or focus_level
     multi_select = payload.get("multiSelect")
     if multi_select is not None and not isinstance(multi_select, bool):
         return _error("multiSelect must be a boolean")
@@ -506,7 +511,7 @@ def _render_boundary_explorer(payload: dict[str, Any]) -> ToolResult:
     if level is not None and not isinstance(level, str):
         return _error("level must be a string")
     if level:
-        config["level"] = level
+        config["level"] = normalize_admin_level(level) or level
     search_term = payload.get("searchTerm")
     if search_term is not None and not isinstance(search_term, str):
         return _error("searchTerm must be a string")
@@ -521,7 +526,7 @@ def _render_boundary_explorer(payload: dict[str, Any]) -> ToolResult:
     if focus_level is not None and not isinstance(focus_level, str):
         return _error("focusLevel must be a string")
     if focus_level:
-        config["focusLevel"] = focus_level
+        config["focusLevel"] = normalize_admin_level(focus_level) or focus_level
     initial_lat = payload.get("initialLat")
     initial_lng = payload.get("initialLng")
     initial_zoom = payload.get("initialZoom")

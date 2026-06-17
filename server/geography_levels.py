@@ -362,8 +362,28 @@ def selector_level_values() -> tuple[str, ...]:
     return tuple(level.key for level in GEOGRAPHY_LEVELS if level.selector)
 
 
+SELECTOR_LEVEL_ALIASES: dict[str, str] = {}
+for _level in GEOGRAPHY_LEVELS:
+    if not _level.selector:
+        continue
+    SELECTOR_LEVEL_ALIASES[_alias_key(_level.key)] = _level.key
+    if _level.area_level:
+        SELECTOR_LEVEL_ALIASES[_alias_key(_level.area_level)] = _level.key
+    if _level.normalized_key:
+        SELECTOR_LEVEL_ALIASES[_alias_key(_level.normalized_key)] = _level.key
+    if _level.admin_level:
+        SELECTOR_LEVEL_ALIASES[_alias_key(_level.admin_level)] = _level.key
+    for _alias in _level.aliases:
+        SELECTOR_LEVEL_ALIASES[_alias_key(_alias)] = _level.key
+
+
+def normalize_selector_level(value: str) -> str | None:
+    return SELECTOR_LEVEL_ALIASES.get(_alias_key(value))
+
+
 def map_focus_level_for_selector(value: str) -> str | None:
-    level = LEVEL_BY_KEY.get(value.strip().lower())
+    level_key = normalize_selector_level(value)
+    level = LEVEL_BY_KEY.get(level_key) if level_key else None
     return level.map_focus_level if level else None
 
 

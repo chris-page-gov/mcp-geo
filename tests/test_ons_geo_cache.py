@@ -10,6 +10,7 @@ from server.geography_levels import (
     boundary_search_priority_levels,
     infer_admin_levels_from_text,
     normalize_admin_level,
+    normalize_selector_level,
 )
 from server.ons_geo_cache import (
     ONSGeoCache,
@@ -42,6 +43,11 @@ def test_shared_geography_level_registry_covers_parish_and_country_aliases() -> 
     assert normalize_admin_level("parncp") == "PARISH"
     assert normalize_admin_level("non civil parished") == "PARISH"
     assert normalize_admin_level("country") == "NATION"
+    assert normalize_selector_level("DISTRICT") == "local_auth"
+    assert normalize_selector_level("local_authority") == "local_auth"
+    assert normalize_selector_level("LAD") == "local_auth"
+    assert normalize_selector_level("PARNCP") == "parish"
+    assert normalize_selector_level("NATION") == "country"
     assert infer_admin_levels_from_text("Nationwide statistics") == ["NATION"]
     assert infer_admin_levels_from_text("PARNCP boundary") == ["PARISH"]
     assert boundary_search_priority_levels()[:3] == ("WARD", "PARISH", "DISTRICT")
