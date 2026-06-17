@@ -4,6 +4,11 @@ import re
 from collections.abc import Iterable
 from typing import Any
 
+from server.geography_levels import (
+    normalize_ons_select_geography_level,
+    ons_select_geography_level_values,
+)
+
 
 def client_supports_elicitation_form(capabilities: dict[str, Any]) -> bool:
     """Return True if a client capability object indicates form elicitation support."""
@@ -20,20 +25,6 @@ def client_supports_elicitation_form(capabilities: dict[str, Any]) -> bool:
     return isinstance(elicitation.get("form"), dict)
 
 
-_GEO_LEVEL_ALIASES: dict[str, str] = {
-    "nation": "nation",
-    "national": "nation",
-    "country": "nation",
-    "region": "region",
-    "regional": "region",
-    "local_authority": "local_authority",
-    "local-authority": "local_authority",
-    "local authority": "local_authority",
-    "la": "local_authority",
-    "ward": "ward",
-    "wards": "ward",
-}
-
 _TIME_GRANULARITY_ALIASES: dict[str, str] = {
     "latest": "latest",
     "current": "latest",
@@ -46,13 +37,6 @@ _TIME_GRANULARITY_ALIASES: dict[str, str] = {
     "month": "month",
     "monthly": "month",
 }
-
-
-def normalize_ons_select_geography_level(value: str) -> str | None:
-    raw = value.strip().lower()
-    if not raw:
-        return None
-    return _GEO_LEVEL_ALIASES.get(raw, raw)
 
 
 def normalize_ons_select_time_granularity(value: str) -> str | None:
@@ -110,7 +94,7 @@ def build_ons_select_elicitation_params(
         "description": (
             "Choose the area level you care about (optional). Leave unset for no preference."
         ),
-        "enum": ["nation", "region", "local_authority", "ward"],
+        "enum": list(ons_select_geography_level_values()),
     }
     if geo_default is not None:
         geography_level_schema["default"] = geo_default

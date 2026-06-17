@@ -264,6 +264,95 @@ def test_nomis_query_resolves_gss_geography_ids(monkeypatch):
     assert resolution["usedLegacyLookup"] is False
 
 
+def test_nomis_query_resolves_parish_gss_when_dataset_advertises_parish_type(monkeypatch):
+    from tools import nomis_common
+    from server.config import settings
+
+    monkeypatch.setattr(settings, "NOMIS_LIVE_ENABLED", True, raising=False)
+
+    overview = {
+        "overview": {
+            "dimensions": {
+                "dimension": [
+                    {"concept": "time", "codes": {"code": [{"value": "2021"}]}},
+                    {
+                        "concept": "geography",
+                        "types": {
+                            "type": [
+                                {"name": "Civil parishes and communities", "value": "TYPE999"},
+                            ]
+                        },
+                    },
+                    {"concept": "measures", "codes": {"code": [{"value": "20100"}]}},
+                ]
+            }
+        }
+    }
+
+    parish_def = {
+        "structure": {
+            "codelists": {
+                "codelist": [
+                    {
+                        "code": [
+                            {
+                                "value": 123456789,
+                                "description": {"value": "Example Parish"},
+                                "annotations": {
+                                    "annotation": [
+                                        {
+                                            "annotationtitle": "GeogCode",
+                                            "annotationtext": "E04000001",
+                                        },
+                                    ]
+                                },
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+
+    def fake_get_json(  # noqa: ARG001
+        url: str,
+        params: Dict[str, Any] | None = None,
+        use_cache: bool = True,
+    ) -> Tuple[int, Dict[str, Any]]:
+        params = params or {}
+        if url.endswith(
+            "/dataset/NM_2021_1.overview.json?select=DatasetInfo,Coverage,Keywords,Dimensions,Codes"
+        ):
+            return 200, overview
+        if url.endswith("/dataset/NM_2021_1/geography/TYPE999.def.sdmx.json"):
+            assert params.get("search") == "E04000001"
+            return 200, parish_def
+        if url.endswith("/dataset/NM_2021_1.jsonstat.json"):
+            assert params.get("geography") == "123456789"
+            return 200, {"value": 456}
+        return 500, {"error": f"Unexpected URL {url}"}
+
+    monkeypatch.setattr(nomis_common.client, "get_json", fake_get_json)
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "nomis.query",
+            "dataset": "NM_2021_1",
+            "params": {"geography": "E04000001", "measures": "20100"},
+        },
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["data"]["value"] == 456
+    resolution = body["queryAdjusted"]["geographyResolution"]
+    assert resolution["level"] == "PARISH"
+    assert resolution["datasetType"] == {
+        "name": "Civil parishes and communities",
+        "value": "TYPE999",
+    }
+
+
 def test_nomis_query_resolves_legacy_ward_gss_by_name_fallback(monkeypatch):
     from tools import nomis_common, nomis_data
     from server.config import settings

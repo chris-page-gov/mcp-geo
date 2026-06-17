@@ -1,304 +1,167 @@
 # MCP Geo Repository Guidelines
 
-This document defines how agents (and humans) should work within the `mcp-geo` repository. It replaces a template from a different project—details below are specific to this codebase.
+This file is the always-read agent guide for `mcp-geo`. Keep it compact.
+Detailed operational history lives under `docs/agent_context/`.
 
 ## Current Tech & Scope
 
-- FastAPI-based Model Context Protocol (MCP) server providing geospatial / Ordnance Survey tooling.
-- Python >=3.11 runtime (bump `requires-python` in `pyproject.toml` if upgraded).
-- Endpoints: `/health`, `/tools/list`, `/tools/call`, `/tools/describe`, `/resources/list`, playground transcript endpoints.
-- Epic A (core) and Epic B (OS tools) implemented with real handlers (OS calls if `OS_API_KEY` set; graceful 501 otherwise).
+- FastAPI-based MCP server for UK geospatial, Ordnance Survey, ONS/NOMIS,
+  property, mapping, and LandIS tooling.
+- Python >=3.11 runtime.
+- Main entrypoints: `server/main.py` for HTTP and `server/stdio_adapter.py` for
+  JSON-RPC STDIO.
+- Tool modules live in `tools/`; static resources live in `resources/`; tests
+  live in `tests/`.
 
-## Repository Layout
+## Required Startup Context
 
-- `server/`: FastAPI app (`main.py`), config (`config.py`), MCP routers (`mcp/`).
-- `server/mcp/tools.py`: Tool metadata/dispatch + explicit dynamic imports guaranteeing registration.
-- `server/mcp/resources.py`: Resource listing + retrieval with filtering, paging, and ETag/`If-None-Match` support.
-- `server/mcp/playground.py`: Transcript stub (synchronous; should become async and validated).
-- `server/stdio_adapter.py`: JSON-RPC 2.0 STDIO adapter (relocated from legacy `scripts/os_mcp.py`; console script `mcp-geo-stdio` + wrapper `scripts/os-mcp` retained for compatibility).
-- `resources/`: Static data (currently minimal / placeholder folders expected).
-- `tools/`: Concrete tool modules (os_places, os_places_extra, os_names, os_features, os_linked_ids, os_maps, os_vector_tiles, etc.).
-- `playground/`: Placeholder for a web or CLI UI (not yet populated with frontend assets here).
-- `tests/`: Pytest suite (currently missing critical coverage—see gaps section).
-- `research/`: Research packs and design studies (see `research/ons_dataset_selection/`).
-- `.devcontainer/`: Development container configuration.
-- `CHANGELOG.md`: Canonical release log. Parallel PRs may use branch-local
-  fragments as described in "Parallel Tracking Docs" below, then fold them into
-  the Unreleased section during integration.
-- `pyproject.toml`: Project metadata & dependencies.
-- `.env.example`: Example environment; currently only OS_API_KEY stub.
+- Read `CONTEXT.md` at the start of each session.
+- Use `PROGRESS.MD` for active workstream status only.
+- Use `docs/agent_context/` for historical context and operational playbooks:
+  - `README.md`
+  - `geography-extension-contract.md`
+  - `agent-operations.md`
+  - `historical-workstreams.md`
+- Treat `docs/vendor/openai/` as deprecated fallback. Prefer current OpenAI
+  developer docs via the shared documentation MCP server when available.
 
 ## Build & Run
 
-- Devcontainer: open in VS Code, auto installs deps via `postCreateCommand`.
-- Local manual run:
+Local manual run:
 
-  ```bash
-  pip install -e .[test]
-  uvicorn server.main:app --reload
-  ```
+```bash
+pip install -e .[test]
+uvicorn server.main:app --reload
+```
 
-- Run tests:
+Preferred local validation wrappers:
 
-  ```bash
-  ./scripts/pytest-local -q
-  ```
+```bash
+./scripts/ruff-local
+./scripts/mypy-local
+./scripts/pytest-local -q
+./scripts/validate-owasp-mcp-local
+```
 
-- For host-side Codex/CLI sessions, prefer `scripts/pytest-local`,
-  `scripts/ruff-local`, and `scripts/mypy-local`. They automatically prefer the
-  running repo devcontainer app container, then the repo `.venv`, then `uv run`
-  when the tool is not installed locally.
+The wrappers prefer the running devcontainer, then `.venv`, then `uv run`.
 
-### Command timeout guidance for agents
+Timeout guidance:
 
-- Set explicit `timeout_ms` for long-running commands; do not rely on short defaults.
-- Recommended minimums in this repo:
-  - Full regression `pytest -q`: `900000` (15 minutes).
-  - Containerized map trial runner `./scripts/run_map_delivery_trials.sh`: `300000` (5 minutes).
-  - Full Playwright suites (`npm --prefix playground run test` or `test:trials`): `300000` (5 minutes).
-- For unknown runtime commands, start at `300000` and increase if historical logs show longer runs.
-
-- Alternate entrypoint: `python run.py` (ensure it points to uvicorn).
+- Full pytest: 15 minutes.
+- Containerized map trials: 5 minutes.
+- Full Playwright suites: 5 minutes.
+- Unknown long command: start at 5 minutes and extend from evidence.
 
 ## Coding Standards
 
 - 4-space indent, LF, max line length 100.
-- Universal type hints for maintained runtime surfaces. Repo-supported CI
-  currently enforces phased Ruff/mypy gates on curated slices; expand those
-  gates only when each next slice is clean and documented.
+- Use type hints on maintained runtime surfaces.
 - Error model: `{ "isError": true, "code": str, "message": str, "correlationId"?: str }`.
-- `nextPageToken` for pagination (never snake case).
-- Logging via `loguru`; sensitive tokens masked (`server/security.py`).
-- Dynamic tool registration: Explicit import loop in `server/mcp/tools.py` ensures consistent registry population across agent/test environments.
-- Rate limiting: middleware in `server/main.py` (defaults: `RATE_LIMIT_PER_MIN=207`, `RATE_LIMIT_BYPASS=False` in `server/config.py`; over-limit returns `429` + `{code:"RATE_LIMITED"}`).
-- Metrics: `GET /metrics` enabled by default (`METRICS_ENABLED=True` in `server/config.py`).
-- When MCP HTTP auth is enabled, only `GET /health` remains public; raw
-  `/tools/*`, `/resources/*`, `/playground/*`, and `/metrics` share the same
-  bearer-auth boundary as `/mcp`.
+- Use `nextPageToken` for pagination.
+- Logging via `loguru`; mask secrets through shared redaction helpers.
+- Dynamic tool registration depends on explicit imports in `server/mcp/tools.py`.
+- OS-backed tools return `501` with `{code:"NO_API_KEY"}` when `OS_API_KEY` is unset.
+- Do not add dependencies without updating `pyproject.toml` and documenting why.
 
-## Tools & Resources Conventions
+## Tool Contracts
 
-- Namespace: `os_<domain>.<verb>` — allowed verbs: `search|get|query|find|nearest|within|render|descriptor`.
-- Each tool supplies: name, version, description, `input_schema`, `output_schema`, handler.
-- Discovery endpoints: `/tools/list` (names + paging), `/tools/describe` (full metadata).
-- Keep handlers small; shared concerns (HTTP, retries) live in `os_common.py`.
-- Tools register via side effects into `tools/registry.py`; ensure modules are explicitly imported in `server/mcp/tools.py` (don’t rely on import order).
-- OS-backed tools must return `501` with `{code:"NO_API_KEY"}` when `OS_API_KEY` is unset (see `tools/os_common.py`).
-- Resources support filtering, paging, and weak ETags; use `If-None-Match` and return `304` with `ETag` header when appropriate (see `server/mcp/resources.py`).
+- Namespace tools as `os_<domain>.<verb>` where verbs are
+  `search|get|query|find|nearest|within|render|descriptor`.
+- Each tool must supply metadata, input schema, output schema, and a small
+  handler.
+- Shared concerns such as HTTP, retries, config, auth, and normalization should
+  live in shared helpers rather than per-tool copies.
+- If adding or renaming a tool, changing a description, or changing a schema:
+  update `security/owasp_mcp/tool_risk_inventory.json`, regenerate signed
+  manifest artifacts, and run `./scripts/validate-owasp-mcp-local`.
 
-## STDIO adapter notes
+## Geography-Level Changes
 
-- `server/stdio_adapter.py` speaks JSON-RPC 2.0 with `Content-Length` framing; methods map to `tools/*` and `resources/*`.
-- Keep responses compatible with existing tests under `tests/test_stdio_*.py` when modifying adapter behavior.
+Geography levels must be treated as cross-surface contracts. Start in
+`server/geography_levels.py`; do not add one-off alias lists in individual tools.
+
+For parish/PARNCP, public API level is `PARISH`; raw fields remain
+`PARNCP25CD`, `PARNCP25NM`, and `PARNCP25NW`. For House of Commons Library MSOA
+names, keep official ONS/RGC names in `name` / `currentName` and expose Library
+labels through `displayName` fields with provenance.
+
+Before finishing any geography-level or display-name change, review and test:
+
+- ONS cache schema, refresh ingest, semantic extraction, and migrations
+- admin lookup cache/live/geometry paths
+- route-query, stats routing, and workflow resources
+- HTTP and STDIO schemas/elicitation
+- MCP-Apps widget config and embedded HTML defaults
+- export selectors and CSV audit columns
+- docs, examples, changelog fragments, and OWASP manifest artifacts
+
+See `docs/agent_context/geography-extension-contract.md` for the full checklist.
 
 ## Testing Strategy
 
-- Pytest with coverage gate (≥90%). Current suite covers success + validation + upstream error paths.
-- When adding a tool: include validation tests, success path (mocked upstream), and at least one upstream error normalization test.
-- When adding or changing a tool contract: update
-  `security/owasp_mcp/tool_risk_inventory.json`, regenerate the signed tool
-  manifest artifacts (`tool_manifest.lock.json`, `.sig`, and `tool_manifest.pub.pem`)
-  with `scripts/generate_owasp_mcp_tool_manifest.py`, and rerun the strict
-  validator via `./scripts/validate-owasp-mcp-local` so OWASP CI stays aligned
-  with the registered tool set.
-- When fixing a bug or review finding: search for structurally similar code paths
-  across the repo, patch every confirmed sibling instance in the same change,
-  and add regression coverage for both the reported case and at least one
-  equivalent path when such a sibling exists. If the reported site is unique,
-  note that conclusion in the task summary or tracking docs.
-- Prefer monkeypatching minimal surface (e.g., `client.get_json` / `requests.get`) to reach normalization logic.
-- Future: introduce golden fixtures for canonical postcodes & feature queries.
+- Pytest has a coverage gate; use targeted `--no-cov` slices during development
+  only when the full gate is not needed yet.
+- New tools need validation tests, a mocked success path, and upstream error
+  normalization tests.
+- Bug fixes and PR-comment fixes require a same-pattern sweep. Check shared
+  helpers, HTTP/STDIO variants, cache/live variants, file-format variants, and
+  widget fallbacks where relevant.
+- Add regression coverage for the reported case plus at least one confirmed
+  sibling path. If the site is unique, say so in the task summary or PR comment.
+- Prefer monkeypatching minimal surfaces such as `client.get_json` or
+  `requests.get`.
 
 ## Commits & PRs
 
-- Use Conventional Commits: `feat(server): implement os_places.by_postcode parsing`.
-- Each PR must: include release-note coverage, add/adjust docs, and include/adjust tests.
-  For parallel work, release-note coverage can be a branch-local changelog
-  fragment instead of a direct `CHANGELOG.md` edit.
-- Avoid bundling unrelated refactors with feature delivery.
+- Use Conventional Commits, for example
+  `feat(server): implement os_places.by_postcode parsing`.
+- Keep unrelated refactors out of feature/fix commits.
+- Each PR needs tests, docs, and release-note coverage. For parallel work, use a
+  `changelog.d/` fragment instead of editing `CHANGELOG.md` directly.
+- For high-churn files (`CHANGELOG.md`, `PROGRESS.MD`, `CONTEXT.md`), prefer
+  branch-local fragments/plans unless doing release or integration work.
+- When creating PRs/comments with markdown, prefer body files rather than
+  embedding backticks directly in shell commands.
 
-## Parallel Tracking Docs
+## Runtime & Security
 
-High-churn tracking docs (`CHANGELOG.md`, `PROGRESS.MD`, `CONTEXT.md`, and
-similar top-level status files) are shared integration surfaces. When several
-worktrees or PRs are active in parallel, avoid making every branch edit the same
-canonical section unless that branch is the integration branch.
+- When MCP HTTP auth is enabled, only `GET /health` is public. Raw `/tools/*`,
+  `/resources/*`, `/playground/*`, and `/metrics` share the bearer-auth boundary
+  with `/mcp`.
+- Never log full secrets. Include `MCP_HTTP_AUTH_TOKEN` and
+  `MCP_HTTP_JWT_HS256_SECRET` in redaction-sensitive reviews.
+- Validate external inputs and keep outbound HTTP timeouts.
+- Metrics are served at `/metrics` when enabled.
 
-- For normal feature or bug-fix PRs, prefer a branch-local changelog fragment
-  such as `changelog.d/<date>-<short-branch-or-pr>.md` with only the final
-  `Added` / `Changed` / `Fixed` bullets for that branch. If the directory does
-  not exist yet, create it in the PR that first needs the pattern.
-- Edit `CHANGELOG.md` directly only for release preparation, integration
-  branches, single-branch work, or when the user explicitly asks for the
-  canonical changelog to be updated immediately.
-- For implementation progress, prefer a focused plan file under `Plans/` while
-  the work is in flight. Update `PROGRESS.MD` directly when the workstream is
-  repo-level, when the branch is about to merge, or when you have first synced
-  with current `main`.
-- Keep `CONTEXT.md` for durable decisions and active cross-branch facts. Do not
-  add transient per-branch status there unless other concurrent work needs to
-  know it before merge.
-- When merging a batch of parallel PRs, first update each branch from current
-  `main`, fold any `changelog.d/` fragments and completed plan status into the
-  canonical docs once, and preserve entries from all branches. Admin override
-  can bypass review gates, but it cannot safely bypass content conflicts.
+## Client Interop
 
-## Release Process (Publish a Version)
+Keep STDIO and MCP-Apps compatibility in mind:
 
-Definition of "publish a version" in this repo:
-- Update versions in `pyproject.toml` and `server/__init__.py`.
-- Move the `[Unreleased]` section in `CHANGELOG.md` into a new dated release.
-- Add `RELEASE_NOTES/<version>.md` (match the changelog summary).
-- Run tests (`pytest -q`) and confirm coverage gate passes.
-- Create a git tag `v<version>` that points at the release commit.
-- Optional but recommended: build the Docker image (`docker build -t mcp-geo-server .`).
+- Support JSON-RPC `tools/call` with `params.name` and `params.arguments`.
+- Accept sanitized and original tool names.
+- `resources/read` should accept both `uri` and `name`.
+- Do not respond to JSON-RPC notifications without an `id`.
+- Widget payload extraction must tolerate `structuredContent`, content blocks,
+  and `result.data`.
 
-If you need CI automation later, add `.github/workflows/release.yml` to formalize the above.
+See `docs/agent_context/agent-operations.md` for detailed client and review
+workflow learnings.
 
-## Security & Configuration
+## Map UX
 
-- Never log full secrets (centralise redaction helper: e.g., `server/security.py`).
-- Validate all external inputs (postcode regex OK; add length and normalization utilities module).
-- Timeouts on all outbound HTTP calls (already set for OS API: `timeout=5`). Add retry strategy (e.g., `tenacity`) for transient errors.
-- Config knobs live in `server/config.py`: `OS_API_KEY`, `DEBUG_ERRORS`, `RATE_LIMIT_PER_MIN`, `RATE_LIMIT_BYPASS`, `METRICS_ENABLED`, `ONS_LIVE_ENABLED`, `ONS_CACHE_TTL`, `ONS_CACHE_SIZE`.
+- For user-facing maps needing street/building detail, default to MapLibre with
+  an OS vector basemap such as `OS_VTS_3857_Light.json`.
+- Keep analytical overlays separate from the basemap and label-safe.
+- Validate maps in a real browser at desktop width with zoom, pan, and label
+  readability checks before closing the task.
 
-## Observability Enhancements (Backlog)
+## Releases
 
-- Add structured JSON logging sink.
-- Add request/response size metrics and tool latency histograms (Prometheus or OTLP exporter).
-- Correlation ID should also propagate to outbound requests via header injection.
+Publishing a version means:
 
-## Agent Execution Rules
-
-- Read `CONTEXT.md` at the start of each session and update it when priorities,
-  decisions, or active work items change.
-- Do not assume Docker-backed host clients share one PostGIS database. The
-  normal wrapper topology is isolated per-client named-volume sidecars
-  (`claude`, `codex`, `gemini`, and generic fallback), while shared
-  devcontainer reuse is explicit opt-in only. When benchmarking or debugging
-  host parity, inspect `scripts/check_shared_benchmark_cache.sh` and the active
-  wrapper plans before concluding which topology is in use.
-- Treat every bug fix and PR-comment fix as a small codebase review: identify
-  whether the problem sits in a shared helper, repeated pattern, or transport
-  variant before editing; then either fix all confirmed matches or record why
-  the implementation is single-site.
-- Prefer the shared `openaiDeveloperDocs` MCP server
-  (`https://developers.openai.com/mcp`) for OpenAI/Codex/API/App SDK
-  documentation when it is available.
-- Treat `docs/vendor/openai/` as deprecated legacy fallback material; do not
-  refresh or cite those local copies when the Documentation MCP can serve the
-  same docs.
-- Do not introduce new dependencies without updating `pyproject.toml` and rationale in PR.
-- Prefer incremental refactors (extract functions before rewriting blocks).
-- If adding a tool: include JSON schema for request/response in docstring.
-- If adding or renaming a tool, or changing its description/schema: treat that
-  as an OWASP manifest change as well as a runtime change. Refresh the tool
-  risk inventory and signed manifest artifacts in `security/owasp_mcp/` in the
-  same change rather than leaving the validator to catch drift later.
-- Keep the implementation plan in `PROGRESS.MD` updated as plan items move from
-  pending to in progress to done. Update `CHANGELOG.md` when a plan item is
-  completed and adjust related docs in the same change.
-- For user-facing HTML maps or report maps that need street-level or building-level
-  Ordnance Survey detail, default to a MapLibre-based OS vector basemap
-  (`OS_VTS_3857_Light.json` or a justified equivalent) rather than `Light_3857`
-  raster tiles.
-- Keep analytical overlays separate from the basemap, favoring route casing,
-  outline-only emphasis, or other label-safe treatments so OS names remain
-  readable in the detailed view.
-- Validate user-facing maps in a real browser at desktop width with zoom, pan,
-  and label readability checks before closing the task.
-
-## Agent Skills (Codex)
-
-- Codex supports Agent Skills; follow the Agent Skills specification for format and behavior.
-- The upstream spec and examples are vendored as a git submodule at `docs/vendor/agentskills`.
-- When adding skills for this repo:
-  - Create a skill directory containing a `SKILL.md` with YAML frontmatter (at least `name` and `description`) plus Markdown instructions.
-  - Use optional `scripts/`, `references/`, and `assets/` directories for helper code and large resources instead of inlining bulky content.
-  - Keep instructions concise; move large tables or examples into referenced files.
-  - Document prerequisites and expected outputs to keep automation reliable.
-- Update `docs/spec_tracking.md` if the Agent Skills spec URL or status changes.
-
-## Preview Spec Tracking
-
-- Any preview/evolving spec or feature must be logged in `docs/spec_tracking.md`.
-- Entries must include spec URL, status, owner, last-checked date, and review cadence.
-- Update README if a preview spec link changes or new preview features are added.
-- Note client-behavior evidence (logs or traces) in the tracking entry when available.
-
-## MCP Client Interop Learnings
-
-- Claude uses `tools/call` with `params.name` + `params.arguments` (not `args`); support both.
-- Claude expects tool names matching `^[a-zA-Z0-9_-]{1,64}$`; normalize dotted names for stdio list/search and accept both sanitized + original names for calls. UI widgets should tolerate sanitized names (retry with dot→underscore).
-- `resources/read` should accept both `params.uri` and `params.name` end to end.
-  If a bridge or host-side allowlist validates only URIs, widgets that reuse
-  `resources/list` names will fail valid MCP calls with false
-  `RESOURCE_NOT_ALLOWED` errors.
-- STDIO framing can be JSON lines or Content-Length; auto-detect and allow `MCP_STDIO_FRAMING=line` to force.
-- Do not respond to JSON-RPC notifications (no `id`) to avoid client disconnects.
-- Some clients do not advertise MCP-Apps UI support; stdio adds `data.fallback` static map metadata for `os_apps.render_geography_selector` unless `MCP_STDIO_UI_SUPPORTED=1`. Use `MCP_STDIO_FALLBACK_BBOX_DEG` to control fallback span.
-- MCP-Apps tool payloads may arrive as `structuredContent` (or JSON/text `content` blocks) without `result.data`; widget-side tool clients should normalize payload extraction across all three shapes.
-- MapLibre style swaps clear custom sources/layers; map widgets must rehydrate overlay sources/layers and replay in-memory boundary/point state on every `style.load` to avoid invisible-but-selected geometry.
-
-## GitHub/Codex Workflow Learnings
-
-- When creating PRs/comments with markdown that includes backticks, never inline the body directly in a shell command. Write body text to a temp file and use `gh pr create --body-file` / `gh pr edit --body-file` / `gh pr comment --body-file` to avoid shell interpolation and command substitution.
-- In this repo, Codex review is triggered by PR comment (`@codex review`), not by reviewer assignment. If a Codex review is requested, post the trigger comment on the PR and confirm the comment URL.
-- Before requesting review or pushing a batch of review fixes, run a
-  pre-review sweep for the touched area instead of waiting for one comment at
-  a time. Minimum sweep:
-  - cluster open comments by behavior area and fix each cluster in one batch
-  - scan for sibling patterns with `rg` and shared-helper inspection
-  - check transport/runtime variants (`HTTP`, `STDIO`, live probe vs refresh,
-    cache vs direct source, CSV vs Parquet, etc.) when relevant
-  - add regressions for the reported case plus at least one confirmed sibling
-  - rerun the narrowest meaningful validation slice before pushing
-- When several review comments are open, prefer one coordinated fix push per
-  behavior cluster rather than pushing after each individual edit. This reduces
-  drip-feed review passes and makes it more likely that Codex/GitHub sees the
-  full corrected class on the next review.
-- When addressing PR comments, do not stop at the exact line cited by the
-  reviewer. Run a same-pattern scan (`rg`, shared-helper inspection, transport
-  variant check, and targeted regressions) so the follow-up closes the entire
-  class of issue rather than one manifestation.
-- GitHub Advanced Security discussion markers are not normal review
-  conversations. They may remain visible on a PR even after the underlying
-  CodeQL alert is fixed, and `resolveReviewThread` will fail with
-  `The thread is not a conversation and cannot be resolved`.
-- When fixing PR comments on deterministic Playwright suites, prefer targeted
-  reruns of the exact CI entrypoint and a non-default port smoke such as
-  `PLAYGROUND_FULL_FRONTEND_PORT=<port> npm --prefix playground run test:full`
-  to catch hard-coded port assumptions.
-- In full UI Playwright tests, prefer component-scoped selectors plus an
-  explicit rendered-ready indicator over page-wide accessible-name matches.
-  Waiting for stable state such as the seeded-demo count is more reliable than
-  clicking immediately after a tab switch.
-
-## Gaps & Immediate Action Items
-
-1. CI pipeline is now committed via GitHub Actions (targeted Ruff/Mypy gates,
-   full Python tests with the 90% coverage gate, multi-arch Docker validation,
-   and GHCR publish on `main`/`v*` tags). Next improvement: add playground /
-   browser coverage and release automation.
-2. Observability: improve/extend metrics and add structured JSON log sink.
-3. Retry/backoff sophistication (currently simple exponential) – consider `tenacity` or custom jitter.
-4. Resource catalog still minimal (admin sample only) – add real code lists & full boundary sets.
-5. Pagination not implemented for tools returning large collections (future: token-based for OS features).
-6. Map render tool currently descriptor/stub – add real static map generation or proxy.
-7. Security hardening: circuit breaker not yet implemented (rate limiting is present in `server/main.py`).
-8. Enhance resources further (ETag / caching headers are present; expand to more datasets).
-9. ONS data tools (Epic D) not yet started.
-
-Resolved (removed from gaps): baseline tests, dynamic tool registration reliability, redaction helper, README duplication, type + lint config, modular tool structure, STDIO adapter relocation with branch tests (+ invalid params fix), ETag support for resources over STDIO.
-
-## Roadmap (Suggested)
-
-- Phase 1 (DONE): Core server + dynamic tool dispatch + baseline tests.
-- Phase 2 (DONE): Implement Epic B OS tools with schemas & describe endpoint.
-- Phase 3 (NEXT): CI pipeline, metrics, richer retries, resource population.
-- Phase 4 (IN PROGRESS): Admin geography tools (started `admin_lookup.containing_areas`), ONS data, golden scenario tests.
-- Phase 5: Performance & scaling (caching, rate limiting, async upstream calls).
-
----
-
-Last updated: 2026-04-08
+- update versions in `pyproject.toml` and `server/__init__.py`
+- move `CHANGELOG.md` Unreleased content into a dated release
+- add `RELEASE_NOTES/<version>.md`
+- run tests and confirm the coverage gate
+- tag `v<version>` at the release commit
+- optionally build the Docker image

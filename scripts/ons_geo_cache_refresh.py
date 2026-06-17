@@ -82,6 +82,8 @@ _CONTENT_DISPOSITION_FILENAME_RE = re.compile(
     re.IGNORECASE,
 )
 _SQLITE_REFRESH_INSERT_BATCH = 50_000
+_MSOA_DISPLAY_NAME_DATASET_IDS = {"HOC_MSOA_NAMES_2021"}
+_OPTIONAL_SUPPORT_DATASET_IDS = _MSOA_DISPLAY_NAME_DATASET_IDS
 _RGC_XLSX_FIELDNAMES = [
     "GEOGRAPHY_CODE",
     "GEOGRAPHY_NAME",
@@ -96,6 +98,10 @@ _RGC_SHEET_ANNOTATIONS = {
     "DZ": ("lsoa", "lower_layer_super_output_area"),
     "MSOA": ("msoa", "middle_layer_super_output_area"),
     "SDZ": ("msoa", "middle_layer_super_output_area"),
+    "PAR": ("parish", "parish"),
+    "PARNCP": ("parish", "parish"),
+    "CP": ("parish", "parish"),
+    "COM": ("parish", "parish"),
     "WD": ("ward", "ward"),
     "CMWD": ("ward", "ward"),
     "DEA": ("ward", "ward"),
@@ -124,6 +130,14 @@ _SEMANTIC_FIELD_REGEX: dict[str, re.Pattern[str]] = {
     "lsoa_name": re.compile(r"^(lsoa\d{2}nm|lsoanm)$", re.IGNORECASE),
     "msoa_code": re.compile(r"^(msoa\d{2}cd|msoacd)$", re.IGNORECASE),
     "msoa_name": re.compile(r"^(msoa\d{2}nm|msoanm)$", re.IGNORECASE),
+    "msoa_name_welsh": re.compile(r"^(msoa\d{2}(nmw|nw)|msoanmw|msoanw)$", re.IGNORECASE),
+    "msoa_display_name": re.compile(r"^msoa\d{2}hclnm$", re.IGNORECASE),
+    "msoa_display_name_welsh": re.compile(r"^msoa\d{2}hclnmw$", re.IGNORECASE),
+    "local_authority_name": re.compile(r"^(local_?authority_?name|localauthorityname)$", re.IGNORECASE),
+    "name_type": re.compile(r"^type$", re.IGNORECASE),
+    "parish_code": re.compile(r"^((par|parncp)\d{2}cd|parcd|parncpcd)$", re.IGNORECASE),
+    "parish_name": re.compile(r"^((par|parncp)\d{2}nm|parnm|parncpnm)$", re.IGNORECASE),
+    "parish_name_welsh": re.compile(r"^((par|parncp)\d{2}(nmw|nw)|parnmw|parnw|parncpnmw|parncpnw)$", re.IGNORECASE),
     "lad_code": re.compile(r"^(lad\d{2}cd|ladcd)$", re.IGNORECASE),
     "lad_name": re.compile(r"^(lad\d{2}nm|ladnm)$", re.IGNORECASE),
     "ward_code": re.compile(r"^((wd|ward)\d{2}cd|wdcd|wardcd)$", re.IGNORECASE),
@@ -153,6 +167,26 @@ _SEMANTIC_ALIAS_PATTERNS: dict[str, tuple[re.Pattern[str], ...]] = {
     "lsoa_name": (re.compile(r"lower layer super output area name", re.IGNORECASE),),
     "msoa_code": (re.compile(r"middle layer super output area code", re.IGNORECASE),),
     "msoa_name": (re.compile(r"middle layer super output area name", re.IGNORECASE),),
+    "msoa_name_welsh": (
+        re.compile(r"middle layer super output area welsh name", re.IGNORECASE),
+    ),
+    "msoa_display_name": (re.compile(r"house of commons library msoa name", re.IGNORECASE),),
+    "msoa_display_name_welsh": (
+        re.compile(r"house of commons library welsh msoa name", re.IGNORECASE),
+    ),
+    "local_authority_name": (re.compile(r"local authority name", re.IGNORECASE),),
+    "name_type": (re.compile(r"name type", re.IGNORECASE),),
+    "parish_code": (
+        re.compile(r"parish and non civil parished area code", re.IGNORECASE),
+        re.compile(r"civil parish code", re.IGNORECASE),
+    ),
+    "parish_name": (
+        re.compile(r"parish and non civil parished area name", re.IGNORECASE),
+        re.compile(r"civil parish name", re.IGNORECASE),
+    ),
+    "parish_name_welsh": (
+        re.compile(r"parish and non civil parished area welsh name", re.IGNORECASE),
+    ),
     "postcode": (re.compile(r"postcode", re.IGNORECASE),),
     "uprn": (re.compile(r"\buprn\b", re.IGNORECASE),),
     "postal_delivery": (re.compile(r"delivery", re.IGNORECASE),),
@@ -162,6 +196,7 @@ _GEOGRAPHY_GROUPS: dict[str, tuple[str, str]] = {
     "oa": ("oa_code", "oa_name"),
     "lsoa": ("lsoa_code", "lsoa_name"),
     "msoa": ("msoa_code", "msoa_name"),
+    "parish": ("parish_code", "parish_name"),
     "lad": ("lad_code", "lad_name"),
     "ward": ("ward_code", "ward_name"),
     "country": ("country_code", "country_name"),
@@ -172,6 +207,8 @@ _MAIN_PRODUCT_SEMANTICS = {
     "postcode",
     "uprn",
     "postal_delivery",
+    "msoa_name_welsh",
+    "parish_name_welsh",
     *{item for pair in _GEOGRAPHY_GROUPS.values() for item in pair},
 }
 
@@ -310,6 +347,22 @@ def _family_matches(expected_family: str | None, actual_family: str | None) -> b
     if not expected_family or not actual_family:
         return True
     return expected_family.strip().lower() == actual_family.strip().lower()
+
+
+def _is_msoa_display_name_dataset(dataset: DatasetConfig) -> bool:
+    return dataset.dataset_id in _MSOA_DISPLAY_NAME_DATASET_IDS
+
+
+def _msoa_display_name_provenance(record: dict[str, Any]) -> dict[str, Any]:
+    provenance = {
+        "datasetId": record.get("datasetId"),
+        "source": "House of Commons Library MSOA Names",
+        "version": record.get("sourceVersion"),
+        "publishedDate": record.get("publishedDate"),
+        "license": record.get("license"),
+        "sourceUrl": record.get("sourceUrl"),
+    }
+    return {key: value for key, value in provenance.items() if value}
 
 
 def _sha256_file(path: Path) -> str:
@@ -1922,11 +1975,19 @@ def _select_archive_members(
     if not allow_multi:
         return [scored_members[0][3]]
 
-    best_required, best_missing, best_optional, _best_name = scored_members[0]
+    valid_members = [
+        name
+        for _required, missing, _optional, name in scored_members
+        if missing == 0
+    ]
+    if valid_members:
+        return sorted(valid_members)
+
+    best_required, best_missing_score, _best_optional, _best_name = scored_members[0]
     return sorted(
         name
-        for required, missing, optional, name in scored_members
-        if (required, missing, optional) == (best_required, best_missing, best_optional)
+        for required, missing_score, _optional, name in scored_members
+        if (required, missing_score) == (best_required, best_missing_score)
     )
 
 
@@ -2120,6 +2181,7 @@ def _build_normalized_row(
     *,
     mapping: dict[str, str],
     code_references: CodeReferenceStore,
+    msoa_display_names: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     semantic_fields: dict[str, Any] = {}
     for semantic_name, raw_field in mapping.items():
@@ -2169,6 +2231,47 @@ def _build_normalized_row(
             "successorName": annotation.get("successorName"),
             "level": annotation.get("level"),
         }
+        if family == "msoa":
+            welsh_name = semantic_fields.get("msoa_name_welsh")
+            if isinstance(welsh_name, str) and welsh_name.strip():
+                geographies[family]["nameWelsh"] = welsh_name.strip()
+                if not geographies[family].get("currentNameWelsh"):
+                    geographies[family]["currentNameWelsh"] = welsh_name.strip()
+        if family == "parish":
+            welsh_name = semantic_fields.get("parish_name_welsh")
+            if isinstance(welsh_name, str) and welsh_name.strip():
+                geographies[family]["nameWelsh"] = welsh_name.strip()
+                if not geographies[family].get("currentNameWelsh"):
+                    geographies[family]["currentNameWelsh"] = welsh_name.strip()
+
+    msoa_entry = geographies.get("msoa")
+    if isinstance(msoa_entry, dict) and isinstance(msoa_display_names, dict):
+        msoa_code = msoa_entry.get("currentCode") or msoa_entry.get("code")
+        display_record = (
+            msoa_display_names.get(str(msoa_code).strip().upper())
+            if isinstance(msoa_code, str)
+            else None
+        )
+        if display_record:
+            display_name = display_record.get("displayName")
+            if isinstance(display_name, str) and display_name.strip():
+                msoa_entry["displayName"] = display_name.strip()
+                msoa_entry["displayNameSource"] = _msoa_display_name_provenance(display_record)
+            display_name_welsh = display_record.get("displayNameWelsh")
+            if isinstance(display_name_welsh, str) and display_name_welsh.strip():
+                msoa_entry["displayNameWelsh"] = display_name_welsh.strip()
+            official_name = display_record.get("officialName")
+            if isinstance(official_name, str) and official_name.strip():
+                msoa_entry.setdefault("officialName", official_name.strip())
+            official_name_welsh = display_record.get("officialNameWelsh")
+            if isinstance(official_name_welsh, str) and official_name_welsh.strip():
+                msoa_entry.setdefault("officialNameWelsh", official_name_welsh.strip())
+            local_authority_name = display_record.get("localAuthorityName")
+            if isinstance(local_authority_name, str) and local_authority_name.strip():
+                msoa_entry["displayNameLocalAuthority"] = local_authority_name.strip()
+            name_type = display_record.get("type")
+            if isinstance(name_type, str) and name_type.strip():
+                msoa_entry["displayNameType"] = name_type.strip()
 
     return {
         "semanticFields": semantic_fields,
@@ -2201,6 +2304,9 @@ def _insert_uprn_index_row(
             oa_code,
             lsoa_code,
             msoa_code,
+            parish_code,
+            parish_name,
+            parish_name_welsh,
             lad_code,
             lad_name,
             ward_code,
@@ -2212,7 +2318,7 @@ def _insert_uprn_index_row(
             postal_delivery,
             geographies_json,
             cached_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         row_values,
     )
@@ -2256,6 +2362,9 @@ def _uprn_index_row_values(
         _geo_value("oa", "currentCode"),
         _geo_value("lsoa", "currentCode"),
         _geo_value("msoa", "currentCode"),
+        _geo_value("parish", "currentCode"),
+        _geo_value("parish", "currentName"),
+        _geo_value("parish", "currentNameWelsh"),
         _geo_value("lad", "currentCode"),
         _geo_value("lad", "currentName"),
         _geo_value("ward", "currentCode"),
@@ -2373,6 +2482,212 @@ def _ingest_support_dataset(
     return inserted, schema_validation
 
 
+def _optional_clean_text(value: Any) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
+
+
+def _normalize_msoa_display_name_row(
+    row: dict[str, Any],
+    *,
+    dataset: DatasetConfig,
+    mapping: dict[str, str],
+    resolved: ResolvedSource,
+) -> dict[str, Any] | None:
+    code_field = mapping.get("msoa_code")
+    display_field = mapping.get("msoa_display_name")
+    if not code_field or not display_field:
+        return None
+    msoa_code = _optional_clean_text(row.get(code_field))
+    display_name = _optional_clean_text(row.get(display_field))
+    if not msoa_code or not display_name:
+        return None
+    source_version = _optional_clean_text(dataset.defaults.get("source_version")) or dataset.release
+    published_date = _optional_clean_text(dataset.defaults.get("published_date"))
+    license_name = _optional_clean_text(dataset.defaults.get("license"))
+    source_url = _optional_clean_text(dataset.defaults.get("source_url")) or resolved.resolved_source_url
+    official_name = _optional_clean_text(row.get(mapping["msoa_name"])) if "msoa_name" in mapping else None
+    official_name_welsh = (
+        _optional_clean_text(row.get(mapping["msoa_name_welsh"]))
+        if "msoa_name_welsh" in mapping
+        else None
+    )
+    display_name_welsh = (
+        _optional_clean_text(row.get(mapping["msoa_display_name_welsh"]))
+        if "msoa_display_name_welsh" in mapping
+        else None
+    )
+    local_authority_name = (
+        _optional_clean_text(row.get(mapping["local_authority_name"]))
+        if "local_authority_name" in mapping
+        else None
+    )
+    name_type = _optional_clean_text(row.get(mapping["name_type"])) if "name_type" in mapping else None
+    return {
+        "datasetId": dataset.dataset_id,
+        "msoaCode": msoa_code.upper(),
+        "officialName": official_name,
+        "officialNameWelsh": official_name_welsh,
+        "displayName": display_name,
+        "displayNameWelsh": display_name_welsh,
+        "localAuthorityName": local_authority_name,
+        "type": name_type,
+        "sourceVersion": source_version,
+        "publishedDate": published_date,
+        "license": license_name,
+        "sourceUrl": source_url,
+        "record": row,
+    }
+
+
+def _ingest_msoa_display_names_dataset(
+    *,
+    conn: sqlite3.Connection,
+    dataset: DatasetConfig,
+    resolved: ResolvedSource,
+    max_rows: int | None,
+) -> tuple[int, dict[str, Any], str | None]:
+    now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    inserted = 0
+    key_field: str | None = None
+    insert_sql = """
+        INSERT OR REPLACE INTO ons_geo_msoa_display_names (
+            dataset_id,
+            msoa_code,
+            official_name,
+            official_name_welsh,
+            display_name,
+            display_name_welsh,
+            local_authority_name,
+            name_type,
+            source_version,
+            published_date,
+            license,
+            source_url,
+            record_json,
+            ingested_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """
+    pending_records: list[tuple[Any, ...]] = []
+    with _open_rows(
+        resolved.source_path,
+        dataset=dataset,
+        metadata_aliases=resolved.field_aliases,
+    ) as (rows_iter, fieldnames):
+        available_fieldnames = _merged_fieldnames(fieldnames, resolved.schema_fields)
+        mapping, validation = _build_field_mapping(
+            dataset,
+            fieldnames=available_fieldnames,
+            metadata_aliases=resolved.field_aliases,
+        )
+        if validation["requiredMissing"]:
+            raise ValueError(
+                "MSOA display-name dataset schema drift: missing required fields "
+                f"{validation['requiredMissing']}"
+            )
+        key_field = mapping.get("msoa_code")
+        conn.execute(
+            "DELETE FROM ons_geo_msoa_display_names WHERE dataset_id = ?",
+            (dataset.dataset_id,),
+        )
+        for row in rows_iter:
+            if not isinstance(row, dict):
+                continue
+            record = _normalize_msoa_display_name_row(
+                row,
+                dataset=dataset,
+                mapping=mapping,
+                resolved=resolved,
+            )
+            if record is None:
+                continue
+            pending_records.append(
+                (
+                    record["datasetId"],
+                    record["msoaCode"],
+                    record["officialName"],
+                    record["officialNameWelsh"],
+                    record["displayName"],
+                    record["displayNameWelsh"],
+                    record["localAuthorityName"],
+                    record["type"],
+                    record["sourceVersion"],
+                    record["publishedDate"],
+                    record["license"],
+                    record["sourceUrl"],
+                    json.dumps(record["record"], ensure_ascii=True, separators=(",", ":")),
+                    now_iso,
+                )
+            )
+            inserted += 1
+            if len(pending_records) >= _SQLITE_REFRESH_INSERT_BATCH:
+                _flush_pending_rows(conn, insert_sql, pending_records)
+            if max_rows is not None and inserted >= max_rows:
+                break
+        _flush_pending_rows(conn, insert_sql, pending_records)
+
+    schema_validation = {
+        **validation,
+        "schemaFingerprint": _schema_fingerprint(
+            available_fieldnames,
+            resolved.field_aliases,
+        ),
+    }
+    _upsert_product_metadata(
+        conn=conn,
+        dataset=dataset,
+        resolved=resolved,
+        record_count=inserted,
+        schema_validation=schema_validation,
+        status="ingested",
+    )
+    return inserted, schema_validation, key_field
+
+
+def _load_msoa_display_names(conn: sqlite3.Connection) -> dict[str, dict[str, Any]]:
+    rows = conn.execute(
+        """
+        SELECT
+            dataset_id,
+            msoa_code,
+            official_name,
+            official_name_welsh,
+            display_name,
+            display_name_welsh,
+            local_authority_name,
+            name_type,
+            source_version,
+            published_date,
+            license,
+            source_url
+        FROM ons_geo_msoa_display_names
+        """
+    ).fetchall()
+    display_names: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        code = str(row[1] or "").strip().upper()
+        display_name = str(row[4] or "").strip()
+        if not code or not display_name:
+            continue
+        display_names[code] = {
+            "datasetId": row[0],
+            "msoaCode": code,
+            "officialName": row[2],
+            "officialNameWelsh": row[3],
+            "displayName": display_name,
+            "displayNameWelsh": row[5],
+            "localAuthorityName": row[6],
+            "type": row[7],
+            "sourceVersion": row[8],
+            "publishedDate": row[9],
+            "license": row[10],
+            "sourceUrl": row[11],
+        }
+    return display_names
+
+
 def _ingest_main_dataset(
     *,
     conn: sqlite3.Connection,
@@ -2407,6 +2722,9 @@ def _ingest_main_dataset(
             oa_code,
             lsoa_code,
             msoa_code,
+            parish_code,
+            parish_name,
+            parish_name_welsh,
             lad_code,
             lad_name,
             ward_code,
@@ -2418,10 +2736,11 @@ def _ingest_main_dataset(
             postal_delivery,
             geographies_json,
             cached_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """
     pending_rows: list[tuple[Any, ...]] = []
     pending_uprn_rows: list[tuple[Any, ...]] = []
+    msoa_display_names = _load_msoa_display_names(conn)
     with _open_rows(
         resolved.source_path,
         dataset=dataset,
@@ -2463,6 +2782,7 @@ def _ingest_main_dataset(
                 row,
                 mapping=mapping,
                 code_references=code_references,
+                msoa_display_names=msoa_display_names,
             )
             pending_rows.append(
                 (
@@ -2682,9 +3002,20 @@ def _index_health(
 
     exact_ready = _mode_ready("exact")
     best_fit_ready = _mode_ready("best_fit")
+    required_support_products = [
+        item
+        for item in support_products
+        if str(item.get("id") or "").strip().upper() not in _OPTIONAL_SUPPORT_DATASET_IDS
+    ]
+    optional_support_lagging = [
+        item.get("id")
+        for item in support_products
+        if str(item.get("id") or "").strip().upper() in _OPTIONAL_SUPPORT_DATASET_IDS
+        and item.get("status") != "ingested"
+    ]
     support_ready = (
-        all(item.get("status") == "ingested" for item in support_products)
-        if support_products
+        all(item.get("status") == "ingested" for item in required_support_products)
+        if required_support_products
         else True
     )
     freshness_lagging = [
@@ -2706,6 +3037,8 @@ def _index_health(
         "exactReady": exact_ready,
         "bestFitReady": best_fit_ready,
         "supportReady": support_ready,
+        "optionalSupportReady": not optional_support_lagging,
+        "optionalSupportUnavailable": optional_support_lagging,
         "freshnessReady": not freshness_lagging,
         "laggingProducts": freshness_lagging,
         "status": "ready" if not degraded_reasons else "degraded",
@@ -2777,13 +3110,21 @@ def main() -> int:
             else:
                 assert conn is not None
                 if dataset.dataset_kind == "support":
-                    records, schema_validation = _ingest_support_dataset(
-                        conn=conn,
-                        dataset=dataset,
-                        resolved=resolved,
-                        max_rows=args.max_rows,
-                        code_references=code_references,
-                    )
+                    if _is_msoa_display_name_dataset(dataset):
+                        records, schema_validation, key_field = _ingest_msoa_display_names_dataset(
+                            conn=conn,
+                            dataset=dataset,
+                            resolved=resolved,
+                            max_rows=args.max_rows,
+                        )
+                    else:
+                        records, schema_validation = _ingest_support_dataset(
+                            conn=conn,
+                            dataset=dataset,
+                            resolved=resolved,
+                            max_rows=args.max_rows,
+                            code_references=code_references,
+                        )
                 else:
                     records, schema_validation, key_field = _ingest_main_dataset(
                         conn=conn,

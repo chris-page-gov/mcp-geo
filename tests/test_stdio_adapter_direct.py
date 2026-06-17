@@ -564,6 +564,7 @@ def test_build_stats_routing_elicitation_defaults_from_payload():
     )
     properties = params["requestedSchema"]["properties"]
     assert properties["comparisonLevel"]["default"] == "MSOA"
+    assert "PARISH" in properties["comparisonLevel"]["enum"]
     assert properties["providerPreference"]["default"] == "ONS"
 
 
@@ -719,7 +720,16 @@ def test_ons_select_elicitation_applies_choices(monkeypatch, tmp_path):
     props = schema.get("properties", {})
     assert "geographyLevel" in props
     assert "timeGranularity" in props
-    assert props["geographyLevel"]["enum"] == ["nation", "region", "local_authority", "ward"]
+    assert props["geographyLevel"]["enum"] == [
+        "oa",
+        "lsoa",
+        "msoa",
+        "parish",
+        "ward",
+        "local_authority",
+        "region",
+        "nation",
+    ]
     assert props["timeGranularity"]["enum"] == ["latest", "year", "quarter", "month"]
     assert "oneOf" not in props["geographyLevel"]
     assert "oneOf" not in props["timeGranularity"]

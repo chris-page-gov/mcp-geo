@@ -402,6 +402,15 @@ Note: ONS tools require live mode (`ONS_LIVE_ENABLED=true`) and `dataset`,
 - Hierarchy and geometry: `admin_lookup.reverse_hierarchy`,
   `admin_lookup.area_geometry`, `admin_lookup.find_by_name`
 
+Use `admin_lookup.*` for official boundary/admin/statistical geography work,
+including `PARISH` lookups. `PARISH` normalizes civil parishes, Welsh
+communities, and non-civil-parished areas; raw ONS boundary/cache fields remain
+`PARNCP25CD`, `PARNCP25NM`, and `PARNCP25NW` where supplied.
+
+Use `os_names.find` / `os_names.nearest` for OS Names gazetteer work such as
+settlements, named places, and named features. Do not use OS Names as the
+authoritative boundary source when a GSS-code area geometry is required.
+
 ### UI widgets (MCP-Apps)
 
 - Geography selector: `os_apps.render_geography_selector`

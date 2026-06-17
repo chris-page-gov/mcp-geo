@@ -70,6 +70,12 @@ def test_search_tools_finds_ons_geo_keywords():
     assert "ons_geo.by_postcode" in names
 
 
+def test_search_tools_finds_os_names_for_gazetteer_keywords():
+    results = search_tools("gazetteer named place settlement", mode="token")
+    names = {item.get("name") for item in results}
+    assert "os_names.find" in names
+
+
 def test_search_tools_finds_council_tax_keywords():
     results = search_tools("council tax band property", mode="token")
     names = {item.get("name") for item in results}

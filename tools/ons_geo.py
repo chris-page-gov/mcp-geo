@@ -3,6 +3,11 @@ from __future__ import annotations
 from typing import Any
 
 from server.config import settings
+from server.geography_levels import (
+    AREA_SUMMARY_LEVELS,
+    area_summary_target_is_compatible,
+    geography_identity_from_normalized,
+)
 from server.ons_geo_cache import (
     AREA_LEVEL_COLUMN_MAP,
     ONSGeoCache,
@@ -20,24 +25,6 @@ from tools.nomis_data import curated_profile_dataset_specs
 from tools.registry import Tool, ToolResult, register
 from tools.registry import get as get_tool
 
-_AREA_SUMMARY_LEVELS = {
-    "OA": {"normalizedKey": "oa", "semanticKey": "oa_code"},
-    "LSOA": {"normalizedKey": "lsoa", "semanticKey": "lsoa_code"},
-    "MSOA": {"normalizedKey": "msoa", "semanticKey": "msoa_code"},
-    "WARD": {"normalizedKey": "ward", "semanticKey": "ward_code"},
-    "DISTRICT": {"normalizedKey": "lad", "semanticKey": "lad_code"},
-    "COUNTRY": {"normalizedKey": "country", "semanticKey": "country_code"},
-    "REGION": {"normalizedKey": "region", "semanticKey": "region_code"},
-}
-_AREA_SUMMARY_LEVEL_RANK = {
-    "OA": 0,
-    "LSOA": 1,
-    "MSOA": 2,
-    "WARD": 3,
-    "DISTRICT": 4,
-    "REGION": 5,
-    "COUNTRY": 6,
-}
 _DEFAULT_PROFILE_CATEGORIES = ["population", "sex", "ethnicity", "country_of_birth", "tenure"]
 _AREA_SUMMARY_WORKFLOW_URI = "resource://mcp-geo/area-summary-workflows"
 
@@ -285,7 +272,7 @@ def _resolve_area_from_lookup(
     target_level: str,
     cache_result: Any,
 ) -> tuple[dict[str, Any] | None, ToolResult | None]:
-    config = _AREA_SUMMARY_LEVELS.get(target_level)
+    config = AREA_SUMMARY_LEVELS.get(target_level)
     if config is None:
         return None, _error("Unsupported targetLevel")
     normalized = cache_result.normalized if isinstance(cache_result.normalized, dict) else {}
@@ -314,17 +301,13 @@ def _resolve_area_from_lookup(
             status=404,
         )
 
-    name: str | None = None
-    if isinstance(geography, dict):
-        raw_name = geography.get("currentName") or geography.get("name")
-        if isinstance(raw_name, str) and raw_name.strip():
-            name = raw_name.strip()
-    return {
-        "id": code,
-        "level": target_level,
-        "name": name or code,
-        "hierarchy": geographies if isinstance(geographies, dict) else {},
-    }, None
+    area = geography_identity_from_normalized(
+        target_level=target_level,
+        geography=geography if isinstance(geography, dict) else {},
+        fallback_code=code,
+    )
+    area["hierarchy"] = geographies if isinstance(geographies, dict) else {}
+    return area, None
 
 
 def _best_effort_call(
@@ -339,12 +322,6 @@ def _best_effort_call(
     except Exception:
         return None, None
     return status, payload if isinstance(payload, dict) else None
-
-
-def _area_summary_level_rank(level: str | None) -> int | None:
-    if not isinstance(level, str):
-        return None
-    return _AREA_SUMMARY_LEVEL_RANK.get(level)
 
 
 def _resolve_area_from_hierarchy_chain(
@@ -590,18 +567,11 @@ def _area_summary(payload: dict[str, Any]) -> ToolResult:
             direct_anchor_level = inferred_level
             if target_level is None:
                 target_level = inferred_level
-            else:
-                inferred_rank = _area_summary_level_rank(inferred_level)
-                target_rank = _area_summary_level_rank(target_level)
-                if (
-                    inferred_rank is not None
-                    and target_rank is not None
-                    and target_rank < inferred_rank
-                ):
-                    return _error(
-                        f"id {area_id} implies level {inferred_level}, which cannot be "
-                        f"narrowed to targetLevel={target_level}"
-                    )
+            elif not area_summary_target_is_compatible(inferred_level, target_level):
+                return _error(
+                    f"id {area_id} implies level {inferred_level}, which cannot be "
+                    f"mapped to targetLevel={target_level}"
+                )
         elif target_level is None:
             return _error(
                 f"Could not infer targetLevel from id {area_id}. Provide targetLevel explicitly."
@@ -708,6 +678,9 @@ def _area_summary(payload: dict[str, Any]) -> ToolResult:
         if include_profile_datasets
         else []
     )
+    response_area = dict(area)
+    response_area["bbox"] = bbox
+    response_area["hierarchy"] = area.get("hierarchy", {})
 
     response: dict[str, Any] = {
         "input": {
@@ -723,16 +696,10 @@ def _area_summary(payload: dict[str, Any]) -> ToolResult:
             derivation_mode=derivation_mode,
             cache_result=cache_result,
         ),
-        "area": {
-            "id": area["id"],
-            "level": area["level"],
-            "name": area["name"],
-            "bbox": bbox,
-            "hierarchy": area.get("hierarchy", {}),
-        },
+        "area": response_area,
         "workflowProfileUri": _AREA_SUMMARY_WORKFLOW_URI,
         "guidance": [
-            "Use ons_geo.area_summary for compact OA/LSOA/MSOA/ward summaries.",
+            "Use ons_geo.area_summary for compact OA/LSOA/MSOA/parish/ward summaries.",
             "Prefer inventoryResponseMode='summary' or 'counts' for narrative "
             "summaries instead of raw map inventories.",
             "Use profileDatasets for deeper NOMIS follow-up queries by topic.",
@@ -1000,7 +967,7 @@ register(
     Tool(
         name="ons_geo.area_summary",
         description=(
-            "Resolve a compact OA/LSOA/MSOA/ward/profile summary from an area code, "
+            "Resolve a compact OA/LSOA/MSOA/parish/ward/profile summary from an area code, "
             "postcode, or UPRN using cached ONS geographies, compact inventory counts, "
             "and curated NOMIS follow-up datasets."
         ),

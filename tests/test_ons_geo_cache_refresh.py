@@ -58,6 +58,44 @@ def _static_resolver(path: Path) -> dict[str, object]:
     return {"type": "static_file", "path": str(path)}
 
 
+def _msoa_display_name_support_product(path: Path) -> dict[str, object]:
+    return {
+        "id": "HOC_MSOA_NAMES_2021",
+        "title": "House of Commons Library MSOA Names 2021",
+        "priority": 30,
+        "release": "2.3",
+        "resolver": _static_resolver(path),
+        "semanticFields": {
+            "required": ["msoa_code", "msoa_display_name"],
+            "optional": [
+                "msoa_name",
+                "msoa_name_welsh",
+                "msoa_display_name_welsh",
+                "local_authority_name",
+                "name_type",
+            ],
+            "aliases": {
+                "msoa_code": ["msoa21cd"],
+                "msoa_name": ["msoa21nm"],
+                "msoa_name_welsh": ["msoa21nmw"],
+                "msoa_display_name": ["msoa21hclnm"],
+                "msoa_display_name_welsh": ["msoa21hclnmw"],
+                "local_authority_name": ["localauthorityname"],
+                "name_type": ["type"],
+            },
+            "defaults": {
+                "source_version": "2.3",
+                "published_date": "2026-02-13",
+                "license": "Open Parliament Licence",
+                "source_url": (
+                    "https://houseofcommonslibrary.github.io/msoanames/"
+                    "MSOA-Names-Latest2.csv"
+                ),
+            },
+        },
+    }
+
+
 def _base_manifest() -> dict[str, object]:
     return {
         "version": "2026-04-08",
@@ -105,6 +143,9 @@ def _base_manifest() -> dict[str, object]:
                         "oa_code",
                         "lsoa_code",
                         "msoa_code",
+                        "parish_code",
+                        "parish_name",
+                        "parish_name_welsh",
                         "ward_code",
                         "country_code",
                         "region_code",
@@ -128,6 +169,9 @@ def _base_manifest() -> dict[str, object]:
                         "oa_code",
                         "lsoa_code",
                         "msoa_code",
+                        "parish_code",
+                        "parish_name",
+                        "parish_name_welsh",
                         "ward_code",
                         "country_code",
                         "region_code",
@@ -271,6 +315,225 @@ def test_ons_geo_cache_refresh_ingests_products_and_sidecars(tmp_path: Path) -> 
     assert uprn_row == ("E08000026", "E05001111", "E92000001", "E12000005")
 
 
+def test_build_normalized_row_adds_parish_and_msoa_display_name() -> None:
+    normalized = refresh._build_normalized_row(
+        {
+            "MSOA21CD": "E02000001",
+            "MSOA21NM": "Example MSOA",
+            "MSOA21NMW": "MSOA Enghreifftiol",
+            "PARNCP25CD": "E04000001",
+            "PARNCP25NM": "Example Parish",
+            "PARNCP25NW": "Plwyf Enghreifftiol",
+        },
+        mapping={
+            "msoa_code": "MSOA21CD",
+            "msoa_name": "MSOA21NM",
+            "msoa_name_welsh": "MSOA21NMW",
+            "parish_code": "PARNCP25CD",
+            "parish_name": "PARNCP25NM",
+            "parish_name_welsh": "PARNCP25NW",
+        },
+        code_references=refresh.CodeReferenceStore(),
+        msoa_display_names={
+            "E02000001": {
+                "datasetId": "HOC_MSOA_NAMES_2021",
+                "displayName": "Readable MSOA",
+                "displayNameWelsh": "MSOA Darllenadwy",
+                "officialName": "Example MSOA",
+                "officialNameWelsh": "MSOA Enghreifftiol",
+                "localAuthorityName": "Example LA",
+                "type": "Present in 2011",
+                "sourceVersion": "2.3",
+                "publishedDate": "2026-02-13",
+                "license": "Open Parliament Licence",
+                "sourceUrl": (
+                    "https://houseofcommonslibrary.github.io/msoanames/"
+                    "MSOA-Names-Latest2.csv"
+                ),
+            }
+        },
+    )
+
+    parish = normalized["geographies"]["parish"]
+    assert parish["currentCode"] == "E04000001"
+    assert parish["currentName"] == "Example Parish"
+    assert parish["currentNameWelsh"] == "Plwyf Enghreifftiol"
+    msoa = normalized["geographies"]["msoa"]
+    assert msoa["currentName"] == "Example MSOA"
+    assert msoa["displayName"] == "Readable MSOA"
+    assert msoa["displayNameWelsh"] == "MSOA Darllenadwy"
+    assert msoa["displayNameSource"]["datasetId"] == "HOC_MSOA_NAMES_2021"
+    assert msoa["displayNameSource"]["version"] == "2.3"
+
+
+def test_ingest_msoa_display_names_dataset(tmp_path: Path) -> None:
+    source_path = tmp_path / "msoa_names.csv"
+    source_path.write_text(
+        "\n".join(
+            [
+                (
+                    "msoa21cd,msoa21nm,msoa21nmw,msoa21hclnm,msoa21hclnmw,"
+                    "localauthorityname,type"
+                ),
+                (
+                    "E02000001,Example 001,Example Welsh,Readable MSOA,"
+                    "MSOA Darllenadwy,Example LA,Present in 2011"
+                ),
+            ]
+        ),
+        encoding="utf-8",
+    )
+    manifest = _write_manifest(
+        tmp_path,
+        {
+            "version": "2026-04-08",
+            "products": [],
+            "supportProducts": [_msoa_display_name_support_product(source_path)],
+        },
+    )
+    dataset = refresh.load_manifest(manifest)[2][0]
+    resolved = refresh._resolve_static_file(dataset)
+    conn = sqlite3.connect(":memory:")
+    refresh.ensure_schema(conn)
+
+    inserted, validation, key_field = refresh._ingest_msoa_display_names_dataset(
+        conn=conn,
+        dataset=dataset,
+        resolved=resolved,
+        max_rows=None,
+    )
+    row = conn.execute(
+        """
+        SELECT
+            msoa_code,
+            official_name,
+            official_name_welsh,
+            display_name,
+            display_name_welsh,
+            local_authority_name,
+            name_type,
+            source_version,
+            published_date,
+            license,
+            source_url
+        FROM ons_geo_msoa_display_names
+        """
+    ).fetchone()
+    conn.close()
+
+    assert inserted == 1
+    assert validation["status"] == "ok"
+    assert key_field == "msoa21cd"
+    assert row == (
+        "E02000001",
+        "Example 001",
+        "Example Welsh",
+        "Readable MSOA",
+        "MSOA Darllenadwy",
+        "Example LA",
+        "Present in 2011",
+        "2.3",
+        "2026-02-13",
+        "Open Parliament Licence",
+        "https://houseofcommonslibrary.github.io/msoanames/MSOA-Names-Latest2.csv",
+    )
+
+
+def test_ingest_main_dataset_persists_parish_uprn_index(tmp_path: Path) -> None:
+    source_path = tmp_path / "onsud_parish.csv"
+    source_path.write_text(
+        "\n".join(
+            [
+                (
+                    "UPRN,pcds,LAD25CD,MSOA21CD,MSOA21NM,PARNCP25CD,"
+                    "PARNCP25NM,PARNCP25NW,postal_delivery"
+                ),
+                (
+                    "100023336959,CV1 2GT,E08000026,E02000001,Example MSOA,"
+                    "E04000001,Example Parish,Plwyf Enghreifftiol,1"
+                ),
+            ]
+        ),
+        encoding="utf-8",
+    )
+    manifest = _write_manifest(
+        tmp_path,
+        {
+            "version": "2026-04-08",
+            "products": [
+                {
+                    "id": "ONSUD",
+                    "title": "ONSUD",
+                    "keyType": "uprn",
+                    "derivationMode": "exact",
+                    "priority": 10,
+                    "release": "2026-05",
+                    "resolver": _static_resolver(source_path),
+                    "semanticFields": {
+                        "required": ["uprn", "lad_code"],
+                        "optional": [
+                            "postcode",
+                            "msoa_code",
+                            "msoa_name",
+                            "parish_code",
+                            "parish_name",
+                            "parish_name_welsh",
+                            "postal_delivery",
+                        ],
+                        "aliases": {
+                            "uprn": ["UPRN"],
+                            "postcode": ["pcds"],
+                            "lad_code": ["LAD25CD"],
+                            "msoa_code": ["MSOA21CD"],
+                            "msoa_name": ["MSOA21NM"],
+                            "parish_code": ["PARNCP25CD"],
+                            "parish_name": ["PARNCP25NM"],
+                            "parish_name_welsh": ["PARNCP25NW"],
+                        },
+                    },
+                }
+            ],
+            "supportProducts": [],
+        },
+    )
+    dataset = refresh.load_manifest(manifest)[1][0]
+    resolved = refresh._resolve_static_file(dataset)
+    conn = sqlite3.connect(":memory:")
+    refresh.ensure_schema(conn)
+
+    inserted, _validation, key_field = refresh._ingest_main_dataset(
+        conn=conn,
+        dataset=dataset,
+        resolved=resolved,
+        max_rows=None,
+        code_references=refresh.CodeReferenceStore(),
+    )
+    row = conn.execute(
+        """
+        SELECT parish_code, parish_name, parish_name_welsh
+        FROM ons_geo_uprn_index
+        WHERE product_id = 'ONSUD' AND uprn = '100023336959'
+        """
+    ).fetchone()
+    normalized = conn.execute(
+        """
+        SELECT normalized_json
+        FROM ons_geo_rows
+        WHERE product_id = 'ONSUD' AND key_norm = '100023336959'
+        """
+    ).fetchone()
+    conn.close()
+
+    assert inserted == 1
+    assert key_field == "UPRN"
+    assert row == ("E04000001", "Example Parish", "Plwyf Enghreifftiol")
+    normalized_payload = json.loads(normalized[0])
+    parish = normalized_payload["geographies"]["parish"]
+    assert parish["currentCode"] == "E04000001"
+    assert parish["currentName"] == "Example Parish"
+    assert parish["currentNameWelsh"] == "Plwyf Enghreifftiol"
+
+
 def test_ons_geo_cache_refresh_reports_partial_failure_for_missing_support_dataset(
     tmp_path: Path,
 ) -> None:
@@ -345,6 +608,30 @@ def test_index_health_requires_each_key_type_per_mode() -> None:
     assert health["bestFitReady"] is True
     assert health["status"] == "degraded"
     assert "exact_products_unavailable" in health["degradedReasons"]
+
+
+def test_index_health_does_not_degrade_for_optional_msoa_display_names() -> None:
+    products = [
+        {
+            "kind": "product",
+            "id": "ONSPD",
+            "keyType": "postcode",
+            "derivationMode": "exact",
+            "status": "ingested",
+        }
+    ]
+    support_products = [
+        {"kind": "support", "id": "CHD", "status": "ingested"},
+        {"kind": "support", "id": "RGC", "status": "ingested"},
+        {"kind": "support", "id": "HOC_MSOA_NAMES_2021", "status": "error"},
+    ]
+
+    health = refresh._index_health(products, support_products)
+
+    assert health["supportReady"] is True
+    assert health["optionalSupportReady"] is False
+    assert health["optionalSupportUnavailable"] == ["HOC_MSOA_NAMES_2021"]
+    assert "support_datasets_unavailable" not in health["degradedReasons"]
 
 
 def test_resolve_hosted_table_arcgis_pages_rows_and_extracts_schema(
@@ -2140,6 +2427,10 @@ def test_ingest_uprn_product_zip_streams_all_data_shards(
         "UPRN,PCDS,LAD25CD,LAD25NM,OA21CD,LSOA21CD,MSOA21CD,WD25CD,"
         "WD25NM,CTRY25CD,CTRY25NM,postal_delivery\n"
     )
+    parish_header = (
+        "UPRN,PCDS,LAD25CD,LAD25NM,OA21CD,LSOA21CD,MSOA21CD,WD25CD,"
+        "WD25NM,PARNCP25CD,PARNCP25NM,CTRY25CD,CTRY25NM,postal_delivery\n"
+    )
     region_header = (
         "uprn,pcds,lad25cd,lad25nm,oa21cd,lsoa21cd,msoa21cd,ctry25cd,"
         "ctry25nm,rgn25cd,rgn25nm,postal_delivery\n"
@@ -2147,10 +2438,11 @@ def test_ingest_uprn_product_zip_streams_all_data_shards(
     with zipfile.ZipFile(source_path, "w") as archive:
         archive.writestr(
             f"Data/{dataset_id}_DEC_2025_LN.csv",
-            ward_header
+            parish_header
             + (
                 "100023336959,SW1A 2AH,E09000033,Westminster,E00023913,E01004734,"
-                "E02000977,E05013806,St James's,E92000001,England,1\n"
+                "E02000977,E05013806,St James's,E43000246,Non-civil parished area,"
+                "E92000001,England,1\n"
             ),
         )
         archive.writestr(
@@ -2202,7 +2494,7 @@ def test_ingest_uprn_product_zip_streams_all_data_shards(
         ).fetchall()
         uprn_index_rows = conn.execute(
             """
-            SELECT uprn, postcode, lad_code, ward_code, region_code
+            SELECT uprn, postcode, lad_code, parish_code, parish_name, ward_code, region_code
             FROM ons_geo_uprn_index
             WHERE product_id = ?
             ORDER BY uprn
@@ -2216,10 +2508,19 @@ def test_ingest_uprn_product_zip_streams_all_data_shards(
     assert key_field == "UPRN"
     assert validation["requiredMissing"] == []
     assert rows == [("10000062102",), ("100010542645",), ("100023336959",)]
+    assert "parish_code" in validation["optionalFound"]
     assert uprn_index_rows == [
-        ("10000062102", "HU93HS", "E06000010", "E05011542", None),
-        ("100010542645", "CF101EP", "W06000015", None, "W99999999"),
-        ("100023336959", "SW1A2AH", "E09000033", "E05013806", None),
+        ("10000062102", "HU93HS", "E06000010", None, None, "E05011542", None),
+        ("100010542645", "CF101EP", "W06000015", None, None, None, "W99999999"),
+        (
+            "100023336959",
+            "SW1A2AH",
+            "E09000033",
+            "E43000246",
+            "Non-civil parished area",
+            "E05013806",
+            None,
+        ),
     ]
 
 
@@ -2307,11 +2608,16 @@ def test_ingest_main_dataset_rolls_back_after_batched_failure(
     original_build = refresh._build_normalized_row
     calls = {"count": 0}
 
-    def crashing_build(row, *, mapping, code_references):
+    def crashing_build(row, *, mapping, code_references, msoa_display_names=None):
         calls["count"] += 1
         if calls["count"] == 2:
             raise ValueError("main ingest boom")
-        return original_build(row, mapping=mapping, code_references=code_references)
+        return original_build(
+            row,
+            mapping=mapping,
+            code_references=code_references,
+            msoa_display_names=msoa_display_names,
+        )
 
     monkeypatch.setattr(refresh, "_SQLITE_REFRESH_INSERT_BATCH", 1)
     monkeypatch.setattr(refresh, "_build_normalized_row", crashing_build)

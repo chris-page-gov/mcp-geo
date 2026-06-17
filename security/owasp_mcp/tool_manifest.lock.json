@@ -277,9 +277,9 @@
       "version": "0.1.0"
     },
     {
-      "description": "Resolve a compact OA/LSOA/MSOA/ward/profile summary from an area code, postcode, or UPRN using cached ONS geographies, compact inventory counts, and curated NOMIS follow-up datasets.",
-      "description_sha256": "6ea77ea3af351e47807c0aa270011b0bf9bb6cb72e8001e837097c7395b59e32",
-      "input_schema_sha256": "d2e43865541d3a0cee9a0a6c80b1b4b2ac1e424b42f402919e85b24acaedc395",
+      "description": "Resolve a compact OA/LSOA/MSOA/parish/ward/profile summary from an area code, postcode, or UPRN using cached ONS geographies, compact inventory counts, and curated NOMIS follow-up datasets.",
+      "description_sha256": "173cdfdfb733aaeccfeab9c24ea4403a916aac6e0e31e74ca370f5d5f4978952",
+      "input_schema_sha256": "ee2600f07a39a4c720a233853b737d47d2bca0fd18b180e7a92ae26caf0f8611",
       "name": "ons_geo.area_summary",
       "output_schema_sha256": "2b23389982e75dd920dbf027e46dcbee5e943fa7a231e813cea3906e8d150a1d",
       "version": "0.1.0"
@@ -599,7 +599,7 @@
     {
       "description": "Explain whether stats queries route to ONS or NOMIS.",
       "description_sha256": "b9b05fd3f89a1e33b1f5c6b055d7ea857ff17e0ffff1e4fe1c63385a385979ed",
-      "input_schema_sha256": "848c8b8ed80206b2980139aa7110f7ff5150cc71389bfc6f6a1215d1a72ff562",
+      "input_schema_sha256": "9526dbf711f6895ceceb3118293b5876b6641b635ac84b15aef24124f5b77375",
       "name": "os_mcp.stats_routing",
       "output_schema_sha256": "2ff329195619aa96e125d13bed7dcfd7bf1a5397b2db97ec57f209ee3af672ae",
       "version": "0.1.0"

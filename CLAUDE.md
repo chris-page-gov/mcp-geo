@@ -1,19 +1,16 @@
-# CLAUDE.md
+# Claude Code Guidance
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This repository is `mcp-geo`, not a generic hackathon workspace.
 
-## Repository Purpose
+Use `AGENTS.md` as the source of truth for build, validation, coding, review,
+and security rules. Read `CONTEXT.md` for the current handoff before making
+changes.
 
-This is a hackathon workspace for the AI Engineering Lab. Individual projects are added here as hackathon work progresses.
+Claude-specific notes:
 
-## Claude API Configuration
-
-This workspace is pre-configured (via `.claude/settings.local.json`, which is gitignored) to use a custom Anthropic proxy endpoint at `https://licenseportal.aiengineeringlab.co.uk` with European-region model variants. When building applications that call the Claude API directly, use these model IDs:
-
-| Tier   | Model ID                                  |
-|--------|-------------------------------------------|
-| Sonnet | `eu.anthropic.claude-sonnet-4-6`          |
-| Haiku  | `eu.anthropic.claude-haiku-4-5-20251001-v1:0` |
-| Opus   | `eu.anthropic.claude-opus-4-6-v1`         |
-
-The `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` environment variables are injected automatically from `.claude/settings.local.json` — no manual export needed when running commands through Claude Code.
+- Do not commit API keys, `.env` secrets, or local Claude settings.
+- Use the repo wrappers and docs for MCP startup rather than assuming a shared
+  local server or shared PostGIS volume.
+- Preserve STDIO compatibility: sanitized tool names, JSON-RPC notifications
+  without responses, and `resources/read` accepting both `uri` and `name`.
+- For current operational learnings, see `docs/agent_context/agent-operations.md`.

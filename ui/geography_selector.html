@@ -588,11 +588,14 @@
               <label for="levelSelect">Level focus</label>
               <select id="levelSelect">
                 <option value="local_auth">Local Authority</option>
-                <option value="parl_const">Parliamentary Constituency</option>
+                <option value="parish">Parish / PARNCP</option>
                 <option value="ward">Ward</option>
                 <option value="msoa">MSOA</option>
                 <option value="lsoa">LSOA</option>
                 <option value="oa">OA</option>
+                <option value="region">Region</option>
+                <option value="country">Country / Nation</option>
+                <option value="parl_const">Parliamentary Constituency</option>
                 <option value="built_up_area">Built-up Area</option>
                 <option value="postcode">Postcode</option>
               </select>
@@ -760,6 +763,25 @@
       ];
       const vectorSrs = "3857";
       const POSTCODE_REGEX = /^[A-Z]{1,2}[0-9][0-9A-Z]?[0-9][A-Z]{2}$/;
+      const DEFAULT_GEOGRAPHY_LEVELS = [
+        { value: "local_auth", label: "Local Authority", mapFocusLevel: "DISTRICT" },
+        { value: "parish", label: "Parish / PARNCP", areaLevel: "PARISH", mapFocusLevel: "PARISH" },
+        { value: "ward", label: "Ward", areaLevel: "WARD", mapFocusLevel: "WARD" },
+        {
+          value: "msoa",
+          label: "MSOA",
+          areaLevel: "MSOA",
+          mapFocusLevel: "MSOA",
+          displayNamePolicy: "preserve official currentName; expose HoC displayName separately",
+        },
+        { value: "lsoa", label: "LSOA", areaLevel: "LSOA", mapFocusLevel: "LSOA" },
+        { value: "oa", label: "OA", areaLevel: "OA", mapFocusLevel: "OA" },
+        { value: "region", label: "Region", areaLevel: "REGION", mapFocusLevel: "REGION" },
+        { value: "country", label: "Country / Nation", areaLevel: "COUNTRY", mapFocusLevel: "NATION" },
+        { value: "parl_const", label: "Parliamentary Constituency", mapFocusLevel: null },
+        { value: "built_up_area", label: "Built-up Area", mapFocusLevel: null },
+        { value: "postcode", label: "Postcode", mapFocusLevel: null },
+      ];
 
       const defaultMode = modes.find((mode) => mode.id === "free") || modes[0];
       const state = {
@@ -795,6 +817,7 @@
         },
         displayMode: "inline",
         availableDisplayModes: [],
+        supportedLevels: DEFAULT_GEOGRAPHY_LEVELS,
         selectionMode: "pan",
         sessionId: `ui_${Date.now()}_${Math.random().toString(16).slice(2)}`,
         compactTab: "map",
@@ -1025,6 +1048,62 @@
           }
           throw err;
         }
+      }
+
+      function normalizeSupportedLevels(levels) {
+        if (!Array.isArray(levels)) {
+          return DEFAULT_GEOGRAPHY_LEVELS;
+        }
+        const normalized = [];
+        levels.forEach((entry) => {
+          if (!entry || typeof entry !== "object") {
+            return;
+          }
+          const value = String(entry.value || "").trim().toLowerCase();
+          const label = String(entry.label || value).trim();
+          if (!value || !label) {
+            return;
+          }
+          normalized.push({
+            value,
+            label,
+            areaLevel: typeof entry.areaLevel === "string" ? entry.areaLevel : null,
+            mapFocusLevel: typeof entry.mapFocusLevel === "string" ? entry.mapFocusLevel : null,
+            displayNamePolicy:
+              typeof entry.displayNamePolicy === "string" ? entry.displayNamePolicy : null,
+          });
+        });
+        return normalized.length ? normalized : DEFAULT_GEOGRAPHY_LEVELS;
+      }
+
+      function rebuildLevelOptions(levels) {
+        const current = levelSelect.value;
+        state.supportedLevels = normalizeSupportedLevels(levels);
+        levelSelect.innerHTML = "";
+        state.supportedLevels.forEach((entry) => {
+          const option = document.createElement("option");
+          option.value = entry.value;
+          option.textContent = entry.label;
+          if (entry.displayNamePolicy) {
+            option.title = entry.displayNamePolicy;
+          }
+          levelSelect.appendChild(option);
+        });
+        if (state.supportedLevels.some((entry) => entry.value === current)) {
+          levelSelect.value = current;
+        }
+      }
+
+      function applyLevelSelection(level) {
+        if (typeof level !== "string") {
+          return;
+        }
+        const normalized = level.trim().toLowerCase();
+        if (!state.supportedLevels.some((entry) => entry.value === normalized)) {
+          setFlowStatus("warning", `Unsupported geography level '${level}' ignored.`);
+          return;
+        }
+        levelSelect.value = normalized;
       }
 
       function buildSegmentButtons() {
@@ -2314,17 +2393,10 @@
       }
 
       function mapFocusLevel(value) {
-        const mapping = {
-          local_auth: "DISTRICT",
-          parl_const: null,
-          ward: "WARD",
-          msoa: "MSOA",
-          lsoa: "LSOA",
-          oa: "OA",
-          built_up_area: null,
-          postcode: null,
-        };
-        return mapping[value] || null;
+        const entry = state.supportedLevels.find(
+          (level) => level.value === String(value || "").toLowerCase()
+        );
+        return entry?.mapFocusLevel || null;
       }
 
       function renderError(message) {
@@ -2678,8 +2750,11 @@
         if (payload.tool) {
           delete payload.tool;
         }
+        if (payload.supportedLevels) {
+          rebuildLevelOptions(payload.supportedLevels);
+        }
         if (payload.level) {
-          levelSelect.value = payload.level;
+          applyLevelSelection(payload.level);
         }
         if (payload.searchTerm) {
           queryInput.value = payload.searchTerm;
@@ -3000,6 +3075,7 @@
         }
       });
 
+      rebuildLevelOptions(DEFAULT_GEOGRAPHY_LEVELS);
       buildSegmentButtons();
       buildSelectionModeButtons();
       buildZoomLadder();

@@ -477,7 +477,7 @@ the council-tax surfaces.
 | os_places.by_uprn                   | Single address lookup                                                         |
 | os_places.nearest                   | Nearest addresses to a coordinate                                             |
 | os_places.within                    | Addresses within bbox                                                         |
-| os_names.find                       | Gazetteer name search                                                         |
+| os_names.find                       | OS Names gazetteer search for named places and features                       |
 | os_names.nearest                    | Nearest named features                                                        |
 | os_features.query                   | NGD features by bbox & collection                                             |
 | os_linked_ids.get                   | Relationship lookup between UPRN/USRN/TOID                                    |
@@ -487,8 +487,8 @@ the council-tax surfaces.
 | os_offline.get                      | Offline map handoff payloads (`map_card`, `overlay_bundle`, `export_handoff`) |
 | admin_lookup.containing_areas       | Administrative area containment for a point                                   |
 | admin_lookup.reverse_hierarchy      | Ancestor chain for an administrative area                                     |
-| admin_lookup.area_geometry          | Bounding box geometry for an area                                             |
-| admin_lookup.find_by_name           | Case-insensitive substring name search                                        |
+| admin_lookup.area_geometry          | Bounding box geometry for an administrative or statistical area               |
+| admin_lookup.find_by_name           | Boundary/admin area name search, including parish/PARNCP areas                |
 | council_tax.band_lookup             | Experimental England/Wales Council Tax band lookup                            |
 | council_tax.query                   | AddressBase Premium UPRN check for Council Tax and non-domestic rates         |
 | landis_catalog.list_products        | LandIS callable product registry, exact thematic IDs, and access tiers        |
@@ -518,6 +518,19 @@ the council-tax surfaces.
 | os_apps.render_feature_inspector    | Open the MCP-Apps feature inspector widget                                    |
 | os_apps.render_route_planner        | Open the MCP-Apps route planner widget backed by `os_route.get`               |
 | os_apps.render_ui_probe             | Probe MCP-Apps UI rendering support                                           |
+
+Use OS Names for gazetteer-style named-place and named-feature lookup, such as
+settlements, hamlets, villages, hills, woods, or other named map features. Use
+`admin_lookup.*` when you need an official boundary, hierarchy, containment, or
+geometry for a statistical/admin area. `PARISH` is the public normalized level
+for civil parishes, Welsh communities, and non-civil-parished areas; source
+fields remain `PARNCP25CD`, `PARNCP25NM`, and `PARNCP25NW` where present.
+
+`ons_geo.by_postcode`, `ons_geo.by_uprn`, and `ons_geo.area_summary` expose
+normalized `OA`, `LSOA`, `MSOA`, `PARISH`, ward, district, region, and country
+fields when the local ONS cache has those source columns. House of Commons
+Library 2021 MSOA names are carried only as `displayName` labels with
+provenance; they do not replace the official ONS/RGC `currentName`.
 
 ## Resources, Filtering & Provenance
 

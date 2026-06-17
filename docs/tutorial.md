@@ -420,6 +420,14 @@ schedule or paused by a publisher notice. See
 [docs/ons_geo_source_resolution.md](/Users/crpage/repos/mcp-geo/docs/ons_geo_source_resolution.md)
 for the source model, glossary, and release-audit rationale.
 
+When present in the source products, normalized responses include
+`normalizedGeographies.parish` for the unified `PARISH` level. This covers
+civil parishes, Welsh communities, and non-civil-parished areas while keeping
+the source field names (`PARNCP25CD`, `PARNCP25NM`, `PARNCP25NW`) visible in
+raw payloads. MSOA entries can also include House of Commons Library
+`displayName` labels; those labels are non-official display names and do not
+replace the ONS/RGC `currentName`.
+
 ```bash
 curl -sS "$BASE_URL/tools/call" \
   -H 'content-type: application/json' \
@@ -487,7 +495,16 @@ confirm whether PostGIS cache-backed responses are available.
 curl -sS "$BASE_URL/tools/call" \
   -H 'content-type: application/json' \
   -d '{"tool":"admin_lookup.find_by_name","text":"Westminster"}'
+
+curl -sS "$BASE_URL/tools/call" \
+  -H 'content-type: application/json' \
+  -d '{"tool":"admin_lookup.find_by_name","text":"Example Parish","level":"PARISH"}'
 ```
+
+Use `admin_lookup.*` for official boundary geometry and containment. Use
+`os_names.find` for OS Names gazetteer searches such as named places,
+settlements, villages, hamlets, and named features; route generic boundary
+phrases back to `admin_lookup.*`.
 
 ## Ordnance Survey tools (require `OS_API_KEY`)
 

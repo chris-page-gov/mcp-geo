@@ -42,6 +42,40 @@ class _FakeConn:
         return False
 
 
+class _CaptureCursor:
+    def __init__(self, capture, rows=None):
+        self._capture = capture
+        self._rows = rows or []
+
+    def execute(self, query, params=None):  # noqa: ARG002
+        self._capture["params"] = list(params or [])
+        return None
+
+    def fetchall(self):
+        return self._rows
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):  # noqa: ARG002
+        return False
+
+
+class _CaptureConn:
+    def __init__(self, capture, rows=None):
+        self._capture = capture
+        self._rows = rows or []
+
+    def cursor(self):
+        return _CaptureCursor(self._capture, self._rows)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):  # noqa: ARG002
+        return False
+
+
 class _SeqCursor:
     def __init__(self, responses):
         self._responses = responses
@@ -531,6 +565,52 @@ def test_boundary_cache_search(monkeypatch):
     monkeypatch.setattr(cache, "_connect", lambda: _FakeConn(rows=rows))
     results = cache.search(query="Test", level="OA", limit=5, include_geometry=True)
     assert results and results[0]["id"] == "E00000001"
+
+
+@pytest.mark.parametrize(
+    ("match", "where_params"),
+    [
+        ("contains", ["%Warwick%", "%Warwick%"]),
+        ("starts_with", ["Warwick%", "Warwick%"]),
+        ("exact", ["WARWICK", "WARWICK"]),
+    ],
+)
+def test_boundary_cache_search_applies_match_and_priority_before_limit(
+    monkeypatch,
+    match,
+    where_params,
+):
+    capture = {}
+    rows = [
+        {
+            "area_id": "E04000001",
+            "name": "Warwick",
+            "level": "PARISH",
+            "dataset_id": "PARNCP_MAY_2025_EW_BGC",
+            "minx": -1.6,
+            "miny": 52.3,
+            "maxx": -1.5,
+            "maxy": 52.4,
+            "geometry": None,
+        }
+    ]
+    cache = BoundaryCache(
+        dsn="postgresql://example",
+        schema="public",
+        table="admin_boundaries",
+        dataset_table="boundary_datasets",
+        max_age_days=180,
+    )
+    monkeypatch.setattr(settings, "BOUNDARY_CACHE_ENABLED", True, raising=False)
+    monkeypatch.setattr(cache, "_connect", lambda: _CaptureConn(capture, rows=rows))
+
+    results = cache.search(query="Warwick", limit=1, match=match)
+
+    assert results and results[0]["id"] == "E04000001"
+    assert capture["params"][:2] == where_params
+    assert capture["params"][2:6] == ["WARWICK", "WARWICK", "Warwick%", "Warwick%"]
+    assert capture["params"][-2][:3] == ["WARD", "PARISH", "DISTRICT"]
+    assert capture["params"][-1] == 1
 
 
 def test_boundary_cache_status_psycopg_missing(monkeypatch):

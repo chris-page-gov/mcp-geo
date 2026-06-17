@@ -12,13 +12,15 @@ import uuid
 from pathlib import Path
 from typing import Any, Iterable
 
+from server.geography_levels import AREA_LEVEL_COLUMN_MAP, normalize_area_level
 from server.ons_geo_cache import (
     ONSGeoCache,
     ONSGeoCacheReadError,
     normalize_postcode,
     normalize_uprn,
 )
-from tools.registry import Tool, ToolResult, get as get_tool, register
+from tools.registry import Tool, ToolResult, register
+from tools.registry import get as get_tool
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _EXPORTS_DIR = _REPO_ROOT / "data" / "exports"
@@ -60,27 +62,32 @@ _MAX_LIMIT = 500
 _NGD_COLLECTION_CACHE_TTL_SECONDS = 3600.0
 _NGD_COLLECTION_CACHE: dict[str, Any] = {"stored_at": 0.0, "latest_by_base": {}}
 
-_GSS_LEVEL_TO_COLUMN: dict[str, tuple[str, str | None]] = {
-    "OA": ("oa_code", "selected_by_oa"),
-    "LSOA": ("lsoa_code", "selected_by_lsoa"),
-    "MSOA": ("msoa_code", "selected_by_msoa"),
-    "LAD": ("lad_code", None),
-    "WD": ("ward_code", None),
-    "WARD": ("ward_code", None),
-    "CTRY": ("country_code", None),
-    "COUNTRY": ("country_code", None),
-    "RGN": ("region_code", None),
-    "REGION": ("region_code", None),
+_GSS_MEMBERSHIP_BY_AREA_LEVEL = {
+    "OA": "selected_by_oa",
+    "LSOA": "selected_by_lsoa",
+    "MSOA": "selected_by_msoa",
+    "PARISH": "selected_by_parish",
 }
 
 _MEMBERSHIP_COLUMNS = [
     "selected_by_oa",
     "selected_by_lsoa",
     "selected_by_msoa",
+    "selected_by_parish",
     "selected_by_postcode",
     "selected_by_uprn",
     "selected_by_polygon",
 ]
+
+
+def _gss_level_to_column(level: str) -> tuple[str, str | None] | None:
+    normalized = normalize_area_level(level)
+    if normalized is None:
+        return None
+    column = AREA_LEVEL_COLUMN_MAP.get(normalized)
+    if not column:
+        return None
+    return column, _GSS_MEMBERSHIP_BY_AREA_LEVEL.get(normalized)
 
 _CSV_COLUMNS_CANONICAL_DEFAULT = [
     "uprn",
@@ -89,6 +96,9 @@ _CSV_COLUMNS_CANONICAL_DEFAULT = [
     "local_authority_name",
     "lsoa_code",
     "msoa_code",
+    "parish_code",
+    "parish_name",
+    "parish_name_welsh",
     "lad_code",
 ]
 
@@ -97,6 +107,7 @@ _CSV_COLUMNS_DEFAULT = [
     "selected_by_oa",
     "selected_by_lsoa",
     "selected_by_msoa",
+    "selected_by_parish",
     "selected_by_postcode",
     "selected_by_uprn",
     "selected_by_polygon",
@@ -350,12 +361,6 @@ def _parse_selection_spec(value: Any) -> tuple[dict[str, Any] | None, str | None
 
 
 def _selection_cache_error(exc: Exception) -> ToolResult:
-    if isinstance(exc, RuntimeError):
-        return 503, {
-            "isError": True,
-            "code": "CACHE_UNAVAILABLE",
-            "message": str(exc),
-        }
     if isinstance(exc, (sqlite3.Error, ONSGeoCacheReadError)):
         return 503, {
             "isError": True,
@@ -364,6 +369,12 @@ def _selection_cache_error(exc: Exception) -> ToolResult:
                 "ONS geo cache is unreadable. "
                 f"{exc} Run scripts/ons_geo_cache_refresh.py to rebuild the cache."
             ),
+        }
+    if isinstance(exc, RuntimeError):
+        return 503, {
+            "isError": True,
+            "code": "CACHE_UNAVAILABLE",
+            "message": str(exc),
         }
     return 500, {
         "isError": True,
@@ -2137,8 +2148,9 @@ def _fetch_index_rows_by_column(
         return {}
     placeholders = ",".join("?" for _ in normalized_values)
     sql = (
-        "SELECT uprn, postcode, oa_code, lsoa_code, msoa_code, lad_code, lad_name, "
-        "ward_code, country_code, region_code, postal_delivery "
+        "SELECT uprn, postcode, oa_code, lsoa_code, msoa_code, parish_code, "
+        "parish_name, parish_name_welsh, lad_code, lad_name, ward_code, country_code, "
+        "region_code, postal_delivery "
         "FROM ons_geo_uprn_index "
         f"WHERE derivation_mode = ? AND {column} IN ({placeholders})"
     )
@@ -2155,6 +2167,9 @@ def _fetch_index_rows_by_column(
                 "oa_code": row["oa_code"],
                 "lsoa_code": row["lsoa_code"],
                 "msoa_code": row["msoa_code"],
+                "parish_code": row["parish_code"],
+                "parish_name": row["parish_name"],
+                "parish_name_welsh": row["parish_name_welsh"],
                 "lad_code": row["lad_code"],
                 "lad_name": row["lad_name"],
                 "ward_code": row["ward_code"],
@@ -2182,8 +2197,9 @@ def _fetch_index_rows_for_uprns(
         part = uprn_list[start : start + chunk]
         placeholders = ",".join("?" for _ in part)
         sql = (
-            "SELECT uprn, postcode, oa_code, lsoa_code, msoa_code, lad_code, lad_name, "
-            "ward_code, country_code, region_code, postal_delivery "
+            "SELECT uprn, postcode, oa_code, lsoa_code, msoa_code, parish_code, "
+            "parish_name, parish_name_welsh, lad_code, lad_name, ward_code, country_code, "
+            "region_code, postal_delivery "
             "FROM ons_geo_uprn_index "
             f"WHERE derivation_mode = ? AND uprn IN ({placeholders})"
         )
@@ -2199,6 +2215,9 @@ def _fetch_index_rows_for_uprns(
                     "oa_code": row["oa_code"],
                     "lsoa_code": row["lsoa_code"],
                     "msoa_code": row["msoa_code"],
+                    "parish_code": row["parish_code"],
+                    "parish_name": row["parish_name"],
+                    "parish_name_welsh": row["parish_name_welsh"],
                     "lad_code": row["lad_code"],
                     "lad_name": row["lad_name"],
                     "ward_code": row["ward_code"],
@@ -2260,8 +2279,25 @@ def _resolve_selection_rows(
     if not cache.available():
         raise RuntimeError("ONS geo cache is unavailable. Run scripts/ons_geo_cache_refresh.py.")
 
-    conn = sqlite3.connect(str(cache.db_path))
-    conn.row_factory = sqlite3.Row
+    conn = cache.connect(row_factory=True)
+    try:
+        return _resolve_selection_rows_from_cache(
+            conn=conn,
+            selection_spec=selection_spec,
+            derivation_mode=derivation_mode,
+            postal_delivery_only=postal_delivery_only,
+        )
+    finally:
+        conn.close()
+
+
+def _resolve_selection_rows_from_cache(
+    *,
+    conn: sqlite3.Connection,
+    selection_spec: dict[str, Any],
+    derivation_mode: str,
+    postal_delivery_only: bool,
+) -> tuple[list[dict[str, Any]], dict[str, int], list[str]]:
 
     warnings: list[str] = []
     include_uprns: set[str] = set()
@@ -2288,7 +2324,7 @@ def _resolve_selection_rows(
         if selector_type == "gss_code":
             level = str(selector.get("level") or "").strip().upper()
             code = str(selector.get("code") or "").strip().upper()
-            mapping = _GSS_LEVEL_TO_COLUMN.get(level)
+            mapping = _gss_level_to_column(level)
             if not mapping or not code:
                 warnings.append(
                     f"selectors[{idx}] skipped: gss_code requires supported level and code"
@@ -2412,17 +2448,19 @@ def _resolve_selection_rows(
                 "local_authority_name": data.get("lad_name") or "",
                 "lsoa_code": data.get("lsoa_code") or "",
                 "msoa_code": data.get("msoa_code") or "",
+                "parish_code": data.get("parish_code") or "",
+                "parish_name": data.get("parish_name") or "",
+                "parish_name_welsh": data.get("parish_name_welsh") or "",
                 "lad_code": data.get("lad_code") or "",
                 "selected_by_oa": _membership_value(mem.get("selected_by_oa", set())),
                 "selected_by_lsoa": _membership_value(mem.get("selected_by_lsoa", set())),
                 "selected_by_msoa": _membership_value(mem.get("selected_by_msoa", set())),
+                "selected_by_parish": _membership_value(mem.get("selected_by_parish", set())),
                 "selected_by_postcode": _membership_value(mem.get("selected_by_postcode", set())),
                 "selected_by_uprn": _membership_value(mem.get("selected_by_uprn", set())),
                 "selected_by_polygon": _membership_value(mem.get("selected_by_polygon", set())),
             }
         )
-
-    conn.close()
 
     stats = {
         "resolvedUprnCount": len(rows),

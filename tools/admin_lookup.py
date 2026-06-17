@@ -21,6 +21,11 @@ except ImportError:  # pragma: no cover - optional dependency fallback
 from server.config import settings
 from server.boundary_cache import get_boundary_cache, reset_boundary_cache
 from server.error_taxonomy import classify_error
+from server.geography_levels import (
+    boundary_search_priority_levels,
+    infer_admin_levels_from_text,
+    normalize_admin_level,
+)
 from server.logging import log_upstream_error
 from tools.ons_common import TTLCache
 from tools.registry import Tool, register, ToolResult
@@ -64,6 +69,14 @@ ADMIN_SOURCES: list[AdminSource] = [
         service="Middle_layer_Super_Output_Areas_December_2021_Boundaries_EW_BGC_V3",
         id_field="MSOA21CD",
         name_field="MSOA21NM",
+        lat_field="LAT",
+        lon_field="LONG",
+    ),
+    AdminSource(
+        level="PARISH",
+        service="PARNCP_MAY_2025_EW_BGC",
+        id_field="PARNCP25CD",
+        name_field="PARNCP25NM",
         lat_field="LAT",
         lon_field="LONG",
     ),
@@ -112,18 +125,18 @@ ADMIN_SOURCES: list[AdminSource] = [
 LEVEL_ORDER = [source.level for source in ADMIN_SOURCES]
 LEVEL_INDEX = {level: idx for idx, level in enumerate(LEVEL_ORDER)}
 
-SEARCH_PRIORITY_LEVELS = [
-    "WARD",
-    "DISTRICT",
-    "COUNTY",
-    "REGION",
-    "NATION",
-    "MSOA",
-    "LSOA",
-    "OA",
-]
+SEARCH_PRIORITY_LEVELS = list(boundary_search_priority_levels())
 SEARCH_PRIORITY_INDEX = {level: idx for idx, level in enumerate(SEARCH_PRIORITY_LEVELS)}
 _MATCH_TYPES = {"contains", "starts_with", "exact"}
+
+
+def _normalize_level_name(value: Any) -> str | None:
+    if value is None:
+        return None
+    normalized = normalize_admin_level(value)
+    if normalized is None:
+        return None
+    return normalized if normalized in LEVEL_INDEX else None
 
 
 def _normalize_levels(value: Any) -> list[str] | None:
@@ -138,31 +151,14 @@ def _normalize_levels(value: Any) -> list[str] | None:
         return None
     levels: list[str] = []
     for item in raw:
-        upper = item.upper()
-        if upper in LEVEL_INDEX:
-            levels.append(upper)
+        normalized = _normalize_level_name(item)
+        if normalized is not None:
+            levels.append(normalized)
     return levels or None
 
 
 def _infer_levels_from_text(text: str) -> list[str] | None:
-    lowered = text.lower()
-    if "lsoa" in lowered:
-        return ["LSOA"]
-    if "msoa" in lowered:
-        return ["MSOA"]
-    if "oa" in lowered or "output area" in lowered:
-        return ["OA"]
-    if "ward" in lowered:
-        return ["WARD"]
-    if "district" in lowered or "borough" in lowered or "council" in lowered:
-        return ["DISTRICT"]
-    if "county" in lowered:
-        return ["COUNTY"]
-    if "region" in lowered:
-        return ["REGION"]
-    if "nation" in lowered or "country" in lowered:
-        return ["NATION"]
-    return None
+    return infer_admin_levels_from_text(text)
 
 
 def _ordered_sources(levels: list[str] | None) -> list[AdminSource]:
@@ -396,6 +392,86 @@ def _score_match(name: str, needle: str, level: str) -> tuple[int, int, int, str
         idx = 999
     level_rank = SEARCH_PRIORITY_INDEX.get(level, 999)
     return (idx, level_rank, len(name_upper), name_upper)
+
+
+def _name_matches(name: Any, needle: str, match: str) -> bool:
+    name_upper = str(name or "").upper()
+    if match == "exact":
+        return name_upper == needle
+    if match == "starts_with":
+        return name_upper.startswith(needle)
+    return needle in name_upper
+
+
+def _cache_match_values(item: dict[str, Any]) -> list[str]:
+    values: list[str] = []
+    for key in ("name", "id"):
+        value = item.get(key)
+        if value is None:
+            continue
+        text = str(value).strip()
+        if text:
+            values.append(text)
+    return values
+
+
+def _cache_item_matches(item: dict[str, Any], needle: str, match: str) -> bool:
+    return any(_name_matches(value, needle, match) for value in _cache_match_values(item))
+
+
+def _score_cache_item_match(item: dict[str, Any], needle: str) -> tuple[int, int, int, str]:
+    values = _cache_match_values(item)
+    if not values:
+        values = [""]
+    level = str(item.get("level") or "")
+    return min(_score_match(value, needle, level) for value in values)
+
+
+def _cache_find_by_name(
+    cache: Any,
+    text: str,
+    limit: int,
+    *,
+    levels: list[str] | None,
+    match: str,
+    limit_per_level: int | None,
+    include_geometry: bool,
+) -> list[dict[str, Any]] | None:
+    needle = text.upper()
+    query_levels = levels or [None]
+    per_level = limit_per_level or limit
+    found: list[dict[str, Any]] = []
+    for level in query_levels:
+        raw_results = cache.search(
+            query=text,
+            level=level,
+            limit=per_level,
+            include_geometry=include_geometry,
+            match=match,
+        )
+        if raw_results is None:
+            return None
+        for item in raw_results:
+            if not isinstance(item, dict):
+                continue
+            if not _cache_item_matches(item, needle, match):
+                continue
+            result = {
+                "id": item.get("id"),
+                "level": item.get("level"),
+                "name": item.get("name") or item.get("id"),
+            }
+            if item.get("bbox") is not None:
+                result["bbox"] = item.get("bbox")
+            if include_geometry and item.get("geometry") is not None:
+                result["geometry"] = item.get("geometry")
+            if item.get("datasetId") is not None:
+                result["datasetId"] = item.get("datasetId")
+            found.append(result)
+    found.sort(
+        key=lambda item: _score_cache_item_match(item, needle)
+    )
+    return found[:limit]
 
 
 def _live_find_by_name(
@@ -867,7 +943,50 @@ def _find_by_name(payload: dict[str, Any]) -> ToolResult:
                 "message": "limitPerLevel must be >= 1",
             }
     include_geometry = bool(payload.get("includeGeometry"))
+    match = match if match in _MATCH_TYPES else "contains"
+    cache = get_boundary_cache()
+    cache_error = False
+    if cache:
+        cached = _cache_find_by_name(
+            cache,
+            text,
+            limit,
+            levels=levels,
+            match=match,
+            limit_per_level=limit_per_level,
+            include_geometry=include_geometry,
+        )
+        if cached is None:
+            cache_error = True
+        elif cached:
+            return 200, {
+                "results": cached,
+                "count": len(cached),
+                "live": False,
+                "meta": {
+                    "source": "cache",
+                    "match": match,
+                    "levels": levels,
+                    "limitPerLevel": limit_per_level,
+                    "includeGeometry": include_geometry,
+                    "cacheMaturity": _cache_maturity_snapshot(cache),
+                },
+            }
     if not _live_enabled():
+        if cache and not cache_error:
+            return 200, {
+                "results": [],
+                "count": 0,
+                "live": False,
+                "meta": {
+                    "source": "cache",
+                    "match": match,
+                    "levels": levels,
+                    "limitPerLevel": limit_per_level,
+                    "includeGeometry": include_geometry,
+                    "cacheMaturity": _cache_maturity_snapshot(cache),
+                },
+            }
         return 501, {
             "isError": True,
             "code": "LIVE_DISABLED",
@@ -896,6 +1015,8 @@ def _find_by_name(payload: dict[str, Any]) -> ToolResult:
             "levels": levels,
             "limitPerLevel": limit_per_level,
             "includeGeometry": include_geometry,
+            "cacheFallback": bool(cache),
+            "cacheError": cache_error or None,
         },
     }
 
@@ -1041,7 +1162,8 @@ register(Tool(
 
 def _cache_search(payload: dict[str, Any]) -> ToolResult:
     query = str(payload.get("query", "")).strip() or None
-    level = str(payload.get("level", "")).strip() or None
+    raw_level = str(payload.get("level", "")).strip() or None
+    level = (_normalize_level_name(raw_level) or raw_level.upper()) if raw_level else None
     limit = payload.get("limit", 25)
     if not is_strict_int(limit) or limit < 1 or limit > 200:
         return 400, {"isError": True, "code": "INVALID_INPUT", "message": "limit must be 1-200"}

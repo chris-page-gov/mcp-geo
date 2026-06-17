@@ -72,7 +72,7 @@ _PREFIX_CATEGORY: dict[str, ToolCategory] = {
 _PREFIX_KEYWORDS: dict[str, list[str]] = {
     "os_places": ["address", "postcode", "uprn", "place", "geocode"],
     "os_poi": ["poi", "points", "interest", "amenities", "nearby", "places"],
-    "os_names": ["gazetteer", "names", "feature", "nearest"],
+    "os_names": ["gazetteer", "names", "feature", "nearest", "settlement", "named place"],
     "os_features": ["ngd", "feature", "bbox", "collection"],
     "os_peat": ["peat", "survey", "evidence", "aoi", "bowland"],
     "os_landscape": ["aonb", "national landscape", "protected", "boundary", "bowland"],
@@ -93,7 +93,7 @@ _PREFIX_KEYWORDS: dict[str, list[str]] = {
     "landis_nsi": ["landis", "nsi", "soil", "evidence", "survey", "samples", "profile"],
     "landis_soilscapes": ["landis", "soil", "soilscapes", "screening", "area", "point"],
     "landis_derive": ["landis", "soil", "pipe", "corrosion", "shrink-swell", "utilities"],
-    "admin_lookup": ["admin", "boundary", "hierarchy", "areas"],
+    "admin_lookup": ["admin", "boundary", "hierarchy", "areas", "parish", "parncp"],
     "ons_data": ["ons", "statistics", "observations", "dataset"],
     "ons_search": ["ons", "search", "dataset", "discover"],
     "ons_select": ["ons", "dataset", "selection", "ranking", "discover"],
@@ -442,9 +442,10 @@ def get_tool_search_system_prompt() -> str:
         "Primary tools:\n"
         "- os_places.search: free text address search\n"
         "- os_places.by_postcode: lookup UPRNs and addresses\n"
+        "- os_names.find: gazetteer lookup for named places and named features\n"
         "- os_poi.search: search points of interest (amenities/services)\n"
         "- os_offline.descriptor: inspect offline PMTiles/MBTiles pack contracts\n"
-        "- admin_lookup.find_by_name: find administrative areas by name (use level/levels to reduce noise)\n"
+        "- admin_lookup.find_by_name: find administrative/boundary areas by name (use level/levels to reduce noise)\n"
         "- ons_select.search: rank ONS datasets with explainability\n"
         "- ons_search.query: discover ONS datasets (live API search)\n"
         "- ons_data.query: query ONS observations\n"

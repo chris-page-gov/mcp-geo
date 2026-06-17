@@ -228,15 +228,35 @@ def test_live_find_by_name_skips_failed_sources(monkeypatch):
 def test_normalize_levels_and_infer():
     assert admin_lookup._normalize_levels("ward, lsoa, nope") == ["WARD", "LSOA"]
     assert admin_lookup._normalize_levels(["msoa", "WARD"]) == ["MSOA", "WARD"]
+    assert admin_lookup._normalize_levels(["parncp", "non civil parished"]) == [
+        "PARISH",
+        "PARISH",
+    ]
+    assert admin_lookup._normalize_levels(["country", "nation"]) == ["NATION", "NATION"]
     assert admin_lookup._normalize_levels(123) is None
     assert admin_lookup._infer_levels_from_text("LSOA unemployment rate") == ["LSOA"]
     assert admin_lookup._infer_levels_from_text("MSOA population") == ["MSOA"]
+    assert admin_lookup._infer_levels_from_text("Parish population") == ["PARISH"]
+    assert admin_lookup._infer_levels_from_text("PARNCP boundary") == ["PARISH"]
     assert admin_lookup._infer_levels_from_text("OA boundary") == ["OA"]
     assert admin_lookup._infer_levels_from_text("Ward boundary") == ["WARD"]
     assert admin_lookup._infer_levels_from_text("District council list") == ["DISTRICT"]
     assert admin_lookup._infer_levels_from_text("County services") == ["COUNTY"]
     assert admin_lookup._infer_levels_from_text("UK region data") == ["REGION"]
     assert admin_lookup._infer_levels_from_text("Nationwide statistics") == ["NATION"]
+    assert admin_lookup._infer_levels_from_text("Country boundary") == ["NATION"]
+
+
+def test_default_admin_sources_include_current_parncp_source():
+    parish = next(source for source in admin_lookup.ADMIN_SOURCES if source.level == "PARISH")
+    assert parish.service == "PARNCP_MAY_2025_EW_BGC"
+    assert parish.id_field == "PARNCP25CD"
+    assert parish.name_field == "PARNCP25NM"
+    assert parish.lat_field == "LAT"
+    assert parish.lon_field == "LONG"
+    assert admin_lookup.SEARCH_PRIORITY_LEVELS.index("PARISH") < (
+        admin_lookup.SEARCH_PRIORITY_LEVELS.index("DISTRICT")
+    )
 
 
 def test_ordered_sources_respects_levels(monkeypatch):

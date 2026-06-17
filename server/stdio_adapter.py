@@ -28,6 +28,7 @@ import tools.registry as _reg  # noqa: F401
 from server.mcp import rc2026
 from server.mcp import tools as _mcp_import  # noqa: F401
 
+from server.geography_levels import STATS_COMPARISON_LEVELS
 from tools.registry import all_tools, get as get_tool
 from server.mcp.resource_catalog import (
     list_data_resources,
@@ -279,7 +280,7 @@ def _build_stats_routing_elicitation_params(
     comparison_level = payload.get("comparisonLevel")
     if isinstance(comparison_level, str):
         normalized_level = comparison_level.strip().upper()
-        if normalized_level in {"WARD", "LSOA", "MSOA"}:
+        if normalized_level in STATS_COMPARISON_LEVELS:
             comparison_level_default = normalized_level
     provider_preference = payload.get("providerPreference")
     if isinstance(provider_preference, str):
@@ -298,7 +299,7 @@ def _build_stats_routing_elicitation_params(
                     "type": "string",
                     "title": "Comparison level",
                     "description": "Pick the area granularity used for comparison.",
-                    "enum": ["WARD", "LSOA", "MSOA"],
+                    "enum": list(STATS_COMPARISON_LEVELS),
                     "default": comparison_level_default,
                 },
                 "providerPreference": {
@@ -339,7 +340,7 @@ def _apply_stats_routing_elicitation_choices(
     level = content.get("comparisonLevel")
     if isinstance(level, str):
         level_norm = level.strip().upper()
-        if level_norm in {"WARD", "LSOA", "MSOA"}:
+        if level_norm in STATS_COMPARISON_LEVELS:
             payload["comparisonLevel"] = level_norm
     provider = content.get("providerPreference")
     if isinstance(provider, str):

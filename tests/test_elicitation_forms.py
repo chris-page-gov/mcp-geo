@@ -15,6 +15,8 @@ def test_normalize_geography_level_blank_and_aliases():
     assert forms.normalize_ons_select_geography_level(" ") is None
     assert forms.normalize_ons_select_geography_level("Local authority") == "local_authority"
     assert forms.normalize_ons_select_geography_level("local-authority") == "local_authority"
+    assert forms.normalize_ons_select_geography_level("PARNCP") == "parish"
+    assert forms.normalize_ons_select_geography_level("MSOA") == "msoa"
     assert forms.normalize_ons_select_geography_level("nation") == "nation"
     assert forms.normalize_ons_select_geography_level("weird") == "weird"
 
@@ -51,7 +53,16 @@ def test_build_ons_select_elicitation_params_defaults_and_message():
     props = schema.get("properties", {})
     assert props["geographyLevel"]["default"] == "local_authority"
     assert props["timeGranularity"]["default"] == "year"
-    assert props["geographyLevel"]["enum"] == ["nation", "region", "local_authority", "ward"]
+    assert props["geographyLevel"]["enum"] == [
+        "oa",
+        "lsoa",
+        "msoa",
+        "parish",
+        "ward",
+        "local_authority",
+        "region",
+        "nation",
+    ]
     assert props["timeGranularity"]["enum"] == ["latest", "year", "quarter", "month"]
     assert "oneOf" not in props["geographyLevel"]
     assert "oneOf" not in props["timeGranularity"]

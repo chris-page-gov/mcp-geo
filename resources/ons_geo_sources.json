@@ -24,6 +24,11 @@
           "oa_code",
           "lsoa_code",
           "msoa_code",
+          "msoa_name",
+          "msoa_name_welsh",
+          "parish_code",
+          "parish_name",
+          "parish_name_welsh",
           "ward_code",
           "country_code",
           "region_code"
@@ -35,6 +40,11 @@
           "oa_code": ["oa21cd", "oa11cd"],
           "lsoa_code": ["lsoa21cd", "lsoa11cd"],
           "msoa_code": ["msoa21cd", "msoa11cd"],
+          "msoa_name": ["msoa21nm", "msoa11nm"],
+          "msoa_name_welsh": ["msoa21nmw", "msoa21nw", "msoa11nmw", "msoa11nw"],
+          "parish_code": ["parncp25cd", "parncp24cd", "parncp23cd", "par25cd", "par24cd", "par23cd"],
+          "parish_name": ["parncp25nm", "parncp24nm", "parncp23nm", "par25nm", "par24nm", "par23nm"],
+          "parish_name_welsh": ["parncp25nw", "parncp24nw", "parncp23nw", "par25nw", "par24nw", "par23nw"],
           "ward_code": ["wd25cd", "wd24cd", "wd23cd"],
           "ward_name": ["wd25nm", "wd24nm", "wd23nm"],
           "country_code": ["ctry25cd", "ctry24cd", "ctry23cd"],
@@ -66,6 +76,11 @@
           "oa_code",
           "lsoa_code",
           "msoa_code",
+          "msoa_name",
+          "msoa_name_welsh",
+          "parish_code",
+          "parish_name",
+          "parish_name_welsh",
           "ward_code",
           "country_code",
           "region_code"
@@ -77,6 +92,11 @@
           "oa_code": ["oa21cd", "oa11cd"],
           "lsoa_code": ["lsoa21cd", "lsoa11cd"],
           "msoa_code": ["msoa21cd", "msoa11cd"],
+          "msoa_name": ["msoa21nm", "msoa11nm"],
+          "msoa_name_welsh": ["msoa21nmw", "msoa21nw", "msoa11nmw", "msoa11nw"],
+          "parish_code": ["parncp25cd", "parncp24cd", "parncp23cd", "par25cd", "par24cd", "par23cd"],
+          "parish_name": ["parncp25nm", "parncp24nm", "parncp23nm", "par25nm", "par24nm", "par23nm"],
+          "parish_name_welsh": ["parncp25nw", "parncp24nw", "parncp23nw", "par25nw", "par24nw", "par23nw"],
           "ward_code": ["wd25cd", "wd24cd", "wd23cd"],
           "ward_name": ["wd25nm", "wd24nm", "wd23nm"],
           "country_code": ["ctry25cd", "ctry24cd", "ctry23cd"],
@@ -111,6 +131,11 @@
           "oa_code",
           "lsoa_code",
           "msoa_code",
+          "msoa_name",
+          "msoa_name_welsh",
+          "parish_code",
+          "parish_name",
+          "parish_name_welsh",
           "ward_code",
           "country_code",
           "region_code",
@@ -124,6 +149,11 @@
           "oa_code": ["oa21cd", "oa11cd"],
           "lsoa_code": ["lsoa21cd", "lsoa11cd"],
           "msoa_code": ["msoa21cd", "msoa11cd"],
+          "msoa_name": ["msoa21nm", "msoa11nm"],
+          "msoa_name_welsh": ["msoa21nmw", "msoa21nw", "msoa11nmw", "msoa11nw"],
+          "parish_code": ["parncp25cd", "parncp24cd", "parncp23cd", "par25cd", "par24cd", "par23cd"],
+          "parish_name": ["parncp25nm", "parncp24nm", "parncp23nm", "par25nm", "par24nm", "par23nm"],
+          "parish_name_welsh": ["parncp25nw", "parncp24nw", "parncp23nw", "par25nw", "par24nw", "par23nw"],
           "ward_code": ["wd25cd", "wd24cd", "wd23cd"],
           "ward_name": ["wd25nm", "wd24nm", "wd23nm"],
           "country_code": ["ctry25cd", "ctry24cd", "ctry23cd"],
@@ -159,6 +189,11 @@
           "oa_code",
           "lsoa_code",
           "msoa_code",
+          "msoa_name",
+          "msoa_name_welsh",
+          "parish_code",
+          "parish_name",
+          "parish_name_welsh",
           "ward_code",
           "country_code",
           "region_code",
@@ -172,6 +207,11 @@
           "oa_code": ["oa21cd", "oa11cd"],
           "lsoa_code": ["lsoa21cd", "lsoa11cd"],
           "msoa_code": ["msoa21cd", "msoa11cd"],
+          "msoa_name": ["msoa21nm", "msoa11nm"],
+          "msoa_name_welsh": ["msoa21nmw", "msoa21nw", "msoa11nmw", "msoa11nw"],
+          "parish_code": ["parncp25cd", "parncp24cd", "parncp23cd", "par25cd", "par24cd", "par23cd"],
+          "parish_name": ["parncp25nm", "parncp24nm", "parncp23nm", "par25nm", "par24nm", "par23nm"],
+          "parish_name_welsh": ["parncp25nw", "parncp24nw", "parncp23nw", "par25nw", "par24nw", "par23nw"],
           "ward_code": ["wd25cd", "wd24cd", "wd23cd"],
           "ward_name": ["wd25nm", "wd24nm", "wd23nm"],
           "country_code": ["ctry25cd", "ctry24cd", "ctry23cd"],
@@ -243,6 +283,47 @@
         },
         "defaults": {
           "status": "current"
+        }
+      }
+    },
+    {
+      "id": "HOC_MSOA_NAMES_2021",
+      "title": "House of Commons Library MSOA Names 2021",
+      "priority": 30,
+      "release": "2.3",
+      "resolver": {
+        "type": "direct_url",
+        "landingUrl": "https://houseofcommonslibrary.github.io/msoanames/MSOA-Names-Latest2.csv",
+        "preferredSuffixes": [".csv"],
+        "linkPatterns": ["MSOA-Names-Latest2.csv"],
+        "releasePatterns": [
+          "version\\s+2\\.3",
+          "13\\s+February\\s+2026"
+        ]
+      },
+      "semanticFields": {
+        "required": ["msoa_code", "msoa_display_name"],
+        "optional": [
+          "msoa_name",
+          "msoa_name_welsh",
+          "msoa_display_name_welsh",
+          "local_authority_name",
+          "name_type"
+        ],
+        "aliases": {
+          "msoa_code": ["msoa21cd"],
+          "msoa_name": ["msoa21nm"],
+          "msoa_name_welsh": ["msoa21nmw"],
+          "msoa_display_name": ["msoa21hclnm"],
+          "msoa_display_name_welsh": ["msoa21hclnmw"],
+          "local_authority_name": ["localauthorityname"],
+          "name_type": ["type"]
+        },
+        "defaults": {
+          "source_version": "2.3",
+          "published_date": "2026-02-13",
+          "license": "Open Parliament Licence",
+          "source_url": "https://houseofcommonslibrary.github.io/msoanames/MSOA-Names-Latest2.csv"
         }
       }
     }

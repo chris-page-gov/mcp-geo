@@ -5,6 +5,18 @@ from enum import StrEnum
 from typing import Any
 
 from server import __version__ as SERVER_VERSION
+from server.geography_levels import (
+    ADMIN_LEVEL_MAP,
+    GEOGRAPHY_LEVELS,
+    LEVEL_KEYWORDS,
+    LEVEL_RANK,
+    NOMIS_LOCAL_LEVEL_KEYS,
+    STATS_COMPARISON_LEVELS,
+    area_summary_target_is_compatible,
+)
+from server.geography_levels import (
+    AREA_SUMMARY_LEVEL_RANK as AREA_PROFILE_LEVEL_RANK,
+)
 from server.mcp.resource_catalog import MCP_APPS_MIME, SKILLS_RESOURCE
 from server.mcp.tool_search import (
     apply_default_toolset_filters,
@@ -29,6 +41,7 @@ class QueryIntent(StrEnum):
     AREA_PROFILE = "area_profile"
     PROPERTY_TAX = "property_tax"
     POI_LOOKUP = "poi_lookup"
+    NAMED_PLACE_LOOKUP = "named_place_lookup"
     PLACE_LOOKUP = "place_lookup"
     STATISTICS = "statistics"
     AREA_COMPARISON = "area_comparison"
@@ -90,13 +103,13 @@ NOMIS_PATTERNS = [
 
 def _build_stats_routing_explanation(query_lower: str, level_mentions: list[str]) -> dict[str, Any]:
     matched = [pattern for pattern in NOMIS_PATTERNS if re.search(pattern, query_lower)]
-    matched_levels = [level for level in level_mentions if level in {"oa", "lsoa", "msoa"}]
+    matched_levels = [level for level in level_mentions if level in NOMIS_LOCAL_LEVEL_KEYS]
     nomis_preferred = bool(matched or matched_levels)
     reasons: list[str] = []
     if matched:
         reasons.append("Matched labour/census keyword(s).")
     if matched_levels:
-        reasons.append("Detected deep local geography (OA/LSOA/MSOA).")
+        reasons.append("Detected NOMIS-native local geography (OA/LSOA/MSOA).")
     if not reasons:
         reasons.append("Defaulted to ONS (no labour/census keywords or deep local geographies).")
     return {
@@ -238,6 +251,19 @@ LAT_LON_REGEX = re.compile(r"\b(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)\b")
 AREA_CODE_REGEX = re.compile(r"\b([EKNSW]\d{8})\b", re.IGNORECASE)
 RESOURCE_URI_REGEX = re.compile(r"(resource://[^\s\"'<>]+)", re.IGNORECASE)
 ROAD_NUMBER_REGEX = re.compile(r"\b([ABM]\d{1,4}[A-Z]?)\b", re.IGNORECASE)
+NAMED_PLACE_FEATURE_QUALIFIER_REGEX = re.compile(
+    r"^(?:the\s+)?(?:settlement|hamlet|village)s?\s+(?:(?:of|called|named)\s+)?",
+    re.IGNORECASE,
+)
+NAMED_PLACE_RELATION_REGEX = re.compile(r"^(?:of|called|named)\s+", re.IGNORECASE)
+NAMED_PLACE_SOURCE_PREFIX_REGEX = re.compile(
+    (
+        r"^(?:(?:please\s+)?(?:find|search|look\s+up|lookup|show|use)\s+(?:the\s+)?)?"
+        r"(?:(?:os\s+names?)(?:\s+gazetteer)?|gazetteer|named\s+(?:place|feature)s?)"
+        r"\s+(?:(?:for|of|called|named)\s+)?"
+    ),
+    re.IGNORECASE,
+)
 
 _PLACE_NAME_STOP_WORDS = {
     "a",
@@ -306,64 +332,11 @@ _PLACE_NAME_STOP_WORDS = {
     "workflow",
 }
 
-LEVEL_KEYWORDS = {
-    "oa": [r"\boa\b", r"\boutput areas?\b"],
-    "lsoa": [r"\blsoa\b", r"\blower (layer )?super output areas?\b"],
-    "msoa": [r"\bmsoa\b", r"\bmiddle (layer )?super output areas?\b"],
-    "ward": [r"\bwards?\b"],
-    "parl_const": [r"\bconstituenc(y|ies)\b", r"\bparliamentary\b", r"\bmp\b"],
-    "local_auth": [r"\blocal authority\b", r"\bcouncil\b", r"\bdistrict\b", r"\bborough\b"],
-    "built_up_area": [r"\bbuilt[- ]?up area\b", r"\bbua\b"],
-    "postcode": [r"\bpostcode\b"],
-}
-
-LEVEL_RANK = {
-    "oa": 0,
-    "lsoa": 1,
-    "msoa": 2,
-    "ward": 3,
-    "parl_const": 4,
-    "local_auth": 5,
-    "built_up_area": 6,
-    "postcode": 7,
-}
-
-AREA_PROFILE_LEVEL_RANK = {
-    "OA": 0,
-    "LSOA": 1,
-    "MSOA": 2,
-    "WARD": 3,
-    "DISTRICT": 4,
-    "REGION": 5,
-    "COUNTRY": 6,
-}
-
-ADMIN_LEVEL_MAP = {
-    "oa": "OA",
-    "lsoa": "LSOA",
-    "msoa": "MSOA",
-    "ward": "WARD",
-    "local_auth": "DISTRICT",
-    "parl_const": None,
-    "built_up_area": None,
-    "postcode": None,
-}
-
-AREA_PROFILE_LEVEL_PATTERNS = (
-    (r"\boa\b", "OA"),
-    (r"\boutput areas?\b", "OA"),
-    (r"\blsoa\b", "LSOA"),
-    (r"\blower (layer )?super output areas?\b", "LSOA"),
-    (r"\bmsoa\b", "MSOA"),
-    (r"\bmiddle (layer )?super output areas?\b", "MSOA"),
-    (r"\bwards?\b", "WARD"),
-    (r"\blocal authority\b", "DISTRICT"),
-    (r"\bdistricts?\b", "DISTRICT"),
-    (r"\bboroughs?\b", "DISTRICT"),
-    (r"\blad\b", "DISTRICT"),
-    (r"\bregions?\b", "REGION"),
-    (r"\bcountr(y|ies)\b", "COUNTRY"),
-    (r"\bnational\b", "COUNTRY"),
+AREA_PROFILE_LEVEL_PATTERNS = tuple(
+    (pattern, level.area_level)
+    for level in GEOGRAPHY_LEVELS
+    if level.area_summary and level.area_level
+    for pattern in level.keyword_patterns
 )
 
 FEATURE_COLLECTIONS = {
@@ -407,6 +380,7 @@ INTENT_TOOLSET_MAP: dict[QueryIntent, list[str]] = {
     QueryIntent.AREA_PROFILE: ["core_router", "ons_geo_lookup"],
     QueryIntent.PROPERTY_TAX: ["core_router", "property_tax"],
     QueryIntent.POI_LOOKUP: ["core_router", "places_names"],
+    QueryIntent.NAMED_PLACE_LOOKUP: ["core_router", "places_names"],
     QueryIntent.PLACE_LOOKUP: ["core_router", "admin_boundaries"],
     QueryIntent.STATISTICS: ["core_router", "ons_data"],
     QueryIntent.AREA_COMPARISON: ["core_router", "apps_ui", "ons_data"],
@@ -470,8 +444,10 @@ def _is_geography_lookup_query(query_lower: str) -> bool:
         r"\bexact\b.*\bmode\b",
         r"\bbest[- ]?fit\b",
         (
-            r"\bwhich\b.*\b(ward|lsoa|msoa|oa|local authority|district|borough|region|"
-            r"constituenc(y|ies))\b"
+            r"\bwhich\b.*\b("
+            r"ward|parish|parncp|lsoa|msoa|oa|local authority|district|borough|region|"
+            r"constituenc(y|ies)"
+            r")\b"
         ),
     ]
     return any(re.search(pattern, query_lower) for pattern in patterns)
@@ -581,6 +557,48 @@ def _looks_like_landis_survey_query(query_lower: str) -> bool:
             query_lower,
         )
     )
+
+
+def _looks_like_named_place_lookup_query(query_lower: str) -> bool:
+    if re.search(
+        (
+            r"\bgazetteer\b|\bos names?\b|\bnamed (place|feature)s?\b|"
+            r"\bsettlements?\b|\bhamlets?\b|\bvillages?\b"
+        ),
+        query_lower,
+    ):
+        return not re.search(
+            r"\bboundar(y|ies)\b|\badmin(istrative)?\b|\blocal authority\b|\bward\b|\bparish\b",
+            query_lower,
+        )
+    return False
+
+
+def _extract_named_place_text(query: str, place_name: str | None) -> str:
+    patterns = [
+        r"\b(?:gazetteer|os names?)\b.*?\b(?:for|named|called)\s+(.+)$",
+        r"\bnamed (?:place|feature)s?\b.*?\b(?:for|named|called)\s+(.+)$",
+        r"\b(?:settlement|hamlet|village)\b\s+(?:called|named)?\s*(.+)$",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, query, re.IGNORECASE)
+        if not match:
+            continue
+        candidate = _clean_named_place_candidate(match.group(1))
+        if candidate:
+            return candidate
+    stripped_query = _clean_named_place_candidate(query)
+    if stripped_query and stripped_query != query.strip():
+        return stripped_query
+    return place_name or query.strip()
+
+
+def _clean_named_place_candidate(candidate: str) -> str:
+    cleaned = candidate.strip(" .,:;\"'")
+    cleaned = NAMED_PLACE_SOURCE_PREFIX_REGEX.sub("", cleaned).strip(" .,:;\"'")
+    cleaned = NAMED_PLACE_FEATURE_QUALIFIER_REGEX.sub("", cleaned).strip(" .,:;\"'")
+    cleaned = NAMED_PLACE_RELATION_REGEX.sub("", cleaned).strip(" .,:;\"'")
+    return cleaned
 
 
 def _extract_place_name(query: str) -> str | None:
@@ -754,7 +772,7 @@ def _pick_admin_level(levels: list[str]) -> str | None:
     ordered = sorted(levels, key=lambda level: LEVEL_RANK.get(level, 99))
     for level in ordered:
         mapped = ADMIN_LEVEL_MAP.get(level)
-        if mapped:
+        if isinstance(mapped, str) and mapped:
             return mapped
     return None
 
@@ -762,7 +780,7 @@ def _pick_admin_level(levels: list[str]) -> str | None:
 def _should_route_nomis(query_lower: str, level_mentions: list[str]) -> bool:
     if any(re.search(pattern, query_lower) for pattern in NOMIS_PATTERNS):
         return True
-    if any(level in {"oa", "lsoa", "msoa"} for level in level_mentions):
+    if any(level in NOMIS_LOCAL_LEVEL_KEYS for level in level_mentions):
         return True
     return False
 
@@ -784,13 +802,16 @@ def _looks_like_area_profile_query(query: str, query_lower: str, level_mentions:
     if _extract_postcode(query) or _extract_uprn(query):
         return True
     if re.search(
-        r"\bthat (oa|lsoa|msoa|ward|district|local authority|region|country)\b",
+        r"\bthat (oa|lsoa|msoa|parish|ward|district|local authority|region|country)\b",
         query_lower,
     ):
         return True
     if re.search(r"\b(postcode area|area around postcode|this postcode area)\b", query_lower):
         return True
-    return any(level in {"oa", "lsoa", "msoa", "ward", "local_auth"} for level in level_mentions)
+    return any(
+        level in {"oa", "lsoa", "msoa", "parish", "ward", "local_auth"}
+        for level in level_mentions
+    )
 
 
 def _requested_area_profile_level(query_lower: str, level_mentions: list[str]) -> str | None:
@@ -803,17 +824,13 @@ def _requested_area_profile_level(query_lower: str, level_mentions: list[str]) -
         return matches[-1][1]
     for level in sorted(level_mentions, key=lambda item: LEVEL_RANK.get(item, 99)):
         mapped = ADMIN_LEVEL_MAP.get(level)
-        if mapped in AREA_PROFILE_LEVEL_RANK:
+        if isinstance(mapped, str) and mapped in AREA_PROFILE_LEVEL_RANK:
             return mapped
     return None
 
 
 def _area_profile_target_is_compatible(anchor_level: str, target_level: str) -> bool:
-    anchor_rank = AREA_PROFILE_LEVEL_RANK.get(anchor_level)
-    target_rank = AREA_PROFILE_LEVEL_RANK.get(target_level)
-    if anchor_rank is None or target_rank is None:
-        return False
-    return target_rank >= anchor_rank
+    return bool(area_summary_target_is_compatible(anchor_level, target_level))
 
 
 def _build_area_profile_params(
@@ -883,7 +900,7 @@ def _build_interactive_params(query: str, place_name: str | None) -> dict[str, A
     if focus_level == selection_level:
         focus_level = None
 
-    if selection_level in {"oa", "lsoa", "msoa", "ward"} and not focus_level:
+    if selection_level in {"oa", "lsoa", "msoa", "parish", "ward"} and not focus_level:
         focus_level = "local_auth"
 
     if place_name:
@@ -1044,6 +1061,15 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
         text_match = re.search(r"\bfor\s+(.+)$", query, re.IGNORECASE)
         poi_text = text_match.group(1).strip() if text_match else query
         return QueryIntent.POI_LOOKUP, 0.88, {"text": poi_text}, context
+
+    if _looks_like_named_place_lookup_query(query_lower) and not looks_like_route_query(query):
+        context["place_mode"] = "os_names"
+        return (
+            QueryIntent.NAMED_PLACE_LOOKUP,
+            0.9,
+            {"text": _extract_named_place_text(query, place_name)},
+            context,
+        )
 
     if any(re.search(pattern, query_lower) for pattern in DATASET_PATTERNS):
         if "nomis" in query_lower:
@@ -1502,7 +1528,7 @@ def _get_tool_for_intent(
         if follow_up:
             explanation = (
                 "Use ons_geo.area_summary for the follow-up area profile. If the host keeps "
-                "prior tool context, reuse the previously returned OA/LSOA/MSOA code; "
+                "prior tool context, reuse the previously returned OA/LSOA/MSOA/parish code; "
                 "otherwise pass that code, postcode, or UPRN explicitly."
             )
         return (
@@ -1522,6 +1548,12 @@ def _get_tool_for_intent(
             "os_poi.search",
             ["os_poi.search", "os_poi.nearest", "os_poi.within"],
             "Search OS Points of Interest for amenities and nearby services.",
+        )
+    if intent == QueryIntent.NAMED_PLACE_LOOKUP:
+        return (
+            "os_names.find",
+            ["os_names.find", "os_names.nearest"],
+            "Search the OS Names gazetteer for named places and features.",
         )
     if intent == QueryIntent.LINKED_IDS:
         linked_mode = str(context.get("linked_mode") or "")
@@ -1847,6 +1879,11 @@ def _get_alternative_tools(intent: QueryIntent) -> list[str]:
             "os_places.search",
         ],
         QueryIntent.POI_LOOKUP: ["os_poi.nearest", "os_poi.within", "os_places.search"],
+        QueryIntent.NAMED_PLACE_LOOKUP: [
+            "os_names.nearest",
+            "admin_lookup.find_by_name",
+            "os_places.search",
+        ],
         QueryIntent.LINKED_IDS: [
             "os_linked_ids.identifiers",
             "os_linked_ids.feature_types",
@@ -1896,7 +1933,7 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
             "(NSPL/NSUL) derivation modes."
         ),
         QueryIntent.AREA_PROFILE: (
-            "Use ons_geo.area_summary for compact OA/LSOA/MSOA/ward summaries and "
+            "Use ons_geo.area_summary for compact OA/LSOA/MSOA/parish/ward summaries and "
             "follow-up prompts such as 'that OA'. Prefer its compact inventory/profile "
             "surface over raw os_map.inventory calls when the user only wants a narrative summary. "
             "Workflow guidance is available via os_resources.get or resources/read at "
@@ -1912,6 +1949,11 @@ def _get_guidance_for_intent(intent: QueryIntent) -> str:
         QueryIntent.POI_LOOKUP: (
             "Use os_poi.search/nearest/within for amenities and points of interest. "
             "Use nearest for a point lookup and within for bbox-constrained queries."
+        ),
+        QueryIntent.NAMED_PLACE_LOOKUP: (
+            "Use os_names.find for gazetteer and named-feature lookup. Use "
+            "admin_lookup.find_by_name instead when the user asks for administrative "
+            "areas, boundaries, hierarchy, or geometry."
         ),
         QueryIntent.LINKED_IDS: (
             "Use os_linked_ids.get for identifier type lookups, "
@@ -2383,11 +2425,12 @@ def _stats_routing(payload: dict[str, Any]) -> ToolResult:
                 "message": "comparisonLevel must be a string",
             }
         comparison_level = comparison_level.strip().upper()
-        if comparison_level not in {"WARD", "LSOA", "MSOA"}:
+        if comparison_level not in STATS_COMPARISON_LEVELS:
+            supported_levels = ", ".join(STATS_COMPARISON_LEVELS)
             return 400, {
                 "isError": True,
                 "code": "INVALID_INPUT",
-                "message": "comparisonLevel must be one of WARD, LSOA, MSOA",
+                "message": f"comparisonLevel must be one of {supported_levels}",
             }
     provider_preference = payload.get("providerPreference", "AUTO")
     if not isinstance(provider_preference, str):
@@ -2447,6 +2490,11 @@ def _stats_routing(payload: dict[str, Any]) -> ToolResult:
         notes.append(
             "If dataset discovery is needed, call nomis.datasets with q and limit "
             "(for example q='employment', limit=10)."
+        )
+    if comparison_level == "PARISH":
+        notes.append(
+            "For parish/PARNCP comparisons, resolve parish codes or geometry first; "
+            "use NOMIS only where the chosen dataset exposes parish/community geography."
         )
     return 200, {
         "query": query,
@@ -2548,7 +2596,7 @@ register(
             "properties": {
                 "tool": {"type": "string", "const": "os_mcp.stats_routing"},
                 "query": {"type": "string"},
-                "comparisonLevel": {"type": "string", "enum": ["WARD", "LSOA", "MSOA"]},
+                "comparisonLevel": {"type": "string", "enum": list(STATS_COMPARISON_LEVELS)},
                 "providerPreference": {"type": "string", "enum": ["AUTO", "NOMIS", "ONS"]},
             },
             "required": ["query"],

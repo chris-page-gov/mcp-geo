@@ -19,6 +19,13 @@ def test_os_apps_render_geography_selector(monkeypatch):
     assert body["uiResourceUris"] == ["ui://mcp-geo/geography-selector"]
     assert body["status"] == "ready"
     assert body["config"]["level"] == "ward"
+    levels = body["config"]["supportedLevels"]
+    assert any(level["value"] == "parish" and level["mapFocusLevel"] == "PARISH" for level in levels)
+    assert any(level["value"] == "country" and level["mapFocusLevel"] == "NATION" for level in levels)
+    assert any(
+        level["value"] == "msoa" and "displayName" in level.get("displayNamePolicy", "")
+        for level in levels
+    )
     assert body["resourceUri"] == "ui://mcp-geo/geography-selector"
     assert body["_meta"]["ui"]["resourceUri"] == "ui://mcp-geo/geography-selector"
     assert body["_meta"]["uiResourceUris"] == ["ui://mcp-geo/geography-selector"]
@@ -29,6 +36,41 @@ def test_os_apps_render_geography_selector(monkeypatch):
     ]
     assert resource_links
     assert resource_links[0]["uri"] == "ui://mcp-geo/geography-selector"
+
+
+def test_os_apps_render_geography_selector_normalizes_level_aliases(monkeypatch):
+    monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "text", raising=False)
+
+    cases = [
+        ("DISTRICT", "local_auth"),
+        ("local_authority", "local_auth"),
+        ("LAD", "local_auth"),
+        ("PARNCP", "parish"),
+        ("NATION", "country"),
+    ]
+    for raw_level, expected_level in cases:
+        resp = client.post(
+            "/tools/call",
+            json={"tool": "os_apps.render_geography_selector", "level": raw_level},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["config"]["level"] == expected_level
+
+
+def test_os_apps_render_geography_selector_normalizes_focus_level_alias(monkeypatch):
+    monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "text", raising=False)
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_apps.render_geography_selector",
+            "level": "ward",
+            "focusLevel": "local_authority",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["config"]["level"] == "ward"
+    assert body["config"]["focusLevel"] == "DISTRICT"
 
 
 def test_os_apps_render_geography_selector_embedded(monkeypatch):
@@ -52,6 +94,9 @@ def test_os_apps_render_geography_selector_embedded(monkeypatch):
     html = resource.get("text", "")
     assert "extractToolPayload" in html
     assert "result.data" in html
+    assert 'value="parish"' in html
+    assert 'mapFocusLevel: "PARISH"' in html
+    assert 'mapFocusLevel: "NATION"' in html
 
 
 def test_os_apps_render_geography_selector_text_only_override(monkeypatch):
@@ -123,6 +168,22 @@ def test_os_apps_render_boundary_explorer(monkeypatch):
     assert "basemap-veil-layer" in html
     assert "normalizeBbox" in html
     assert "result.data" in html
+
+
+def test_os_apps_render_boundary_explorer_normalizes_admin_level_aliases(monkeypatch):
+    monkeypatch.setattr(settings, "MCP_APPS_CONTENT_MODE", "text", raising=False)
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_apps.render_boundary_explorer",
+            "level": "local_authority",
+            "focusLevel": "local_auth",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["config"]["level"] == "DISTRICT"
+    assert body["config"]["focusLevel"] == "DISTRICT"
 
 
 def test_os_apps_render_route_planner_supports_benchmark_payload(monkeypatch):

@@ -142,9 +142,10 @@ def prefer_usable_bash(monkeypatch):
 
     shim_dir = Path(tempfile.mkdtemp(prefix="pytest-bash-shims-"))
     python3_shim = shim_dir / "python3"
+    python_executable = sys.executable.replace("\\", "/")
     python3_shim.write_text(
         "#!/usr/bin/env bash\n"
-        f'exec "{sys.executable.replace("\\", "/")}" "$@"\n',
+        f'exec "{python_executable}" "$@"\n',
         encoding="utf-8",
     )
     python3_shim.chmod(0o755)

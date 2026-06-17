@@ -4,17 +4,13 @@ import re
 from typing import Any
 
 from server.config import settings
+from server.geography_levels import NOMIS_GEOGRAPHY_TYPE_MATCHERS, infer_area_level_from_code
 from tools.nomis_common import client as nomis_client
 from tools.registry import Tool, ToolResult, register
 from tools.typing_utils import is_strict_int
 
 _DATASET_ID_PATTERN = re.compile(r"^[A-Z0-9]+(?:_[A-Z0-9]+)+$", re.IGNORECASE)
 _GSS_CODE_PATTERN = re.compile(r"^[EWNS]\d{8}$", re.IGNORECASE)
-_CENSUS_GSS_PREFIXES_OA = ("E00", "W00")
-_CENSUS_GSS_PREFIXES_LSOA = ("E01", "W01")
-_CENSUS_GSS_PREFIXES_MSOA = ("E02", "W02")
-_CENSUS_GSS_PREFIXES_WARD = ("E05", "W05")
-_CENSUS_GSS_PREFIXES_DISTRICT = ("E06", "E07", "E08", "E09", "W06")
 _SEARCH_TOKEN_PATTERN = re.compile(r"[a-z0-9]+")
 _MULTI_TERM_SYNONYMS: dict[str, tuple[str, ...]] = {
     "population": ("resident", "census", "demography"),
@@ -29,13 +25,7 @@ _NOMIS_TRANSIENT_CODES = {
     "UPSTREAM_INVALID_RESPONSE",
     "CIRCUIT_OPEN",
 }
-_GEOGRAPHY_LEVEL_TYPE_MATCHERS: dict[str, tuple[str, ...]] = {
-    "OA": ("output area",),
-    "LSOA": ("lower layer", "lsoa"),
-    "MSOA": ("middle layer", "msoa"),
-    "WARD": ("ward",),
-    "DISTRICT": ("local authorit", "district"),
-}
+_GEOGRAPHY_LEVEL_TYPE_MATCHERS = NOMIS_GEOGRAPHY_TYPE_MATCHERS
 _PROFILE_CATEGORY_ALIASES = {
     "population": "population",
     "resident_population": "population",
@@ -683,20 +673,16 @@ def _annotation_value(code: dict[str, Any], title: str) -> str | None:
 
 
 def _resolve_gss_geography_level(gss_codes: list[str]) -> str | None:
-    prefixes = {code.upper()[:3] for code in gss_codes if code}
-    if not prefixes:
+    levels: set[str] = set()
+    for code in gss_codes:
+        if not code:
+            continue
+        level = infer_area_level_from_code(code)
+        if level is not None:
+            levels.add(level)
+    if len(levels) != 1:
         return None
-    if prefixes.issubset(_CENSUS_GSS_PREFIXES_WARD):
-        return "WARD"
-    if prefixes.issubset(_CENSUS_GSS_PREFIXES_OA):
-        return "OA"
-    if prefixes.issubset(_CENSUS_GSS_PREFIXES_LSOA):
-        return "LSOA"
-    if prefixes.issubset(_CENSUS_GSS_PREFIXES_MSOA):
-        return "MSOA"
-    if prefixes.issubset(_CENSUS_GSS_PREFIXES_DISTRICT):
-        return "DISTRICT"
-    return None
+    return next(iter(levels))
 
 
 def _dataset_geography_types(

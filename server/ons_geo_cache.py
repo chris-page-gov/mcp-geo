@@ -8,38 +8,17 @@ from pathlib import Path
 from typing import Any
 
 from server.config import settings
+from server.geography_levels import (
+    AREA_LEVEL_COLUMN_MAP,
+    infer_area_level_from_code as _infer_area_level_from_code,
+    normalize_area_level,
+)
 
 KEY_TYPES = {"postcode", "uprn"}
 DERIVATION_MODES = {"exact", "best_fit"}
 POSTCODE_REGEX = re.compile(r"^[A-Z]{1,2}[0-9][0-9A-Z]?[0-9][A-Z]{2}$")
 
-_GEOGRAPHY_SUFFIX_RE = re.compile(r"^(?P<stem>[A-Za-z0-9_]+?)(?P<suffix>CD|NM)$")
-_AREA_LEVEL_ALIASES = {
-    "OA": "OA",
-    "OUTPUT_AREA": "OA",
-    "LSOA": "LSOA",
-    "MSOA": "MSOA",
-    "WARD": "WARD",
-    "WD": "WARD",
-    "DISTRICT": "DISTRICT",
-    "LAD": "DISTRICT",
-    "LOCAL_AUTHORITY": "DISTRICT",
-    "LOCAL_AUTHORITY_DISTRICT": "DISTRICT",
-    "COUNTRY": "COUNTRY",
-    "CTRY": "COUNTRY",
-    "NATION": "COUNTRY",
-    "REGION": "REGION",
-    "RGN": "REGION",
-}
-AREA_LEVEL_COLUMN_MAP = {
-    "OA": "oa_code",
-    "LSOA": "lsoa_code",
-    "MSOA": "msoa_code",
-    "WARD": "ward_code",
-    "DISTRICT": "lad_code",
-    "COUNTRY": "country_code",
-    "REGION": "region_code",
-}
+_GEOGRAPHY_SUFFIX_RE = re.compile(r"^(?P<stem>[A-Za-z0-9_]+?)(?P<suffix>CD|NM|NMW|NW)$")
 
 
 def _resolve_path(raw: str | None, default: str) -> Path:
@@ -78,28 +57,8 @@ def normalize_derivation_mode(value: str) -> str | None:
     return mode if mode in DERIVATION_MODES else None
 
 
-def normalize_area_level(value: str) -> str | None:
-    raw = value.strip().upper().replace(" ", "_").replace("-", "_")
-    return _AREA_LEVEL_ALIASES.get(raw)
-
-
 def infer_area_level_from_code(value: str) -> str | None:
-    code = value.strip().upper()
-    if re.fullmatch(r"[EW]00\d{6}", code):
-        return "OA"
-    if re.fullmatch(r"[EW]01\d{6}", code):
-        return "LSOA"
-    if re.fullmatch(r"[EW]02\d{6}", code):
-        return "MSOA"
-    if re.fullmatch(r"[EW]05\d{6}", code):
-        return "WARD"
-    if re.fullmatch(r"(E06|E07|E08|E09|W06)\d{6}", code):
-        return "DISTRICT"
-    if re.fullmatch(r"[EW]12\d{6}", code):
-        return "REGION"
-    if re.fullmatch(r"[EWNS]92\d{6}", code):
-        return "COUNTRY"
-    return None
+    return _infer_area_level_from_code(value)
 
 
 def _table_columns(conn: sqlite3.Connection, table_name: str) -> set[str]:
@@ -169,6 +128,9 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
             oa_code TEXT,
             lsoa_code TEXT,
             msoa_code TEXT,
+            parish_code TEXT,
+            parish_name TEXT,
+            parish_name_welsh TEXT,
             lad_code TEXT,
             lad_name TEXT,
             ward_code TEXT,
@@ -201,6 +163,27 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
 
         CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_lad
         ON ons_geo_uprn_index (derivation_mode, lad_code);
+
+        CREATE TABLE IF NOT EXISTS ons_geo_msoa_display_names (
+            dataset_id TEXT NOT NULL,
+            msoa_code TEXT NOT NULL,
+            official_name TEXT,
+            official_name_welsh TEXT,
+            display_name TEXT NOT NULL,
+            display_name_welsh TEXT,
+            local_authority_name TEXT,
+            name_type TEXT,
+            source_version TEXT,
+            published_date TEXT,
+            license TEXT,
+            source_url TEXT,
+            record_json TEXT NOT NULL,
+            ingested_at TEXT NOT NULL,
+            PRIMARY KEY (dataset_id, msoa_code)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_ons_geo_msoa_display_names_code
+        ON ons_geo_msoa_display_names (msoa_code);
 
         CREATE TABLE IF NOT EXISTS ons_geo_code_reference (
             dataset_id TEXT NOT NULL,
@@ -246,6 +229,9 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
         {
             "ward_code": "TEXT",
             "ward_name": "TEXT",
+            "parish_code": "TEXT",
+            "parish_name": "TEXT",
+            "parish_name_welsh": "TEXT",
             "country_code": "TEXT",
             "country_name": "TEXT",
             "region_code": "TEXT",
@@ -257,6 +243,9 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
         """
         CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_ward
         ON ons_geo_uprn_index (derivation_mode, ward_code);
+
+        CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_parish
+        ON ons_geo_uprn_index (derivation_mode, parish_code);
 
         CREATE INDEX IF NOT EXISTS idx_ons_geo_uprn_by_mode_country
         ON ons_geo_uprn_index (derivation_mode, country_code);
@@ -323,6 +312,22 @@ class ONSGeoCache:
     def available(self) -> bool:
         return self.db_path.exists() and self.db_path.is_file()
 
+    def connect(self, *, row_factory: bool = False) -> sqlite3.Connection:
+        """Open the cache and apply additive schema migrations before reads."""
+        conn: sqlite3.Connection | None = None
+        try:
+            conn = sqlite3.connect(str(self.db_path))
+            if row_factory:
+                conn.row_factory = sqlite3.Row
+            ensure_schema(conn)
+            return conn
+        except sqlite3.Error as exc:
+            if conn is not None:
+                conn.close()
+            raise ONSGeoCacheReadError(
+                f"Failed to prepare cache database at {self.db_path}: {exc}"
+            ) from exc
+
     def load_index(self) -> dict[str, Any]:
         try:
             payload = json.loads(self.index_path.read_text(encoding="utf-8"))
@@ -345,8 +350,7 @@ class ONSGeoCache:
 
         conn: sqlite3.Connection | None = None
         try:
-            conn = sqlite3.connect(str(self.db_path))
-            conn.row_factory = sqlite3.Row
+            conn = self.connect(row_factory=True)
             row = conn.execute(
                 """
                 SELECT
@@ -424,7 +428,7 @@ class ONSGeoCache:
 
         conn: sqlite3.Connection | None = None
         try:
-            conn = sqlite3.connect(str(self.db_path))
+            conn = self.connect()
             row = conn.execute(
                 f"""
                 SELECT
@@ -492,6 +496,8 @@ def extract_geography_fields(row: dict[str, Any]) -> dict[str, dict[str, str]]:
         entry = geographies.setdefault(stem, {})
         if suffix == "CD":
             entry["code"] = text_value
-        else:
+        elif suffix == "NM":
             entry["name"] = text_value
+        else:
+            entry["nameWelsh"] = text_value
     return geographies

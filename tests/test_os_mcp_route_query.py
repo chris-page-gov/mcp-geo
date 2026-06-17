@@ -25,6 +25,47 @@ def test_route_query_place_lookup():
     assert body["recommended_parameters"]["text"] == "Westminster"
 
 
+def test_route_query_gazetteer_lookup_routes_to_os_names():
+    body = _route("Search the OS Names gazetteer for Leamington Spa")
+    assert body["intent"] == "named_place_lookup"
+    assert body["recommended_tool"] == "os_names.find"
+    assert body["recommended_parameters"]["text"] == "Leamington Spa"
+    assert body["workflow_steps"] == ["os_names.find", "os_names.nearest"]
+
+
+def test_route_query_named_place_lookup_routes_to_os_names():
+    body = _route("Find named place settlement Harold Wood")
+    assert body["intent"] == "named_place_lookup"
+    assert body["recommended_tool"] == "os_names.find"
+    assert body["recommended_parameters"]["text"] == "Harold Wood"
+
+
+def test_route_query_named_place_feature_type_strips_prompt_wording():
+    cases = [
+        ("Find the village of Barston", "Barston"),
+        ("OS Names for village of Barston", "Barston"),
+        ("Search the gazetteer for settlement called Harold Wood", "Harold Wood"),
+        ("Find named place hamlet of Shrewley", "Shrewley"),
+        ("OS Names Barston", "Barston"),
+        ("Gazetteer Barston", "Barston"),
+        ("Find OS Names village of Barston", "Barston"),
+        ("Search the gazetteer settlement Harold Wood", "Harold Wood"),
+        ("Named place called Leamington Spa", "Leamington Spa"),
+    ]
+
+    for query, expected_text in cases:
+        body = _route(query)
+        assert body["intent"] == "named_place_lookup"
+        assert body["recommended_tool"] == "os_names.find"
+        assert body["recommended_parameters"]["text"] == expected_text
+
+
+def test_route_query_admin_boundary_wording_stays_on_admin_lookup():
+    body = _route("Find Westminster boundary")
+    assert body["intent"] == "boundary_fetch"
+    assert body["recommended_tool"] == "admin_lookup.area_geometry"
+
+
 def test_route_query_harold_wood_prompt_ignores_question_openers():
     body = _route("What can MCP-Geo tell me about Harold Wood, Essex?")
     assert body["intent"] == "place_lookup"
@@ -93,6 +134,39 @@ def test_route_query_area_profile_from_area_code_preserves_explicit_higher_level
     assert body["recommended_tool"] == "ons_geo.area_summary"
     assert body["recommended_parameters"]["id"] == "E01009617"
     assert body["recommended_parameters"]["targetLevel"] == "REGION"
+
+
+def test_route_query_area_profile_rejects_cross_cutting_parish_target():
+    body = _route("Quick profile for MSOA E02000001 at parish level")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "os_mcp.descriptor"
+    assert body["recommended_parameters"] == {}
+    assert body["workflow_profile_uri"] == "resource://mcp-geo/area-summary-workflows"
+    assert "cannot be narrowed" in body["guidance"]
+    assert "E02000001" in body["guidance"]
+
+
+def test_route_query_area_profile_from_parish_code():
+    body = _route("Quick profile for parish E04000001")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "ons_geo.area_summary"
+    assert body["recommended_parameters"]["id"] == "E04000001"
+    assert body["recommended_parameters"]["targetLevel"] == "PARISH"
+
+
+def test_route_query_area_profile_from_non_civil_parished_code():
+    body = _route("Quick profile for parish E43000246")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "ons_geo.area_summary"
+    assert body["recommended_parameters"]["id"] == "E43000246"
+    assert body["recommended_parameters"]["targetLevel"] == "PARISH"
+
+
+def test_route_query_area_profile_follow_up_parish_phrase():
+    body = _route("What do you know about that parish?")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "ons_geo.area_summary"
+    assert body["recommended_parameters"]["targetLevel"] == "PARISH"
 
 
 def test_route_query_area_profile_from_area_code_rejects_narrower_target_level():
@@ -235,6 +309,16 @@ def test_route_query_interactive_selection():
     assert params.get("focusName") == "Coventry West"
 
 
+def test_route_query_interactive_selection_parish_uses_supported_selector_level():
+    body = _route("Open a map so I can select parishes around Warwick")
+    assert body["intent"] == "interactive_selection"
+    assert body["recommended_tool"] == "os_apps.render_geography_selector"
+    params = body["recommended_parameters"]
+    assert params["level"] == "parish"
+    assert params.get("focusName") == "Warwick"
+    assert params.get("focusLevel") == "local_auth"
+
+
 def test_route_query_boundary_explorer_for_layer_inventory():
     body = _route("Show me buildings and road links within Westminster ward")
     assert body["intent"] == "interactive_selection"
@@ -345,6 +429,18 @@ def test_route_query_sg03_style_prompt_prefers_os_route_tool():
     assert params["stops"][1]["query"].startswith("Goodwin Hall")
     assert body["workflow_steps"][:2] == ["os_route.get", "os_apps.render_route_planner"]
     assert body["interactive_companion_tool"] == "os_apps.render_route_planner"
+
+
+def test_route_query_village_route_stays_on_route_planning():
+    route_queries = [
+        "Plan a walking route from the village of Barston to Hampton in Arden",
+        "Give me cycling directions from the settlement of Barston to the hamlet of Shrewley",
+    ]
+
+    for query in route_queries:
+        body = _route(query)
+        assert body["intent"] == "route_planning"
+        assert body["recommended_tool"] == "os_route.get"
 
 
 def test_route_query_without_if_possible_preserves_hard_avoid():
@@ -636,6 +732,28 @@ def test_stats_routing_respects_provider_preference_and_level():
     assert "level=LSOA" in admin_step.get("note", "")
 
 
+def test_stats_routing_accepts_parish_comparison_level():
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.stats_routing",
+            "query": "Compare population between Warwick and Leamington Spa",
+            "providerPreference": "ONS",
+            "comparisonLevel": "PARISH",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["userSelections"]["comparisonLevel"] == "PARISH"
+    admin_step = next(
+        step
+        for step in body.get("nextSteps", [])
+        if isinstance(step, dict) and step.get("tool") == "admin_lookup.find_by_name"
+    )
+    assert "level=PARISH" in admin_step.get("note", "")
+    assert any("dataset exposes parish/community geography" in note for note in body["notes"])
+
+
 def test_stats_routing_rejects_invalid_provider_preference():
     resp = client.post(
         "/tools/call",
@@ -696,6 +814,25 @@ def test_select_toolsets_poi_query_infers_places_names():
     assert "admin_boundaries" not in include
     matched = body.get("matchedTools", [])
     assert "os_poi.search" in matched
+
+
+def test_select_toolsets_named_place_query_infers_places_names_only():
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "os_mcp.select_toolsets",
+            "query": "Search the gazetteer for Leamington Spa",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    inference = body.get("inference", {})
+    assert inference.get("intent") == "named_place_lookup"
+    include = body.get("effectiveFilters", {}).get("includeToolsets", [])
+    assert "places_names" in include
+    assert "admin_boundaries" not in include
+    matched = body.get("matchedTools", [])
+    assert "os_names.find" in matched
 
 
 def test_select_toolsets_property_tax_band_query_infers_property_tax_and_places():

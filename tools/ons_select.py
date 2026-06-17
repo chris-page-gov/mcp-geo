@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from server.config import settings
+from server.geography_levels import normalize_ons_select_geography_level
 from tools.ons_common import ONSClient
 from tools.registry import Tool, ToolResult, register
 from tools.typing_utils import is_strict_int
@@ -30,20 +31,6 @@ _DEFAULT_LIMIT = 5
 _MAX_LIMIT = 25
 _DEFAULT_RELATED_LIMIT = 5
 _MAX_RELATED_LIMIT = 10
-
-_GEO_LEVEL_ALIASES: dict[str, str] = {
-    "oa": "oa",
-    "output_area": "oa",
-    "lsoa": "lsoa",
-    "msoa": "msoa",
-    "ward": "ward",
-    "local_authority": "local_authority",
-    "lad": "local_authority",
-    "region": "region",
-    "nation": "nation",
-    "country": "nation",
-    "uk": "nation",
-}
 
 _TIME_ALIASES: dict[str, str] = {
     "month": "month",
@@ -123,7 +110,8 @@ def _extract_time_granularity(entry: dict[str, Any]) -> str | None:
 
 
 def _normalize_geo_level(value: str) -> str:
-    return _GEO_LEVEL_ALIASES.get(value.strip().lower(), value.strip().lower())
+    normalized = normalize_ons_select_geography_level(value)
+    return normalized if normalized is not None else value.strip().lower()
 
 
 def _normalize_time_granularity(value: str) -> str:
@@ -518,12 +506,7 @@ def _score_entry(
     if token_hits:
         reasons.append(f"Matched {token_hits} query tokens")
 
-    geo_levels = []
-    geo = entry.get("geography")
-    if isinstance(geo, dict):
-        levels = geo.get("levels")
-        if isinstance(levels, list):
-            geo_levels = [str(x).lower() for x in levels if isinstance(x, str)]
+    geo_levels = _extract_geo_levels_normalized(entry)
     if geography_level:
         geo_norm = geography_level.strip().lower()
         if geo_levels:
@@ -720,6 +703,8 @@ def _search(payload: dict[str, Any]) -> ToolResult:
             "code": "INVALID_INPUT",
             "message": "geographyLevel must be a string",
         }
+    if isinstance(geography_level, str):
+        geography_level = _normalize_geo_level(geography_level)
     time_granularity = payload.get("timeGranularity")
     if time_granularity is not None and not isinstance(time_granularity, str):
         return 400, {
@@ -727,6 +712,8 @@ def _search(payload: dict[str, Any]) -> ToolResult:
             "code": "INVALID_INPUT",
             "message": "timeGranularity must be a string",
         }
+    if isinstance(time_granularity, str):
+        time_granularity = _normalize_time_granularity(time_granularity)
     intent_tags = payload.get("intentTags")
     if intent_tags is not None and not isinstance(intent_tags, list):
         return 400, {
