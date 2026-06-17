@@ -1094,7 +1094,7 @@ def _classify_query(query: str) -> tuple[QueryIntent, float, dict[str, Any], dic
         poi_text = text_match.group(1).strip() if text_match else query
         return QueryIntent.POI_LOOKUP, 0.88, {"text": poi_text}, context
 
-    if _looks_like_named_place_lookup_query(query_lower):
+    if _looks_like_named_place_lookup_query(query_lower) and not looks_like_route_query(query):
         context["place_mode"] = "os_names"
         return (
             QueryIntent.NAMED_PLACE_LOOKUP,

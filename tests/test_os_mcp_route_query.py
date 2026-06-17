@@ -391,6 +391,18 @@ def test_route_query_sg03_style_prompt_prefers_os_route_tool():
     assert body["interactive_companion_tool"] == "os_apps.render_route_planner"
 
 
+def test_route_query_village_route_stays_on_route_planning():
+    route_queries = [
+        "Plan a walking route from the village of Barston to Hampton in Arden",
+        "Give me cycling directions from the settlement of Barston to the hamlet of Shrewley",
+    ]
+
+    for query in route_queries:
+        body = _route(query)
+        assert body["intent"] == "route_planning"
+        assert body["recommended_tool"] == "os_route.get"
+
+
 def test_route_query_without_if_possible_preserves_hard_avoid():
     body = _route(
         "What is the best emergency route from Retford Library, 17 Churchgate, Retford, DN22 6PE "
