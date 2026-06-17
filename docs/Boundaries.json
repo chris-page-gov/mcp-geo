@@ -604,7 +604,7 @@
         ]
       },
       "validation_overrides": {
-        "code_column_regex": "^PAR\\d{2}CD$|^PARNCP\\d{2}CD$|^E04\\d{6}$|^W04\\d{6}$",
+        "code_column_regex": "^PAR\\d{2}CD$|^PARNCP\\d{2}CD$|^E04\\d{6}$|^E43\\d{6}$|^W04\\d{6}$",
         "name_column_regex": "^PAR\\d{2}NM$|^PARNCP\\d{2}NM$|.*NM$|.*NAME$"
       }
     },

@@ -18,6 +18,19 @@ except ImportError:  # pragma: no cover - optional dependency fallback
     sql = None  # type: ignore[assignment]
     dict_row = None  # type: ignore[assignment]
 
+_MATCH_TYPES = {"contains", "starts_with", "exact"}
+_SEARCH_PRIORITY_LEVELS = (
+    "WARD",
+    "PARISH",
+    "DISTRICT",
+    "COUNTY",
+    "REGION",
+    "NATION",
+    "MSOA",
+    "LSOA",
+    "OA",
+)
+
 
 @dataclass(frozen=True)
 class BoundaryGeometryResult:
@@ -497,6 +510,7 @@ class BoundaryCache:
         level: str | None = None,
         limit: int = 25,
         include_geometry: bool = False,
+        match: str = "contains",
     ) -> list[dict[str, Any]] | None:
         if not self.enabled():
             return None
@@ -520,9 +534,40 @@ class BoundaryCache:
             clauses.append(sql.SQL("b.level = %s"))
             params.append(level)
         if query:
-            clauses.append(sql.SQL("(b.area_id ILIKE %s OR b.name ILIKE %s)"))
-            like = f"%{query}%"
-            params.extend([like, like])
+            match = match if match in _MATCH_TYPES else "contains"
+            if match == "exact":
+                clauses.append(sql.SQL("(UPPER(b.area_id) = %s OR UPPER(b.name) = %s)"))
+                query_match = query.upper()
+                params.extend([query_match, query_match])
+            elif match == "starts_with":
+                clauses.append(sql.SQL("(b.area_id ILIKE %s OR b.name ILIKE %s)"))
+                like = f"{query}%"
+                params.extend([like, like])
+            else:
+                clauses.append(sql.SQL("(b.area_id ILIKE %s OR b.name ILIKE %s)"))
+                like = f"%{query}%"
+                params.extend([like, like])
+            query_upper = query.upper()
+            query_prefix = f"{query}%"
+            params.extend(
+                [query_upper, query_upper, query_prefix, query_prefix, list(_SEARCH_PRIORITY_LEVELS)]
+            )
+            order_sql = sql.SQL(
+                """
+                ORDER BY
+                    CASE
+                        WHEN UPPER(b.name) = %s OR UPPER(b.area_id) = %s THEN 0
+                        WHEN b.name ILIKE %s OR b.area_id ILIKE %s THEN 1
+                        ELSE 2
+                    END,
+                    COALESCE(array_position(%s::text[], b.level), 999),
+                    length(COALESCE(b.name, b.area_id)),
+                    b.name,
+                    b.area_id
+                """
+            )
+        else:
+            order_sql = sql.SQL("ORDER BY b.level, b.area_id")
         where_sql = sql.SQL("WHERE ") + sql.SQL(" AND ").join(clauses) if clauses else sql.SQL("")
         params.append(limit)
         query_sql = sql.SQL(
@@ -539,10 +584,10 @@ class BoundaryCache:
                 {geom_expr} AS geometry
             FROM {table} b
             {where}
-            ORDER BY b.level, b.area_id
+            {order}
             LIMIT %s;
             """
-        ).format(table=table_ident, where=where_sql, geom_expr=geom_expr)
+        ).format(table=table_ident, where=where_sql, geom_expr=geom_expr, order=order_sql)
         try:
             with self._connect() as conn:
                 with conn.cursor() as cur:

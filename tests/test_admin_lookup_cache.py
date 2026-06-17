@@ -154,13 +154,22 @@ def test_admin_lookup_find_by_name_prefers_cached_parish(monkeypatch):
     calls = []
 
     class StubCache:
-        def search(self, *, query=None, level=None, limit=25, include_geometry=False):
+        def search(
+            self,
+            *,
+            query=None,
+            level=None,
+            limit=25,
+            include_geometry=False,
+            match="contains",
+        ):
             calls.append(
                 {
                     "query": query,
                     "level": level,
                     "limit": limit,
                     "include_geometry": include_geometry,
+                    "match": match,
                 }
             )
             return [
@@ -206,6 +215,73 @@ def test_admin_lookup_find_by_name_prefers_cached_parish(monkeypatch):
             "level": "PARISH",
             "limit": 25,
             "include_geometry": True,
+            "match": "contains",
+        }
+    ]
+
+
+def test_admin_lookup_find_by_name_passes_match_to_cache(monkeypatch):
+    from tools import admin_lookup
+
+    calls = []
+
+    class StubCache:
+        def search(
+            self,
+            *,
+            query=None,
+            level=None,
+            limit=25,
+            include_geometry=False,
+            match="contains",
+        ):
+            calls.append(
+                {
+                    "query": query,
+                    "level": level,
+                    "limit": limit,
+                    "include_geometry": include_geometry,
+                    "match": match,
+                }
+            )
+            if match != "exact":
+                return []
+            return [
+                {
+                    "id": "E04000001",
+                    "name": "Example Parish",
+                    "level": "PARISH",
+                    "bbox": [-1.6, 52.3, -1.5, 52.4],
+                }
+            ]
+
+        def status(self):
+            return {"maturity": {"state": "ready"}}
+
+    monkeypatch.setattr(admin_lookup, "get_boundary_cache", lambda: StubCache())
+    monkeypatch.setattr(admin_lookup, "_live_enabled", lambda: False)
+
+    c = _client()
+    resp = c.post(
+        "/tools/call",
+        json={
+            "tool": "admin_lookup.find_by_name",
+            "text": "Example Parish",
+            "match": "exact",
+            "limit": 1,
+        },
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["results"][0]["id"] == "E04000001"
+    assert calls == [
+        {
+            "query": "Example Parish",
+            "level": "PARISH",
+            "limit": 1,
+            "include_geometry": False,
+            "match": "exact",
         }
     ]
 

@@ -463,6 +463,7 @@ def _cache_find_by_name(
             level=level,
             limit=per_level,
             include_geometry=include_geometry,
+            match=match,
         )
         if raw_results is None:
             return None
