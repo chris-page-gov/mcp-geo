@@ -4,9 +4,9 @@
     "ops/monitoring/prometheus-alert-rules.yml": "4c86c3314e858044ef08c304ea5143d3b1972f676b618154694303eed53c9e74",
     "ops/monitoring/prometheus.yml": "f70a747e1eee4474e2277192b91cdebce7b824d33a61a7682d2ac4007e517e62",
     "ops/monitoring/vector.toml": "b9f6c8c7c33d27b3640eccf1637dc2cb924802e03d2fe87922768e2c23022370",
-    "security/owasp_mcp/evidence/monitoring_and_alerting_2026-03-13.md": "100946ad808bc49b4c3a624f024585d0429c35f112c081dcfe9b5c23fb2ea16b",
-    "server/main.py": "d542231395c26af03e0ef00b56e7db8e1b7c9eb45d034ce61811539e66d02a0e",
-    "server/mcp/http_transport.py": "d493a3671d43cb4c89b67d05678fa11c7120e823b305097334c2f0dffffdb789"
+    "security/owasp_mcp/evidence/monitoring_and_alerting_2026-03-13.md": "ec6933b5af1898e15615b345130dc5821d5d76fe1b9922ce5e60cff77f18ca3b",
+    "server/main.py": "4e43071dc3d82617c7dc4e5562ac59595dd8f7fbc87f695456c41391843632b8",
+    "server/mcp/http_transport.py": "f607b1d7854d9e9438ba60fe2746461a058faa80196966f0566775ed4e11536e"
   },
   "attestation_id": "owasp-mcp-monitoring-and-alerting-2026-03-13",
   "control_ids": [
@@ -14,9 +14,9 @@
   ],
   "environment": "prod-strict",
   "evidence_uri": "security/owasp_mcp/evidence/monitoring_and_alerting_2026-03-13.md",
-  "expires_at": "2026-06-11T00:00:00Z",
-  "notes": "Prometheus scrapes private metrics, alert rules cover abuse and regression signals, and Vector forwards structured logs and runtime audit files to a SIEM sink.",
+  "expires_at": "2026-09-14T00:00:00Z",
+  "notes": "Prometheus scrapes private metrics, alert rules cover abuse and regression signals, and Vector forwards structured logs and runtime audit files to a SIEM sink. Revalidated against current repository artifacts on 2026-06-16.",
   "title": "Monitoring, alerting, and SIEM log routing are defined for production",
-  "verified_at": "2026-03-13T11:34:23Z",
-  "verifier": "Codex with repository-owner evidence capture"
+  "verified_at": "2026-06-16T14:35:00Z",
+  "verifier": "Codex with repository-owner evidence refresh"
 }

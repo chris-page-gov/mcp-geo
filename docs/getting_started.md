@@ -48,20 +48,27 @@ Host shell best-practice:
 - This is a good pattern and is recommended for this repo.
 
 Need OS credentials or trial access?
+- Step-by-step public-account setup for MCP-Geo:
+  [OS Data Hub public-account setup](os_data_hub_public_account_setup.md)
+- Full spatial LandIS warehouse setup:
+  [LandIS full spatial warehouse setup](landis_spatial_warehouse_setup.md)
 - OS API authentication overview:
   <https://docs.os.uk/os-apis/core-concepts/authentication>
 - OAuth2 token flow quick start:
   <https://docs.os.uk/os-apis/accessing-os-apis/oauth-2-api/getting-started>
 - Create an OS Data Hub account and API project (API key/secret):
   <https://docs.os.uk/os-apis/core-concepts/getting-started-with-an-api-project>
-- OS Data Hub login/signup entry:
-  <https://osdatahub.os.uk/b2c/unified.html>
+- OS Data Hub root:
+  <https://osdatahub.os.uk/>
 
 Optional: enable the PostGIS boundary cache for full admin boundaries:
 - `BOUNDARY_CACHE_ENABLED=true`
 - `BOUNDARY_CACHE_DSN=postgresql://mcp_geo:mcp_geo@localhost:5432/mcp_geo`
 - `ROUTE_GRAPH_ENABLED=true`
 - `ROUTE_GRAPH_DSN=postgresql://mcp_geo:mcp_geo@localhost:5432/mcp_geo`
+
+For LandIS spatial tools, use `LANDIS_WAREHOUSE_DSN` or the Docker wrapper's
+managed LandIS warehouse path instead. `ROUTE_GRAPH_DSN` is not used by LandIS.
 
 Devcontainer note:
 - The devcontainer starts PostGIS as the `postgis` service; use
@@ -465,6 +472,16 @@ Rebuild the STDIO image (include the training dot):
 ```bash
 docker build -t mcp-geo-server .
 ```
+
+Smoke-test the STDIO image with a JSON-RPC request that includes an `id`:
+
+```bash
+printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' \
+  | docker run --rm -i --env-file .env mcp-geo-server
+```
+
+If you omit the `id`, the request is a JSON-RPC notification and the STDIO
+adapter will not send a response.
 
 ## Appendix: HTTP demo launcher
 

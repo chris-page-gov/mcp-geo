@@ -27,6 +27,10 @@ You do **not** need to understand MCP or the internal architecture — just foll
 Create a free Ordnance Survey Data Hub key:
 
 - Ordnance Survey Data Hub: [https://osdatahub.os.uk/](https://osdatahub.os.uk/)
+- Step-by-step public-account setup:
+  [docs/os_data_hub_public_account_setup.md](docs/os_data_hub_public_account_setup.md)
+- Full LandIS spatial warehouse setup:
+  [docs/landis_spatial_warehouse_setup.md](docs/landis_spatial_warehouse_setup.md)
 
 Optional:
 
@@ -66,44 +70,50 @@ Open `.env` and paste the required key:
 
 ```text
 OS_API_KEY=your-key-here
-# Optional: query (default), header, or bearer.
 OS_API_AUTH_MODE=query
+```
 
-# Optional: higher-rate NOMIS access
+Do not add quote marks around `.env` values. Set either `OS_API_KEY` or
+`OS_API_KEY_FILE`, not both. For a secret-file setup and first-run OS Data Hub
+account details, use
+[docs/os_data_hub_public_account_setup.md](docs/os_data_hub_public_account_setup.md).
+
+Optional:
+
+```text
 NOMIS_UID=your-nomis-uid
 NOMIS_SIGNATURE=your-nomis-signature
 ```
 
-Now start the MCP server:
+Now build the MCP server image:
 
 ```bash
 docker build -t mcp-geo-server .
-docker run -i --env-file .env mcp-geo-server
 ```
 
-Or skip the build and use the pre-built image:
+The STDIO server is normally started by your MCP client. A manual
+`docker run -i --env-file .env mcp-geo-server` waits for JSON-RPC on stdin and
+may print nothing until a request arrives.
+
+Or skip the build and replace `mcp-geo-server` in the smoke test below with
+the pre-built image:
 
 ```bash
-docker run -i --env-file .env ghcr.io/chris-page-gov/mcp-geo:latest
+ghcr.io/chris-page-gov/mcp-geo:latest
 ```
-
-You should see something similar to:
-
-```text
-MCP server ready on stdio
-```
-
-Leave this terminal running.
 
 ### 3) Verify it works
 
-In another terminal:
+Send a JSON-RPC request that includes an `id`:
 
 ```bash
-echo '{"method":"tools/list"}' | docker run -i --env-file .env mcp-geo-server
+printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' \
+  | docker run --rm -i --env-file .env mcp-geo-server
 ```
 
-If JSON tool definitions appear → the server is working.
+If JSON tool definitions appear, the server is working. Requests without an
+`id` are JSON-RPC notifications, so the STDIO adapter correctly sends no
+response.
 
 ---
 
@@ -627,6 +637,13 @@ restart because this load is large. The verified phase-2 warehouse load
 currently covers `NationalSoilMap`, eight NATMAP thematic products,
 `NSIsite`, and six mirrored NSI observation datasets from the local archive,
 plus the existing Soilscapes and pipe-risk validation layers.
+
+For a clean setup path aimed at a full spatial LandIS warehouse, use
+[docs/landis_spatial_warehouse_setup.md](docs/landis_spatial_warehouse_setup.md).
+The recommended topology is still one MCP-Geo server with a PostGIS LandIS
+warehouse behind it; a separate LandIS MCP server is only a later governance,
+licensing, or performance-isolation decision.
+
 - `GET /resources/read?uri=resource://mcp-geo/boundary-manifest` returns the boundary manifest.
 
 ### Skills and MCP-Apps Resources

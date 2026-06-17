@@ -2,6 +2,10 @@
 
 Verified on 2026-03-13 for the strict OWASP MCP profile.
 
+Revalidated on 2026-06-16. The attestation refresh checked the current
+repository artifacts named below and renewed the evidence window without
+changing the control scope.
+
 - `Dockerfile` runs the production image as non-root (`USER appuser`).
 - `ops/deployment/docker-compose.prod.yml` keeps the application on an internal Docker network, terminates TLS at the edge proxy, uses `read_only` filesystems, drops Linux capabilities, sets `no-new-privileges`, and constrains scratch space to `tmpfs`.
 - The deployment profile mounts OS, NOMIS, and JWT secrets from files under `/run/secrets` and binds them into the app with `*_FILE` environment variables.

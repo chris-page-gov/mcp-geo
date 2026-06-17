@@ -3,14 +3,18 @@
 This guide lists common error codes emitted by the MCP Geo server and suggested remediation steps.
 
 Need OS credentials or trial access before troubleshooting auth errors?
+- Step-by-step public-account setup for MCP-Geo:
+  [OS Data Hub public-account setup](os_data_hub_public_account_setup.md)
+- Full spatial LandIS warehouse setup:
+  [LandIS full spatial warehouse setup](landis_spatial_warehouse_setup.md)
 - OS API authentication overview:
   <https://docs.os.uk/os-apis/core-concepts/authentication>
 - OAuth2 token flow quick start:
   <https://docs.os.uk/os-apis/accessing-os-apis/oauth-2-api/getting-started>
 - Create an OS Data Hub account and API project (API key/secret):
   <https://docs.os.uk/os-apis/core-concepts/getting-started-with-an-api-project>
-- OS Data Hub login/signup entry:
-  <https://osdatahub.os.uk/b2c/unified.html>
+- OS Data Hub root:
+  <https://osdatahub.os.uk/>
 
 | Code | Meaning | Typical Cause | Remediation |
 |------|---------|---------------|-------------|
@@ -36,6 +40,86 @@ Need OS credentials or trial access before troubleshooting auth errors?
 | ELICITATION_CANCELLED | User declined/cancelled elicitation prompt | Comparison routing prompt was dismissed | Re-run stats routing with explicit `comparisonLevel`/`providerPreference` or accept prompt |
 | ELICITATION_INVALID_RESULT | Client returned malformed elicitation result | Client bug or unsupported elicitation response shape | Update client MCP support or disable elicitation (`MCP_STDIO_ELICITATION_ENABLED=0` / `MCP_HTTP_ELICITATION_ENABLED=0`) |
 | ELICITATION_UNAVAILABLE | No elicitation response arrived | Client announced support but did not answer prompt | Retry, verify client capability handling, or disable elicitation for deterministic flow |
+
+## First-run Docker `.env` pitfalls
+
+For the public OS Data Hub setup path, prefer
+[OS Data Hub public-account setup](os_data_hub_public_account_setup.md). The
+most common first-run mistakes are:
+
+- Running `docker run -i --env-file .env mcp-geo-server` and expecting a banner.
+  The STDIO server waits for JSON-RPC on stdin and may print nothing until a
+  request arrives.
+- Using `OS_API_KEY_FILE=/Users/.../os_api_key` with bare `docker run` but not
+  mounting that host file into the container. Either mount the file with `-v`
+  or use the repo wrapper scripts, which hydrate the host secret before launch.
+- Setting both `OS_API_KEY` and `OS_API_KEY_FILE`. Set one or the other. In a
+  bare server environment, a non-empty `OS_API_KEY` prevents MCP-Geo from
+  reading `OS_API_KEY_FILE`.
+- Adding quotes or smart quotes in `.env`. Docker `--env-file` passes quote
+  characters through as part of the value, so `OS_API_KEY="abc"` is not the
+  same as `OS_API_KEY=abc`.
+- Setting optional cache/log paths or `ROUTE_GRAPH_DSN` before the basic OS API
+  smoke test. These are not needed for `tools/list` or `os_names_find`.
+- Expecting LandIS spatial tools to work from the basic image alone. LandIS
+  catalog/metadata tools work without PostGIS, but Soilscapes, NATMAP, NSI, and
+  pipe-risk tools need a populated LandIS PostGIS warehouse.
+
+For a minimal direct Docker smoke test, use either:
+
+```text
+OS_API_KEY=your-project-api-key-without-quotes
+OS_API_AUTH_MODE=query
+```
+
+or:
+
+```text
+OS_API_KEY_FILE=/Users/YOUR_USER/.secrets/os_api_key
+OS_API_AUTH_MODE=query
+```
+
+and mount the file in each bare `docker run` command:
+
+```bash
+-v "$HOME/.secrets/os_api_key:$HOME/.secrets/os_api_key:ro"
+```
+
+For LandIS spatial testing, prefer `scripts/claude-mcp-local` or
+`scripts/mcp-docker-local` over a bare `docker run`: the wrapper starts the
+PostGIS sidecar and can bootstrap LandIS tables from `LANDIS_LOCAL_DATA_ROOT`.
+
+## LandIS spatial warehouse unavailable
+
+Use [LandIS full spatial warehouse setup](landis_spatial_warehouse_setup.md) for
+the complete setup path. The short version is:
+
+- Do not create a separate MCP server for the first full LandIS setup. Use the
+  existing MCP-Geo server with a PostGIS LandIS warehouse behind it.
+- Set `LANDIS_LOCAL_DATA_ROOT` to the host directory containing
+  `landis_portal_archive_*`, commonly `/Users/<you>/Data`.
+- Start via `scripts/claude-mcp-local` or `scripts/mcp-docker-local` so the
+  PostGIS sidecar, read-only LandIS data mount, and `LANDIS_WAREHOUSE_DSN` are
+  wired together.
+- Do not use `ROUTE_GRAPH_DSN` for LandIS. It is for route planning.
+- Expect the first start to be slower because the wrapper may load NATMAP, NSI,
+  Soilscapes, and pipe-risk tables before serving MCP requests.
+
+Common symptoms:
+
+- `LIVE_DISABLED` with `landis_warehouse_unconfigured`: the app has no
+  `LANDIS_WAREHOUSE_DSN` or `BOUNDARY_CACHE_DSN`. Use the wrapper or set a real
+  LandIS warehouse DSN.
+- `UPSTREAM_CONNECT_ERROR`: a DSN is present, but PostGIS is unreachable or
+  rejecting the connection.
+- `NOT_FOUND`: the spatial query ran, but the point/area is outside the loaded
+  coverage or that product was not loaded.
+- `landis_mount_enabled=false` in wrapper plan output: the host path in
+  `LANDIS_LOCAL_DATA_ROOT` does not exist from the shell running the wrapper.
+- `LandIS portal archive not found under ...`: no `landis_portal_archive_*`
+  directory was found below the mounted data root.
+- `Skipping incomplete LandIS portal archive`: the archive exists but is missing
+  required downloaded Feature Service payloads or metadata.
 
 ## Claude Desktop + Docker wrapper: `OS_API_KEY` not found after key rotation
 If Claude can connect to MCP but OS-backed calls return `NO_API_KEY`, the
@@ -116,6 +200,26 @@ Notes:
   `curl`, `pip`, and Python HTTP clients.
 - The local CA directory is intentionally tracked as empty and the cert files
   themselves stay out of git.
+
+## Docker pull hangs at base image metadata or credential lookup
+If a first-time `docker build` hangs at a line such as
+`load metadata for docker.io/library/python:3.11-slim`, or `docker pull`
+eventually reports `error getting credentials`, check whether Docker Desktop's
+credential helper is blocking access to public images.
+
+Quick public-image probe:
+
+```bash
+mkdir -p /tmp/mcp-geo-docker-config
+DOCKER_CONFIG=/tmp/mcp-geo-docker-config docker pull python:3.11-slim
+DOCKER_CONFIG=/tmp/mcp-geo-docker-config docker build -t mcp-geo-server .
+```
+
+If that works, the repository build path is healthy. Repair Docker Desktop's
+login/keychain credential helper configuration, then rerun the build normally.
+The temporary `DOCKER_CONFIG` workaround applies only to the command where it is
+set and should not be used for private registries that require saved
+credentials.
 
 ## Boundary cache unavailable / PostGIS restart loops
 If `admin_lookup.get_cache_status` shows `enabled=false`/`cache_unavailable`

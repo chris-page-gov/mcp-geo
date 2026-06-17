@@ -1,11 +1,11 @@
 {
   "artifact_hashes": {
-    "README.md": "5038048ae1eef6ee6702253c3e30f9d9c5e1e944b19dc8fe062c17101e624f2b",
-    "docs/Build.md": "44795f2cf346b9cc6f70c3ddd5efa4bf0b6a5612f764ab2a0dd146cbb003b6df",
+    "README.md": "943edd53b3373afe2034243a51b10a89d19c701c6e4101dbb322cb370e389788",
+    "docs/Build.md": "10cb5cee5d807c33de34d507f2fad9b80980dd1d19b84728bf56e7342c9e1528",
     "ops/deployment/docker-compose.prod.yml": "b71ba65937b8a5cc2415977db274f3279b9ebcf100943d4e0730b35bbe5bf6ab",
-    "security/owasp_mcp/evidence/mcp_remote_auth_and_session_controls_2026-03-13.md": "83dc89ea49051fc8ca602c6093552d61cdd5afff50cfd8ea26cc90d44010c871",
-    "server/config.py": "209c892f6440c9aa32d5dfaf289692ef6a69814d1836dbcc35318b26b2864e1d",
-    "server/mcp/http_transport.py": "d493a3671d43cb4c89b67d05678fa11c7120e823b305097334c2f0dffffdb789"
+    "security/owasp_mcp/evidence/mcp_remote_auth_and_session_controls_2026-03-13.md": "40a5aea123b593c3e06828f402fb1e56a97dfcb612e83762ee4c45840f0266e3",
+    "server/config.py": "c4c7b59d665141d58ed657539ca70ef7eac9568d53393668b5319f0693df29bf",
+    "server/mcp/http_transport.py": "f607b1d7854d9e9438ba60fe2746461a058faa80196966f0566775ed4e11536e"
   },
   "attestation_id": "owasp-mcp-remote-auth-and-session-controls-2026-03-13",
   "control_ids": [
@@ -17,9 +17,9 @@
   ],
   "environment": "prod-strict",
   "evidence_uri": "security/owasp_mcp/evidence/mcp_remote_auth_and_session_controls_2026-03-13.md",
-  "expires_at": "2026-06-11T00:00:00Z",
-  "notes": "HS256 JWT enforcement, issuer/audience/scope checks, session subject binding, TTL cleanup, and per-session tool call quotas are active in the hardened deployment profile.",
+  "expires_at": "2026-09-14T00:00:00Z",
+  "notes": "HS256 JWT enforcement, issuer/audience/scope checks, session subject binding, TTL cleanup, and per-session tool call quotas are active in the hardened deployment profile. Revalidated against current repository artifacts on 2026-06-16.",
   "title": "Remote /mcp authentication, token binding, and session safeguards are deployed",
-  "verified_at": "2026-03-13T11:34:23Z",
-  "verifier": "Codex with repository-owner evidence capture"
+  "verified_at": "2026-06-16T14:35:00Z",
+  "verifier": "Codex with repository-owner evidence refresh"
 }

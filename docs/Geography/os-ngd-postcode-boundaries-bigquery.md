@@ -1,0 +1,235 @@
+# OS NGD Postcode Boundaries For BigQuery
+
+Last checked: 2026-06-16
+
+This note records the API call and coordinate reference system choice for loading
+the OS NGD postcode boundary polygons into BigQuery `GEOGRAPHY`.
+
+## Summary
+
+Use the OS NGD API - Features current `Postcode Unit Area` collection and
+request GeoJSON in `CRS84`. Resolve the current collection from the base id
+`asu-gbpcd-postcodeunitarea` before bulk extraction, because OS NGD collection
+ids carry a numeric schema/version suffix.
+
+As of 2026-06-16, the live OS Features collections endpoint advertises
+`asu-gbpcd-postcodeunitarea-1`; the matching `-2` collection, schema, and
+queryables endpoints returned `404`. The examples below therefore use the
+current live `-1` collection:
+
+```text
+https://api.os.uk/features/ngd/ofa/v1/collections/asu-gbpcd-postcodeunitarea-1/items
+```
+
+`CRS84` is WGS84 longitude/latitude order, which is the order expected by
+GeoJSON and BigQuery.
+
+## Collection
+
+- Collection base id: `asu-gbpcd-postcodeunitarea`
+- Current collection ID at last check: `asu-gbpcd-postcodeunitarea-1`
+- Current title at last check: `Postcode Unit Area v1`
+- Product family: OS NGD Administrative and Statistical Units, OS GB Postcodes
+- Feature grain: postcode-unit area part
+- Storage CRS: `EPSG:27700` British National Grid
+- Advertised response CRSs: `EPSG:27700`, `EPSG:3857`, `EPSG:4326`, `CRS84`
+- Coverage: Great Britain
+
+For durable jobs, discover `/collections` first and select the highest available
+numeric suffix for `asu-gbpcd-postcodeunitarea`. In MCP-Geo, the
+`postcode unit areas` alias follows this pattern by resolving the latest
+available collection id at runtime. Do not hard-code a future suffix such as
+`-2` unless the OS Features collections endpoint advertises it for the tenant
+and the schema/queryables endpoints are available.
+
+OS describes these polygons as notional extents for addresses sharing a postcode
+unit, derived from georeferenced Royal Mail PAF delivery addresses. They are for
+display and analysis at postcode-unit level; they are not legal or administrative
+boundaries.
+
+Important: do not assume one geometry row per postcode. The collection can
+return more than one polygon part for a postcode, so dissolve/group by
+`postcode` if the downstream model needs one footprint per postcode.
+
+## Discovery Calls
+
+Collection list for resolving the latest suffix:
+
+```http
+GET https://api.os.uk/features/ngd/ofa/v1/collections
+```
+
+Collection metadata:
+
+```http
+GET https://api.os.uk/features/ngd/ofa/v1/collections/asu-gbpcd-postcodeunitarea-1
+```
+
+Queryable fields:
+
+```http
+GET https://api.os.uk/features/ngd/ofa/v1/collections/asu-gbpcd-postcodeunitarea-1/queryables
+```
+
+Useful queryable fields include:
+
+- `postcode`
+- `featureid`
+- `postcodearea`
+- `postcodedistrict`
+- `postcodesector`
+
+Feature schema:
+
+```http
+GET https://api.os.uk/features/ngd/ofa/v1/collections/asu-gbpcd-postcodeunitarea-1/schema
+```
+
+## BigQuery-Safe Item Requests
+
+Request `CRS84` explicitly:
+
+```bash
+curl -H "key: $OS_API_KEY" \
+  "https://api.os.uk/features/ngd/ofa/v1/collections/asu-gbpcd-postcodeunitarea-1/items?filter=postcode%3D%27SW1A%201AA%27&limit=100&crs=http%3A%2F%2Fwww.opengis.net%2Fdef%2Fcrs%2FOGC%2F1.3%2FCRS84"
+```
+
+The same request without URL encoding, for readability:
+
+```text
+GET /features/ngd/ofa/v1/collections/asu-gbpcd-postcodeunitarea-1/items
+  ?filter=postcode='SW1A 1AA'
+  &limit=100
+  &crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84
+```
+
+Sector or district examples:
+
+```text
+filter=postcodesector='SW1A 1'
+filter=postcodedistrict='SW1A'
+```
+
+Keep `limit` at or below the OS API page limit. Follow `next` links in the
+GeoJSON response for paged extracts.
+
+## Loading To BigQuery
+
+Store each raw API page as a FeatureCollection first, or stage one feature per
+row. A raw API page has the feature records under `$.features[*]`, so unnest the
+FeatureCollection before reading `$.properties` and `$.geometry`.
+
+If `source_rows.feature_collection` is a BigQuery `JSON` column containing one
+raw API response page:
+
+```sql
+WITH features AS (
+  SELECT feature
+  FROM source_rows,
+  UNNEST(JSON_QUERY_ARRAY(feature_collection, '$.features')) AS feature
+)
+SELECT
+  JSON_VALUE(feature, '$.properties.postcode') AS postcode,
+  JSON_VALUE(feature, '$.properties.featureid') AS featureid,
+  ST_GEOGFROMGEOJSON(TO_JSON_STRING(JSON_QUERY(feature, '$.geometry'))) AS geom
+FROM features;
+```
+
+If the raw API response page is held as a JSON string, parse the
+FeatureCollection first:
+
+```sql
+WITH parsed_pages AS (
+  SELECT PARSE_JSON(feature_collection_json) AS feature_collection
+  FROM source_rows
+),
+features AS (
+  SELECT feature
+  FROM parsed_pages,
+  UNNEST(JSON_QUERY_ARRAY(feature_collection, '$.features')) AS feature
+)
+SELECT
+  JSON_VALUE(feature, '$.properties.postcode') AS postcode,
+  JSON_VALUE(feature, '$.properties.featureid') AS featureid,
+  ST_GEOGFROMGEOJSON(TO_JSON_STRING(JSON_QUERY(feature, '$.geometry'))) AS geom
+FROM features;
+```
+
+If staging already stores one GeoJSON Feature per row in a `JSON` column named
+`feature`, no unnest is needed:
+
+```sql
+SELECT
+  JSON_VALUE(feature, '$.properties.postcode') AS postcode,
+  JSON_VALUE(feature, '$.properties.featureid') AS featureid,
+  ST_GEOGFROMGEOJSON(TO_JSON_STRING(JSON_QUERY(feature, '$.geometry'))) AS geom
+FROM source_rows;
+```
+
+Create one dissolved geometry per postcode when required:
+
+```sql
+SELECT
+  postcode,
+  ST_UNION_AGG(geom) AS geom
+FROM postcode_unit_area_parts
+GROUP BY postcode;
+```
+
+Cluster persisted BigQuery tables by the `GEOGRAPHY` column where spatial joins
+or containment queries are common.
+
+## Why CRS84, Not Bare EPSG:4326
+
+`EPSG:4326` and `CRS84` both refer to WGS84 longitude/latitude values in common
+web mapping language, but they are not identical labels in strict OGC usage.
+
+The EPSG registry defines `EPSG:4326` as an ellipsoidal 2D coordinate system with
+axes `latitude, longitude`. GeoJSON and OGC API - Features Core use WGS84 in
+longitude/latitude order. RFC 7946 states that GeoJSON positions are longitude,
+latitude and identifies the CRS as OGC `CRS84`.
+
+For BigQuery, this matters because BigQuery `GEOGRAPHY` expects points on WGS84
+with longitude first and latitude second. Requesting `CRS84` makes that axis
+order explicit and avoids ambiguity introduced by the `EPSG:4326` identifier in
+strict OGC contexts.
+
+Use:
+
+```text
+crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84
+```
+
+Avoid requesting this for direct BigQuery ingestion unless a separate
+reprojection step is planned:
+
+```text
+crs=http://www.opengis.net/def/crs/EPSG/0/27700
+```
+
+## References
+
+- OS NGD API - Features root:
+  `https://api.os.uk/features/ngd/ofa/v1`
+- OS NGD API - Features collections:
+  `https://api.os.uk/features/ngd/ofa/v1/collections`
+- OS NGD postcode unit collection metadata:
+  `https://api.os.uk/features/ngd/ofa/v1/collections/asu-gbpcd-postcodeunitarea-1`
+- OS NGD queryables for postcode unit areas:
+  `https://api.os.uk/features/ngd/ofa/v1/collections/asu-gbpcd-postcodeunitarea-1/queryables`
+- OS NGD GB Postcodes documentation:
+  `https://docs.os.uk/osngd/data-structure/administrative-and-statistical-units/gb-postcodes`
+- OS NGD Postcode Unit Area documentation:
+  `https://docs.os.uk/osngd/data-structure/administrative-and-statistical-units/gb-postcodes/postcode-unit-area`
+- OS NGD API - Features technical specification:
+  `https://docs.os.uk/osngd/getting-started/access-the-os-ngd-api/os-ngd-api-features/technical-specification/features`
+- EPSG registry entry for `EPSG:4326`:
+  `https://epsg.org/crs_4326/WGS-84.html`
+- GeoJSON RFC 7946:
+  `https://www.rfc-editor.org/rfc/rfc7946`
+- OGC API - Features Part 1: Core:
+  `https://docs.ogc.org/is/17-069r3/17-069r3.html`
+- OGC API - Features Part 2: Coordinate Reference Systems by Reference:
+  `https://docs.ogc.org/is/18-058r1/18-058r1.html`
+- BigQuery geospatial data documentation:
+  `https://cloud.google.com/bigquery/docs/geospatial-data`

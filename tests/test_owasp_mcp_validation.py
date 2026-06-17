@@ -45,7 +45,7 @@ ATT_CONTROL_IDS = [
     "OMCP-GOV-003",
 ]
 
-FIXTURE_NOW = parse_datetime("2026-03-13T00:00:00Z")
+FIXTURE_VALIDATION_NOW = datetime(2026, 3, 14, tzinfo=UTC)
 
 
 def _repo_root() -> Path:
@@ -318,13 +318,19 @@ def _control_status(report: dict[str, object], control_id: str) -> str:
     raise AssertionError(f"missing control {control_id}")
 
 
-def _validate_fixture_repo(repo_root: Path, tools: list[ToolSnapshot]) -> tuple[dict[str, Any], dict[str, Any]]:
-    return validate_repo(repo_root, registered_tools=tools, now=FIXTURE_NOW)
+def _validate_fixture_repo(
+    repo_root: Path, *, registered_tools: list[ToolSnapshot]
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    return validate_repo(
+        repo_root,
+        registered_tools=registered_tools,
+        now=FIXTURE_VALIDATION_NOW,
+    )
 
 
 def test_seeded_pass_fixture_is_compliant(tmp_path: Path):
     repo_root, tools = _make_fixture_repo(tmp_path)
-    report, backlog = _validate_fixture_repo(repo_root, tools)
+    report, backlog = _validate_fixture_repo(repo_root, registered_tools=tools)
     assert report["summary"]["verdict"] == "compliant"
     assert _control_status(report, "OMCP-PI-001") == "not_applicable"
     assert backlog["items"] == []
@@ -332,7 +338,7 @@ def test_seeded_pass_fixture_is_compliant(tmp_path: Path):
 
 def test_wrapper_based_ruff_gate_counts_for_deploy_control(tmp_path: Path):
     repo_root, tools = _make_fixture_repo(tmp_path, use_wrapper_ruff_gate=True)
-    report, backlog = _validate_fixture_repo(repo_root, tools)
+    report, backlog = _validate_fixture_repo(repo_root, registered_tools=tools)
     assert report["summary"]["verdict"] == "compliant"
     assert _control_status(report, "OMCP-DEPLOY-003") == "pass"
     assert backlog["items"] == []
@@ -340,14 +346,14 @@ def test_wrapper_based_ruff_gate_counts_for_deploy_control(tmp_path: Path):
 
 def test_missing_attestation_fails_in_strict_mode(tmp_path: Path):
     repo_root, tools = _make_fixture_repo(tmp_path, omit_attestations={"OMCP-AUTH-001"})
-    report, _ = _validate_fixture_repo(repo_root, tools)
+    report, _ = _validate_fixture_repo(repo_root, registered_tools=tools)
     assert report["summary"]["verdict"] == "non_compliant"
     assert _control_status(report, "OMCP-AUTH-001") == "fail"
 
 
 def test_stale_attestation_fails(tmp_path: Path):
     repo_root, tools = _make_fixture_repo(tmp_path, stale_attestations={"OMCP-DEPLOY-001"})
-    report, _ = _validate_fixture_repo(repo_root, tools)
+    report, _ = _validate_fixture_repo(repo_root, registered_tools=tools)
     assert _control_status(report, "OMCP-DEPLOY-001") == "fail"
 
 
@@ -357,7 +363,7 @@ def test_high_risk_tool_without_human_approval_fails(tmp_path: Path):
         high_risk_tools={"os_places.search"},
         omit_attestations={"OMCP-PI-001"},
     )
-    report, _ = _validate_fixture_repo(repo_root, tools)
+    report, _ = _validate_fixture_repo(repo_root, registered_tools=tools)
     assert _control_status(report, "OMCP-PI-001") == "fail"
 
 
@@ -369,14 +375,14 @@ def test_signed_manifest_mismatch_fails(tmp_path: Path):
     manifest_path.write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
-    report, _ = _validate_fixture_repo(repo_root, tools)
+    report, _ = _validate_fixture_repo(repo_root, registered_tools=tools)
     assert _control_status(report, "OMCP-TOOL-002") == "fail"
 
 
 def test_backlog_generation_is_stable(tmp_path: Path):
     repo_root, tools = _make_fixture_repo(tmp_path, token_passthrough=True)
-    report_one, backlog_one = _validate_fixture_repo(repo_root, tools)
-    report_two, backlog_two = _validate_fixture_repo(repo_root, tools)
+    report_one, backlog_one = _validate_fixture_repo(repo_root, registered_tools=tools)
+    report_two, backlog_two = _validate_fixture_repo(repo_root, registered_tools=tools)
     assert report_one["summary"] == report_two["summary"]
     assert backlog_one == backlog_two
     assert any(item["control_id"] == "OMCP-AUTH-002" for item in backlog_one["items"])
@@ -782,7 +788,7 @@ def test_validate_repo_raises_for_unhandled_control(tmp_path: Path):
     catalog_path = repo_root / "security/owasp_mcp/control_catalog.json"
     catalog_path.write_text(json.dumps(bad_catalog, indent=2) + "\n", encoding="utf-8")
     try:
-        validate_repo(repo_root, registered_tools=tools, now=FIXTURE_NOW)
+        _validate_fixture_repo(repo_root, registered_tools=tools)
     except ValidationDataError as exc:
         assert "Unhandled control id" in str(exc)
     else:
