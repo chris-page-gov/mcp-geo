@@ -31,6 +31,7 @@ Legend: pending, in_progress, done, blocked
 | Workstream | Status | Notes |
 | --- | --- | --- |
 | MCP-Apps postcode picker | pending | Build `os_apps.render_postcode_picker` / `ui://mcp-geo/postcode-picker` with seed-postcode discovery, multi-select, structured postcode output, and optional UPRN payload mode. |
+| Welsh PARNCP alternate-name lookup | pending | Extend parish/admin lookup so Welsh community names from `PARNCP25NW` are searchable alongside `PARNCP25NM`, returned as `nameWelsh` or equivalent metadata, and covered across live fallback, cache-backed lookup, and future geography display-name changes. Origin: PR #86 review comment on `tools/admin_lookup.py`. |
 | ONS geo refresh external storage | pending | Continue optional mirror/search-root design for bulky ONS raw artifacts and boundary runs. |
 | LandIS family expansion | pending | Normalize and surface NATMAP join model before deciding whether scale-specific NATMAP products, AUGER, or Soil Catalogue layers need first-class MCP contracts. |
 | Ruff/mypy scope expansion | pending | Widen only after each next slice is green under local wrappers and documented. |

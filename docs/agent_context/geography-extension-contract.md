@@ -48,6 +48,18 @@ Parish support must be present in:
 - selector-driven exports in `os_map.export`
 - workflow resources and user-facing docs
 
+## Alternate-Language Names
+
+When a geography source carries alternate official-language names, treat those
+fields as searchable aliases and response metadata, not as passive source-only
+columns. For Welsh communities in the PARNCP source, `PARNCP25NW` should be
+searchable alongside `PARNCP25NM` and returned as `nameWelsh` or equivalent
+metadata without replacing the English/current `name`.
+
+Future geography additions should identify source-specific alternate-name
+fields during registry design, then check live lookup, cache search, normalized
+geographies, display-name overlays, exports, and docs for consistent behavior.
+
 ## MSOA Display Names
 
 House of Commons Library MSOA names are display labels only. They must not
