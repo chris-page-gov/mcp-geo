@@ -1024,6 +1024,58 @@ def test_ons_geo_area_summary_direct_id_can_resolve_higher_level_from_hierarchy(
     assert body["counts"]["uprnCount"] == 3
 
 
+def test_ons_geo_area_summary_rejects_cross_cutting_parish_target_for_msoa(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    cache_dir, db_name, index_path = _seed_cache(tmp_path)
+    _configure_cache_settings(
+        monkeypatch,
+        cache_dir=cache_dir,
+        db_name=db_name,
+        index_path=index_path,
+    )
+
+    def fake_get_tool(name: str):  # type: ignore[no-untyped-def]
+        if name == "admin_lookup.reverse_hierarchy":
+            return _FakeTool(
+                lambda payload: (
+                    200,
+                    {
+                        "chain": [
+                            {"id": "E02000001", "level": "MSOA", "name": "Example MSOA"},
+                            {
+                                "id": "E04000001",
+                                "level": "PARISH",
+                                "name": "Example Parish",
+                            },
+                        ]
+                    },
+                )
+            )
+        return None
+
+    monkeypatch.setattr(ons_geo_tools, "get_tool", fake_get_tool)
+
+    resp = client.post(
+        "/tools/call",
+        json={
+            "tool": "ons_geo.area_summary",
+            "id": "E02000001",
+            "targetLevel": "PARISH",
+            "includeInventory": False,
+            "includePopulation": False,
+            "includeProfileDatasets": False,
+        },
+    )
+
+    assert resp.status_code == 400
+    body = resp.json()
+    assert body["code"] == "INVALID_INPUT"
+    assert "implies level MSOA" in body["message"]
+    assert "targetLevel=PARISH" in body["message"]
+
+
 def test_ons_geo_area_summary_tolerates_optional_helper_failures(
     tmp_path: Path,
     monkeypatch,

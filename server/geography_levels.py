@@ -117,7 +117,7 @@ GEOGRAPHY_LEVELS: tuple[GeographyLevel, ...] = (
         selector=True,
         map_focus_level="PARISH",
         area_summary=True,
-        area_summary_rank=3,
+        area_summary_rank=None,
         stats_comparison=True,
         admin_search_priority=1,
         aliases=(
@@ -403,6 +403,20 @@ def infer_area_level_from_code(value: str) -> str | None:
         if pattern.fullmatch(code):
             return area_level
     return None
+
+
+def area_summary_target_is_compatible(anchor_level: str, target_level: str) -> bool:
+    anchor = normalize_area_level(anchor_level)
+    target = normalize_area_level(target_level)
+    if anchor is None or target is None:
+        return False
+    if anchor == target:
+        return True
+    anchor_rank = AREA_SUMMARY_LEVEL_RANK.get(anchor)
+    target_rank = AREA_SUMMARY_LEVEL_RANK.get(target)
+    if not isinstance(anchor_rank, int) or not isinstance(target_rank, int):
+        return False
+    return target_rank >= anchor_rank
 
 
 def normalize_ons_select_geography_level(value: str) -> str | None:

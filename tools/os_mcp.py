@@ -12,6 +12,7 @@ from server.geography_levels import (
     LEVEL_RANK,
     NOMIS_LOCAL_LEVEL_KEYS,
     STATS_COMPARISON_LEVELS,
+    area_summary_target_is_compatible,
 )
 from server.geography_levels import (
     AREA_SUMMARY_LEVEL_RANK as AREA_PROFILE_LEVEL_RANK,
@@ -817,11 +818,7 @@ def _requested_area_profile_level(query_lower: str, level_mentions: list[str]) -
 
 
 def _area_profile_target_is_compatible(anchor_level: str, target_level: str) -> bool:
-    anchor_rank = AREA_PROFILE_LEVEL_RANK.get(anchor_level)
-    target_rank = AREA_PROFILE_LEVEL_RANK.get(target_level)
-    if not isinstance(anchor_rank, int) or not isinstance(target_rank, int):
-        return False
-    return target_rank >= anchor_rank
+    return bool(area_summary_target_is_compatible(anchor_level, target_level))
 
 
 def _build_area_profile_params(

@@ -1083,9 +1083,9 @@ def _seed_ons_geo_uprn_index(cache_dir: Path, db_name: str) -> Path:
         """
         INSERT INTO ons_geo_uprn_index (
             product_id, derivation_mode, uprn, postcode, oa_code, lsoa_code, msoa_code,
-            parish_code, parish_name, lad_code, lad_name, postal_delivery, geographies_json,
-            cached_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            parish_code, parish_name, parish_name_welsh, lad_code, lad_name, postal_delivery,
+            geographies_json, cached_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             "ONSUD",
@@ -1097,6 +1097,7 @@ def _seed_ons_geo_uprn_index(cache_dir: Path, db_name: str) -> Path:
             "E0201",
             "E04000001",
             "Example Parish",
+            "Plwyf Enghraifft",
             "E08000026",
             "Coventry",
             1,
@@ -1108,9 +1109,9 @@ def _seed_ons_geo_uprn_index(cache_dir: Path, db_name: str) -> Path:
         """
         INSERT INTO ons_geo_uprn_index (
             product_id, derivation_mode, uprn, postcode, oa_code, lsoa_code, msoa_code,
-            parish_code, parish_name, lad_code, lad_name, postal_delivery, geographies_json,
-            cached_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            parish_code, parish_name, parish_name_welsh, lad_code, lad_name, postal_delivery,
+            geographies_json, cached_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             "ONSUD",
@@ -1122,6 +1123,7 @@ def _seed_ons_geo_uprn_index(cache_dir: Path, db_name: str) -> Path:
             "E0202",
             "E04000002",
             "Other Parish",
+            None,
             "E08000026",
             "Coventry",
             0,
@@ -1296,7 +1298,7 @@ def test_os_map_selection_export_without_membership_columns(client, monkeypatch,
     csv_text = read.json()["contents"][0]["text"]
     assert (
         "uprn,postcode,oa_code,local_authority_name,lsoa_code,msoa_code,parish_code,"
-        "parish_name,lad_code"
+        "parish_name,parish_name_welsh,lad_code"
         in csv_text
     )
     assert "selected_by_oa" not in csv_text
@@ -1327,6 +1329,7 @@ def test_os_map_selection_rows_support_parish_gss_selector(monkeypatch, tmp_path
     assert rows[0]["uprn"] == "100023336959"
     assert rows[0]["parish_code"] == "E04000001"
     assert rows[0]["parish_name"] == "Example Parish"
+    assert rows[0]["parish_name_welsh"] == "Plwyf Enghraifft"
     assert rows[0]["selected_by_parish"] == "E04000001"
 
 
@@ -1353,6 +1356,7 @@ def test_os_map_selection_rows_migrates_legacy_uprn_index(monkeypatch, tmp_path)
     assert rows[0]["uprn"] == "100023336959"
     assert rows[0]["parish_code"] == ""
     assert rows[0]["parish_name"] == ""
+    assert rows[0]["parish_name_welsh"] == ""
     assert rows[0]["selected_by_parish"] == ""
 
     conn = sqlite3.connect(str(db_path))
@@ -1416,6 +1420,7 @@ def test_os_map_selection_export_accepts_postcode_selection_shorthand(
     assert read.status_code == 200
     payload = json.loads(read.json()["contents"][0]["text"])
     assert payload["rows"][0]["uprn"] == "100023336959"
+    assert payload["rows"][0]["parish_name_welsh"] == "Plwyf Enghraifft"
 
 
 def test_os_map_selection_export_cache_failure_is_reported(
@@ -1545,6 +1550,7 @@ def test_os_map_parsers_cover_edge_cases() -> None:
         "msoa_code",
         "parish_code",
         "parish_name",
+        "parish_name_welsh",
         "lad_code",
     ]
 

@@ -4,8 +4,8 @@ from typing import Any
 
 from server.config import settings
 from server.geography_levels import (
-    AREA_SUMMARY_LEVEL_RANK,
     AREA_SUMMARY_LEVELS,
+    area_summary_target_is_compatible,
     geography_identity_from_normalized,
 )
 from server.ons_geo_cache import (
@@ -324,12 +324,6 @@ def _best_effort_call(
     return status, payload if isinstance(payload, dict) else None
 
 
-def _area_summary_level_rank(level: str | None) -> int | None:
-    if not isinstance(level, str):
-        return None
-    return AREA_SUMMARY_LEVEL_RANK.get(level)
-
-
 def _resolve_area_from_hierarchy_chain(
     *,
     target_level: str,
@@ -573,18 +567,11 @@ def _area_summary(payload: dict[str, Any]) -> ToolResult:
             direct_anchor_level = inferred_level
             if target_level is None:
                 target_level = inferred_level
-            else:
-                inferred_rank = _area_summary_level_rank(inferred_level)
-                target_rank = _area_summary_level_rank(target_level)
-                if (
-                    inferred_rank is not None
-                    and target_rank is not None
-                    and target_rank < inferred_rank
-                ):
-                    return _error(
-                        f"id {area_id} implies level {inferred_level}, which cannot be "
-                        f"narrowed to targetLevel={target_level}"
-                    )
+            elif not area_summary_target_is_compatible(inferred_level, target_level):
+                return _error(
+                    f"id {area_id} implies level {inferred_level}, which cannot be "
+                    f"mapped to targetLevel={target_level}"
+                )
         elif target_level is None:
             return _error(
                 f"Could not infer targetLevel from id {area_id}. Provide targetLevel explicitly."

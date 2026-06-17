@@ -98,6 +98,7 @@ _CSV_COLUMNS_CANONICAL_DEFAULT = [
     "msoa_code",
     "parish_code",
     "parish_name",
+    "parish_name_welsh",
     "lad_code",
 ]
 
@@ -2148,8 +2149,8 @@ def _fetch_index_rows_by_column(
     placeholders = ",".join("?" for _ in normalized_values)
     sql = (
         "SELECT uprn, postcode, oa_code, lsoa_code, msoa_code, parish_code, "
-        "parish_name, lad_code, lad_name, ward_code, country_code, region_code, "
-        "postal_delivery "
+        "parish_name, parish_name_welsh, lad_code, lad_name, ward_code, country_code, "
+        "region_code, postal_delivery "
         "FROM ons_geo_uprn_index "
         f"WHERE derivation_mode = ? AND {column} IN ({placeholders})"
     )
@@ -2168,6 +2169,7 @@ def _fetch_index_rows_by_column(
                 "msoa_code": row["msoa_code"],
                 "parish_code": row["parish_code"],
                 "parish_name": row["parish_name"],
+                "parish_name_welsh": row["parish_name_welsh"],
                 "lad_code": row["lad_code"],
                 "lad_name": row["lad_name"],
                 "ward_code": row["ward_code"],
@@ -2196,8 +2198,8 @@ def _fetch_index_rows_for_uprns(
         placeholders = ",".join("?" for _ in part)
         sql = (
             "SELECT uprn, postcode, oa_code, lsoa_code, msoa_code, parish_code, "
-            "parish_name, lad_code, lad_name, ward_code, country_code, region_code, "
-            "postal_delivery "
+            "parish_name, parish_name_welsh, lad_code, lad_name, ward_code, country_code, "
+            "region_code, postal_delivery "
             "FROM ons_geo_uprn_index "
             f"WHERE derivation_mode = ? AND uprn IN ({placeholders})"
         )
@@ -2215,6 +2217,7 @@ def _fetch_index_rows_for_uprns(
                     "msoa_code": row["msoa_code"],
                     "parish_code": row["parish_code"],
                     "parish_name": row["parish_name"],
+                    "parish_name_welsh": row["parish_name_welsh"],
                     "lad_code": row["lad_code"],
                     "lad_name": row["lad_name"],
                     "ward_code": row["ward_code"],
@@ -2447,6 +2450,7 @@ def _resolve_selection_rows_from_cache(
                 "msoa_code": data.get("msoa_code") or "",
                 "parish_code": data.get("parish_code") or "",
                 "parish_name": data.get("parish_name") or "",
+                "parish_name_welsh": data.get("parish_name_welsh") or "",
                 "lad_code": data.get("lad_code") or "",
                 "selected_by_oa": _membership_value(mem.get("selected_by_oa", set())),
                 "selected_by_lsoa": _membership_value(mem.get("selected_by_lsoa", set())),

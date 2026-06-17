@@ -131,6 +131,16 @@ def test_route_query_area_profile_from_area_code_preserves_explicit_higher_level
     assert body["recommended_parameters"]["targetLevel"] == "REGION"
 
 
+def test_route_query_area_profile_rejects_cross_cutting_parish_target():
+    body = _route("Quick profile for MSOA E02000001 at parish level")
+    assert body["intent"] == "area_profile"
+    assert body["recommended_tool"] == "os_mcp.descriptor"
+    assert body["recommended_parameters"] == {}
+    assert body["workflow_profile_uri"] == "resource://mcp-geo/area-summary-workflows"
+    assert "cannot be narrowed" in body["guidance"]
+    assert "E02000001" in body["guidance"]
+
+
 def test_route_query_area_profile_from_parish_code():
     body = _route("Quick profile for parish E04000001")
     assert body["intent"] == "area_profile"

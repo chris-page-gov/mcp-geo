@@ -36,6 +36,9 @@ Source fields remain source-specific:
 
 `PARISH` covers civil parishes, Welsh communities, and non-civil-parished
 areas. Current generalized live boundary fallback is `PARNCP_MAY_2025_EW_BGC`.
+PARNCP is cross-cutting rather than part of the linear OA -> LSOA -> MSOA ->
+LAD -> region -> country nesting chain, so area-summary compatibility must use
+explicit rules instead of assigning `PARISH` a simple nesting rank.
 
 Parish support must be present in:
 

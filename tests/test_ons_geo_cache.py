@@ -4,7 +4,9 @@ import json
 import sqlite3
 
 from server.geography_levels import (
+    AREA_SUMMARY_LEVEL_RANK,
     NOMIS_GEOGRAPHY_TYPE_MATCHERS,
+    area_summary_target_is_compatible,
     boundary_search_priority_levels,
     infer_admin_levels_from_text,
     normalize_admin_level,
@@ -44,6 +46,11 @@ def test_shared_geography_level_registry_covers_parish_and_country_aliases() -> 
     assert infer_admin_levels_from_text("PARNCP boundary") == ["PARISH"]
     assert boundary_search_priority_levels()[:3] == ("WARD", "PARISH", "DISTRICT")
     assert "parish" in NOMIS_GEOGRAPHY_TYPE_MATCHERS["PARISH"]
+    assert "PARISH" not in AREA_SUMMARY_LEVEL_RANK
+    assert area_summary_target_is_compatible("MSOA", "REGION") is True
+    assert area_summary_target_is_compatible("MSOA", "PARISH") is False
+    assert area_summary_target_is_compatible("PARISH", "PARISH") is True
+    assert area_summary_target_is_compatible("PARISH", "MSOA") is False
 
 
 def test_extract_geography_fields_handles_code_name_pairs() -> None:
