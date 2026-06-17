@@ -1972,11 +1972,19 @@ def _select_archive_members(
     if not allow_multi:
         return [scored_members[0][3]]
 
-    best_required, best_missing, best_optional, _best_name = scored_members[0]
+    valid_members = [
+        name
+        for _required, missing, _optional, name in scored_members
+        if missing == 0
+    ]
+    if valid_members:
+        return sorted(valid_members)
+
+    best_required, best_missing_score, _best_optional, _best_name = scored_members[0]
     return sorted(
         name
-        for required, missing, optional, name in scored_members
-        if (required, missing, optional) == (best_required, best_missing, best_optional)
+        for required, missing_score, _optional, name in scored_members
+        if (required, missing_score) == (best_required, best_missing_score)
     )
 
 

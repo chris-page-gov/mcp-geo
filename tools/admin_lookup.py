@@ -443,6 +443,30 @@ def _name_matches(name: Any, needle: str, match: str) -> bool:
     return needle in name_upper
 
 
+def _cache_match_values(item: dict[str, Any]) -> list[str]:
+    values: list[str] = []
+    for key in ("name", "id"):
+        value = item.get(key)
+        if value is None:
+            continue
+        text = str(value).strip()
+        if text:
+            values.append(text)
+    return values
+
+
+def _cache_item_matches(item: dict[str, Any], needle: str, match: str) -> bool:
+    return any(_name_matches(value, needle, match) for value in _cache_match_values(item))
+
+
+def _score_cache_item_match(item: dict[str, Any], needle: str) -> tuple[int, int, int, str]:
+    values = _cache_match_values(item)
+    if not values:
+        values = [""]
+    level = str(item.get("level") or "")
+    return min(_score_match(value, needle, level) for value in values)
+
+
 def _cache_find_by_name(
     cache: Any,
     text: str,
@@ -470,13 +494,12 @@ def _cache_find_by_name(
         for item in raw_results:
             if not isinstance(item, dict):
                 continue
-            name = item.get("name") or item.get("id")
-            if not _name_matches(name, needle, match):
+            if not _cache_item_matches(item, needle, match):
                 continue
             result = {
                 "id": item.get("id"),
                 "level": item.get("level"),
-                "name": name,
+                "name": item.get("name") or item.get("id"),
             }
             if item.get("bbox") is not None:
                 result["bbox"] = item.get("bbox")
@@ -486,11 +509,7 @@ def _cache_find_by_name(
                 result["datasetId"] = item.get("datasetId")
             found.append(result)
     found.sort(
-        key=lambda item: _score_match(
-            str(item.get("name") or ""),
-            needle,
-            str(item.get("level") or ""),
-        )
+        key=lambda item: _score_cache_item_match(item, needle)
     )
     return found[:limit]
 

@@ -143,6 +143,9 @@ def _base_manifest() -> dict[str, object]:
                         "oa_code",
                         "lsoa_code",
                         "msoa_code",
+                        "parish_code",
+                        "parish_name",
+                        "parish_name_welsh",
                         "ward_code",
                         "country_code",
                         "region_code",
@@ -166,6 +169,9 @@ def _base_manifest() -> dict[str, object]:
                         "oa_code",
                         "lsoa_code",
                         "msoa_code",
+                        "parish_code",
+                        "parish_name",
+                        "parish_name_welsh",
                         "ward_code",
                         "country_code",
                         "region_code",
@@ -2421,6 +2427,10 @@ def test_ingest_uprn_product_zip_streams_all_data_shards(
         "UPRN,PCDS,LAD25CD,LAD25NM,OA21CD,LSOA21CD,MSOA21CD,WD25CD,"
         "WD25NM,CTRY25CD,CTRY25NM,postal_delivery\n"
     )
+    parish_header = (
+        "UPRN,PCDS,LAD25CD,LAD25NM,OA21CD,LSOA21CD,MSOA21CD,WD25CD,"
+        "WD25NM,PARNCP25CD,PARNCP25NM,CTRY25CD,CTRY25NM,postal_delivery\n"
+    )
     region_header = (
         "uprn,pcds,lad25cd,lad25nm,oa21cd,lsoa21cd,msoa21cd,ctry25cd,"
         "ctry25nm,rgn25cd,rgn25nm,postal_delivery\n"
@@ -2428,10 +2438,11 @@ def test_ingest_uprn_product_zip_streams_all_data_shards(
     with zipfile.ZipFile(source_path, "w") as archive:
         archive.writestr(
             f"Data/{dataset_id}_DEC_2025_LN.csv",
-            ward_header
+            parish_header
             + (
                 "100023336959,SW1A 2AH,E09000033,Westminster,E00023913,E01004734,"
-                "E02000977,E05013806,St James's,E92000001,England,1\n"
+                "E02000977,E05013806,St James's,E43000246,Non-civil parished area,"
+                "E92000001,England,1\n"
             ),
         )
         archive.writestr(
@@ -2483,7 +2494,7 @@ def test_ingest_uprn_product_zip_streams_all_data_shards(
         ).fetchall()
         uprn_index_rows = conn.execute(
             """
-            SELECT uprn, postcode, lad_code, ward_code, region_code
+            SELECT uprn, postcode, lad_code, parish_code, parish_name, ward_code, region_code
             FROM ons_geo_uprn_index
             WHERE product_id = ?
             ORDER BY uprn
@@ -2497,10 +2508,19 @@ def test_ingest_uprn_product_zip_streams_all_data_shards(
     assert key_field == "UPRN"
     assert validation["requiredMissing"] == []
     assert rows == [("10000062102",), ("100010542645",), ("100023336959",)]
+    assert "parish_code" in validation["optionalFound"]
     assert uprn_index_rows == [
-        ("10000062102", "HU93HS", "E06000010", "E05011542", None),
-        ("100010542645", "CF101EP", "W06000015", None, "W99999999"),
-        ("100023336959", "SW1A2AH", "E09000033", "E05013806", None),
+        ("10000062102", "HU93HS", "E06000010", None, None, "E05011542", None),
+        ("100010542645", "CF101EP", "W06000015", None, None, None, "W99999999"),
+        (
+            "100023336959",
+            "SW1A2AH",
+            "E09000033",
+            "E43000246",
+            "Non-civil parished area",
+            "E05013806",
+            None,
+        ),
     ]
 
 

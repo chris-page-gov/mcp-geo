@@ -1,5 +1,6 @@
 from types import SimpleNamespace
 
+import pytest
 from fastapi.testclient import TestClient
 
 from server.main import app
@@ -284,6 +285,69 @@ def test_admin_lookup_find_by_name_passes_match_to_cache(monkeypatch):
             "match": "exact",
         }
     ]
+
+
+@pytest.mark.parametrize(
+    ("query", "match"),
+    [
+        ("E04000001", "exact"),
+        ("E040", "starts_with"),
+    ],
+)
+def test_admin_lookup_find_by_name_keeps_cached_id_match(monkeypatch, query, match):
+    from tools import admin_lookup
+
+    expected_query = query
+    expected_match = match
+
+    class StubCache:
+        def search(
+            self,
+            *,
+            query=None,
+            level=None,
+            limit=25,
+            include_geometry=False,
+            match="contains",
+        ):
+            assert query == expected_query
+            assert level == "PARISH"
+            assert limit == 1
+            assert include_geometry is False
+            assert match == expected_match
+            return [
+                {
+                    "id": "E04000001",
+                    "name": "Example Parish",
+                    "level": "PARISH",
+                    "bbox": [-1.6, 52.3, -1.5, 52.4],
+                }
+            ]
+
+        def status(self):
+            return {"maturity": {"state": "ready"}}
+
+    monkeypatch.setattr(admin_lookup, "get_boundary_cache", lambda: StubCache())
+    monkeypatch.setattr(admin_lookup, "_live_enabled", lambda: False)
+
+    c = _client()
+    resp = c.post(
+        "/tools/call",
+        json={
+            "tool": "admin_lookup.find_by_name",
+            "text": query,
+            "level": "PARISH",
+            "match": match,
+            "limit": 1,
+        },
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["count"] == 1
+    assert body["results"][0]["id"] == "E04000001"
+    assert body["results"][0]["name"] == "Example Parish"
+    assert body["meta"]["source"] == "cache"
 
 
 def test_admin_lookup_cache_search_fallback_live_when_disabled(monkeypatch):
