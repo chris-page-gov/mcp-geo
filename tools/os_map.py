@@ -360,12 +360,6 @@ def _parse_selection_spec(value: Any) -> tuple[dict[str, Any] | None, str | None
 
 
 def _selection_cache_error(exc: Exception) -> ToolResult:
-    if isinstance(exc, RuntimeError):
-        return 503, {
-            "isError": True,
-            "code": "CACHE_UNAVAILABLE",
-            "message": str(exc),
-        }
     if isinstance(exc, (sqlite3.Error, ONSGeoCacheReadError)):
         return 503, {
             "isError": True,
@@ -374,6 +368,12 @@ def _selection_cache_error(exc: Exception) -> ToolResult:
                 "ONS geo cache is unreadable. "
                 f"{exc} Run scripts/ons_geo_cache_refresh.py to rebuild the cache."
             ),
+        }
+    if isinstance(exc, RuntimeError):
+        return 503, {
+            "isError": True,
+            "code": "CACHE_UNAVAILABLE",
+            "message": str(exc),
         }
     return 500, {
         "isError": True,
@@ -2276,8 +2276,25 @@ def _resolve_selection_rows(
     if not cache.available():
         raise RuntimeError("ONS geo cache is unavailable. Run scripts/ons_geo_cache_refresh.py.")
 
-    conn = sqlite3.connect(str(cache.db_path))
-    conn.row_factory = sqlite3.Row
+    conn = cache.connect(row_factory=True)
+    try:
+        return _resolve_selection_rows_from_cache(
+            conn=conn,
+            selection_spec=selection_spec,
+            derivation_mode=derivation_mode,
+            postal_delivery_only=postal_delivery_only,
+        )
+    finally:
+        conn.close()
+
+
+def _resolve_selection_rows_from_cache(
+    *,
+    conn: sqlite3.Connection,
+    selection_spec: dict[str, Any],
+    derivation_mode: str,
+    postal_delivery_only: bool,
+) -> tuple[list[dict[str, Any]], dict[str, int], list[str]]:
 
     warnings: list[str] = []
     include_uprns: set[str] = set()
@@ -2440,8 +2457,6 @@ def _resolve_selection_rows(
                 "selected_by_polygon": _membership_value(mem.get("selected_by_polygon", set())),
             }
         )
-
-    conn.close()
 
     stats = {
         "resolvedUprnCount": len(rows),

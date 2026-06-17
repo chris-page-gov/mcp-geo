@@ -1134,6 +1134,56 @@ def _seed_ons_geo_uprn_index(cache_dir: Path, db_name: str) -> Path:
     return db_path
 
 
+def _seed_legacy_ons_geo_uprn_index(cache_dir: Path, db_name: str) -> Path:
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    db_path = cache_dir / db_name
+    conn = sqlite3.connect(str(db_path))
+    conn.executescript(
+        """
+        CREATE TABLE ons_geo_uprn_index (
+            product_id TEXT NOT NULL,
+            derivation_mode TEXT NOT NULL,
+            uprn TEXT NOT NULL,
+            postcode TEXT,
+            oa_code TEXT,
+            lsoa_code TEXT,
+            msoa_code TEXT,
+            lad_code TEXT,
+            lad_name TEXT,
+            postal_delivery INTEGER,
+            geographies_json TEXT,
+            cached_at TEXT NOT NULL,
+            PRIMARY KEY (product_id, uprn)
+        );
+        """
+    )
+    conn.execute(
+        """
+        INSERT INTO ons_geo_uprn_index (
+            product_id, derivation_mode, uprn, postcode, oa_code, lsoa_code, msoa_code,
+            lad_code, lad_name, postal_delivery, geographies_json, cached_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            "ONSUD",
+            "exact",
+            "100023336959",
+            "CV12GT",
+            "E0001",
+            "E0101",
+            "E0201",
+            "E08000026",
+            "Coventry",
+            1,
+            "{}",
+            "2026-02-22T00:00:00Z",
+        ),
+    )
+    conn.commit()
+    conn.close()
+    return db_path
+
+
 def test_os_map_selection_export_async_csv_and_status_polling(client, monkeypatch, tmp_path) -> None:  # type: ignore[no-untyped-def]
     from server.config import settings
     from server.mcp import resource_catalog
@@ -1278,6 +1328,41 @@ def test_os_map_selection_rows_support_parish_gss_selector(monkeypatch, tmp_path
     assert rows[0]["parish_code"] == "E04000001"
     assert rows[0]["parish_name"] == "Example Parish"
     assert rows[0]["selected_by_parish"] == "E04000001"
+
+
+def test_os_map_selection_rows_migrates_legacy_uprn_index(monkeypatch, tmp_path) -> None:
+    from server.config import settings
+    from tools import os_map
+
+    cache_dir = tmp_path / "ons_geo_cache"
+    db_name = "ons_geo_cache.sqlite"
+    db_path = _seed_legacy_ons_geo_uprn_index(cache_dir, db_name)
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DIR", str(cache_dir), raising=False)
+    monkeypatch.setattr(settings, "ONS_GEO_CACHE_DB", db_name, raising=False)
+
+    rows, stats, warnings = os_map._resolve_selection_rows(
+        selection_spec={
+            "selectors": [{"type": "gss_code", "level": "LAD", "code": "E08000026"}]
+        },
+        derivation_mode="exact",
+        postal_delivery_only=False,
+    )
+
+    assert warnings == []
+    assert stats["resolvedUprnCount"] == 1
+    assert rows[0]["uprn"] == "100023336959"
+    assert rows[0]["parish_code"] == ""
+    assert rows[0]["parish_name"] == ""
+    assert rows[0]["selected_by_parish"] == ""
+
+    conn = sqlite3.connect(str(db_path))
+    try:
+        migrated_columns = {
+            row[1] for row in conn.execute("PRAGMA table_info(ons_geo_uprn_index)").fetchall()
+        }
+    finally:
+        conn.close()
+    assert {"parish_code", "parish_name", "parish_name_welsh"} <= migrated_columns
 
 
 def test_os_map_selection_export_accepts_postcode_selection_shorthand(
@@ -1504,6 +1589,12 @@ def test_os_map_selection_and_aoi_helpers_cover_error_branches(monkeypatch) -> N
     assert payload["code"] == "CACHE_UNAVAILABLE"
 
     status, payload = os_map._selection_cache_error(sqlite3.OperationalError("bad db"))
+    assert status == 503
+    assert payload["code"] == "CACHE_READ_ERROR"
+
+    from server.ons_geo_cache import ONSGeoCacheReadError
+
+    status, payload = os_map._selection_cache_error(ONSGeoCacheReadError("old schema"))
     assert status == 503
     assert payload["code"] == "CACHE_READ_ERROR"
 

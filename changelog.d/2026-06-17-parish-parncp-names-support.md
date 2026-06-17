@@ -20,3 +20,5 @@
   without replacing official `name` / `currentName` values.
 - Added parish identity and `selected_by_parish` audit fields to selector-driven
   UPRN exports.
+- Migrated older ONS UPRN index cache files before selector exports read newly
+  added parish columns.

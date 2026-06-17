@@ -441,7 +441,7 @@ def test_lookup_decodes_normalized_payload(tmp_path) -> None:
     assert result.normalized["codeStatusSummary"]["current"] == 1
 
 
-def test_lookup_raises_cache_read_error_when_schema_is_missing(tmp_path) -> None:
+def test_lookup_migrates_empty_sqlite_cache_with_missing_schema(tmp_path) -> None:
     cache = ONSGeoCache(
         cache_dir=tmp_path,
         db_name="ons_geo_cache.sqlite",
@@ -452,9 +452,32 @@ def test_lookup_raises_cache_read_error_when_schema_is_missing(tmp_path) -> None
     conn.commit()
     conn.close()
 
+    assert cache.lookup(key_type="postcode", key_value="SW1A 1AA", derivation_mode="exact") is None
+
+    conn = sqlite3.connect(str(cache.db_path))
+    try:
+        tables = {
+            row[0] for row in conn.execute(
+                "SELECT name FROM sqlite_master WHERE type = 'table'"
+            ).fetchall()
+        }
+    finally:
+        conn.close()
+    assert "ons_geo_rows" in tables
+    assert "ons_geo_uprn_index" in tables
+
+
+def test_lookup_raises_cache_read_error_when_sqlite_file_is_unreadable(tmp_path) -> None:
+    cache = ONSGeoCache(
+        cache_dir=tmp_path,
+        db_name="ons_geo_cache.sqlite",
+        index_path=tmp_path / "ons_geo_cache_index.json",
+    )
+    cache.db_path.write_text("not a sqlite database", encoding="utf-8")
+
     try:
         cache.lookup(key_type="postcode", key_value="SW1A 1AA", derivation_mode="exact")
     except ONSGeoCacheReadError as exc:
-        assert "Failed to query cache database" in str(exc)
+        assert "Failed to prepare cache database" in str(exc)
     else:
-        raise AssertionError("Expected ONSGeoCacheReadError for unreadable cache schema")
+        raise AssertionError("Expected ONSGeoCacheReadError for unreadable cache file")

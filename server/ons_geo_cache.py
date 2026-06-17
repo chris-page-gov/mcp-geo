@@ -312,6 +312,22 @@ class ONSGeoCache:
     def available(self) -> bool:
         return self.db_path.exists() and self.db_path.is_file()
 
+    def connect(self, *, row_factory: bool = False) -> sqlite3.Connection:
+        """Open the cache and apply additive schema migrations before reads."""
+        conn: sqlite3.Connection | None = None
+        try:
+            conn = sqlite3.connect(str(self.db_path))
+            if row_factory:
+                conn.row_factory = sqlite3.Row
+            ensure_schema(conn)
+            return conn
+        except sqlite3.Error as exc:
+            if conn is not None:
+                conn.close()
+            raise ONSGeoCacheReadError(
+                f"Failed to prepare cache database at {self.db_path}: {exc}"
+            ) from exc
+
     def load_index(self) -> dict[str, Any]:
         try:
             payload = json.loads(self.index_path.read_text(encoding="utf-8"))
@@ -334,8 +350,7 @@ class ONSGeoCache:
 
         conn: sqlite3.Connection | None = None
         try:
-            conn = sqlite3.connect(str(self.db_path))
-            conn.row_factory = sqlite3.Row
+            conn = self.connect(row_factory=True)
             row = conn.execute(
                 """
                 SELECT
@@ -413,7 +428,7 @@ class ONSGeoCache:
 
         conn: sqlite3.Connection | None = None
         try:
-            conn = sqlite3.connect(str(self.db_path))
+            conn = self.connect()
             row = conn.execute(
                 f"""
                 SELECT

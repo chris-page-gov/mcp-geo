@@ -69,6 +69,8 @@ that display labels are non-official disambiguating labels.
 For any geography-level or display-name change, review these sibling surfaces:
 
 - cache schema, migrations, refresh ingest, semantic extraction
+- direct cache readers; use `ONSGeoCache.connect(...)` or `ensure_schema(...)`
+  before selecting migration-added columns
 - code-prefix inference and alias normalisation
 - cache lookup, live fallback, and boundary geometry paths
 - HTTP tool schemas and descriptions
