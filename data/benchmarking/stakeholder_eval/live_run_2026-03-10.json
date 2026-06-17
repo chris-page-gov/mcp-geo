@@ -1,19 +1,19 @@
 {
-  "generated": "2026-03-10",
+  "generated": "2026-06-17",
+  "benchmarkReferenceDate": "2026-03-10",
   "runtime": {
     "osApiKeyPresent": true,
     "osApiKeyFile": "/Users/crpage/.secrets/os_api_key",
     "boundaryCacheEnabled": false,
-    "routeGraphEnabled": true,
+    "routeGraphEnabled": false,
     "routeGraphDsnPresent": true
   },
   "overall": {
     "scenarioCount": 20,
-    "firstClassProductReadyCount": 1,
+    "firstClassProductReadyCount": 2,
     "liveOutcomeCounts": {
-      "blocked": 2,
-      "full": 1,
-      "partial": 17
+      "blocked": 4,
+      "partial": 16
     },
     "scenarioIdsWithLiveEvidence": [
       "SG01",
@@ -47,7 +47,8 @@
       "os_places.by_postcode",
       "os_places.by_uprn",
       "os_places.nearest",
-      "os_places.search"
+      "os_places.search",
+      "os_workflows.query"
     ]
   },
   "results": [
@@ -56,301 +57,128 @@
       "title": "Affected premises and vulnerable households in an incident area",
       "benchmarkSupportLevel": "partial",
       "liveOutcome": "partial",
-      "firstClassProductReady": false,
-      "summary": "Live OS Places resolved all 7 benchmark addresses, but only 2 records fall strictly inside the clipped benchmark polygon when the returned address points are used directly. That is materially lower than the benchmark reference answer, so the live rerun reinforces that MCP-Geo still lacks the native flood-geometry, building-footprint, and record-join workflow needed to treat the benchmark total as authoritative live truth.",
+      "firstClassProductReady": true,
+      "summary": "MCP-Geo now exposes SG01 as a native incident-impact workflow: it resolves address rows, applies point-in-polygon filtering, deduplicates premises and returns a review/export queue. The vulnerability data remains synthetic, so the output is still decision-support evidence rather than authoritative emergency truth.",
       "evidence": {
         "inputRecords": 7,
-        "resolvedRecords": 7,
+        "workflowAnswerStatus": "ready_for_review",
+        "workflowProductSurfaceReady": true,
+        "resolvedRecords": 6,
         "insidePolygonRecords": 2,
         "insideUniquePremises": 2,
         "duplicateInsideUprns": [],
         "districtFromLiveLookup": "Bassetlaw",
         "matchedRows": [
           {
-            "recordId": "VH-001",
-            "uprn": "100031280113",
-            "matchType": "high_confidence",
-            "score": 1.0,
-            "insidePolygon": false
-          },
-          {
-            "recordId": "VH-002",
-            "uprn": "10023264877",
-            "matchType": "high_confidence",
-            "score": 1.0,
-            "insidePolygon": false
-          },
-          {
-            "recordId": "VH-003",
-            "uprn": "10023264877",
-            "matchType": "high_confidence",
-            "score": 1.0,
-            "insidePolygon": false
-          },
-          {
             "recordId": "VH-004",
+            "address": "18 Mill Bridge Close, Retford, DN22 6FE",
             "uprn": "10023264881",
-            "matchType": "high_confidence",
-            "score": 1.0,
-            "insidePolygon": true
+            "category": "young_children",
+            "lat": 53.3188671,
+            "lon": -0.9447751
           },
           {
             "recordId": "VH-005",
+            "address": "115 Mill Bridge Close, Retford, DN22 6FE",
             "uprn": "10023264984",
-            "matchType": "high_confidence",
-            "score": 1.0,
-            "insidePolygon": true
-          },
-          {
-            "recordId": "VH-006",
-            "uprn": "100031279587",
-            "matchType": "high_confidence",
-            "score": 1.0,
-            "insidePolygon": false
-          },
-          {
-            "recordId": "VH-007",
-            "uprn": "100031269830",
-            "matchType": "review",
-            "score": 0.65,
-            "insidePolygon": false
+            "category": "visual_impairment",
+            "lat": 53.3189102,
+            "lon": -0.9455847
           }
-        ]
+        ],
+        "reviewQueueCount": 0
       },
       "confirmedCapabilities": [
-        "Live OS Places address resolution works for the benchmark addresses.",
+        "Native os_workflows.query incident_impact workflow now covers SG01 orchestration.",
         "Live containing-area lookup confirms the affected sample sits in Bassetlaw."
       ],
       "confirmedGaps": [
         "The vulnerable-household data remains synthetic and external to MCP-Geo.",
-        "Point-in-polygon filtering and record dedupe still require external orchestration."
+        "Operational use still needs access-controlled real support data and incident perimeter QA."
       ],
-      "toolCallCount": 8,
-      "successfulToolCalls": 8,
-      "liveEvidenceCalls": 8,
+      "toolCallCount": 2,
+      "successfulToolCalls": 2,
+      "liveEvidenceCalls": 2,
       "toolCalls": [
         {
-          "tool": "os_places.search",
+          "tool": "os_workflows.query",
           "request": {
-            "text": "Navigation Lodge, Wharf Road, Retford, DN22 6EN"
+            "workflowId": "incident_impact",
+            "geometryWkt": "POLYGON((-0.946200 53.321400,-0.946200 53.318800,-0.943000 53.318800,-0.943000 53.321400,-0.946200 53.321400))\n",
+            "records": [
+              {
+                "record_id": "VH-001",
+                "address_text": "Navigation Lodge, Wharf Road, Retford, DN22 6EN",
+                "postcode": "DN22 6EN",
+                "resident_group": "mobility_support",
+                "support_notes": "Wheelchair user; evacuation support required.",
+                "synthetic_case_note": "Synthetic vulnerability annotation applied to a real HMLR address."
+              },
+              {
+                "record_id": "VH-002",
+                "address_text": "6 Mill Bridge Close, Retford, DN22 6FE",
+                "postcode": "DN22 6FE",
+                "resident_group": "older_person",
+                "support_notes": "Lives alone; welfare check requested.",
+                "synthetic_case_note": "Synthetic vulnerability annotation applied to a real HMLR address."
+              },
+              {
+                "record_id": "VH-003",
+                "address_text": "6 Mill Bridge Cl, Retford DN22 6FE",
+                "postcode": "DN22 6FE",
+                "resident_group": "medically_dependent",
+                "support_notes": "Oxygen dependency recorded in synthetic benchmark notes.",
+                "synthetic_case_note": "Intentional duplicate-address variant for join and dedupe scoring."
+              },
+              {
+                "record_id": "VH-004",
+                "address_text": "18 Mill Bridge Close, Retford, DN22 6FE",
+                "postcode": "DN22 6FE",
+                "resident_group": "young_children",
+                "support_notes": "Two children under five in household.",
+                "synthetic_case_note": "Synthetic vulnerability annotation applied to a real HMLR address."
+              },
+              {
+                "record_id": "VH-005",
+                "address_text": "115 Mill Bridge Close, Retford, DN22 6FE",
+                "postcode": "DN22 6FE",
+                "resident_group": "visual_impairment",
+                "support_notes": "Accessible transport required.",
+                "synthetic_case_note": "Synthetic vulnerability annotation applied to a real HMLR address."
+              },
+              {
+                "record_id": "VH-006",
+                "address_text": "13 Welham Road, Retford, DN22 6TN",
+                "postcode": "DN22 6TN",
+                "resident_group": "older_person",
+                "support_notes": "Outside incident polygon in benchmark ground truth.",
+                "synthetic_case_note": "Real HMLR address kept as negative-control record."
+              },
+              {
+                "record_id": "VH-007",
+                "address_text": "22A Chapelgate, Retford, DN22 6PJ",
+                "postcode": "DN22 6PJ",
+                "resident_group": "carer_household",
+                "support_notes": "Outside incident polygon in benchmark ground truth.",
+                "synthetic_case_note": "Real HMLR address kept as negative-control record."
+              }
+            ],
+            "resolveAddresses": true
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1685.73,
+          "durationMs": 6224.22,
           "cached": false,
-          "source": "OS Places live",
+          "source": "Workflow engine",
           "liveEvidence": true,
           "responseSummary": {
-            "count": 25,
-            "sample": [
-              {
-                "uprn": "100031280113",
-                "address": "NAVIGATION LODGE, WHARF ROAD, RETFORD, DN22 6EN",
-                "classification": "Detached"
-              },
-              {
-                "uprn": "200002769091",
-                "address": "NAVIGATION FLAT, WHARF ROAD, RETFORD, DN22 6EN",
-                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
-              },
-              {
-                "uprn": "10093191656",
-                "address": "SUITS MARIE, WHARF ROAD, RETFORD, DN22 6EN",
-                "classification": "Shop / Showroom"
-              }
-            ]
-          }
-        },
-        {
-          "tool": "os_places.search",
-          "request": {
-            "text": "6 Mill Bridge Close, Retford, DN22 6FE"
-          },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 215.99,
-          "cached": false,
-          "source": "OS Places live",
-          "liveEvidence": true,
-          "responseSummary": {
-            "count": 25,
-            "sample": [
-              {
-                "uprn": "10023264877",
-                "address": "6, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
-                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
-              },
-              {
-                "uprn": "10023264890",
-                "address": "61, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
-                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
-              },
-              {
-                "uprn": "10023264891",
-                "address": "63, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
-                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
-              }
-            ]
-          }
-        },
-        {
-          "tool": "os_places.search",
-          "request": {
-            "text": "6 Mill Bridge Cl, Retford DN22 6FE"
-          },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 603.73,
-          "cached": false,
-          "source": "OS Places live",
-          "liveEvidence": true,
-          "responseSummary": {
-            "count": 25,
-            "sample": [
-              {
-                "uprn": "10023264877",
-                "address": "6, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
-                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
-              },
-              {
-                "uprn": "10023264890",
-                "address": "61, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
-                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
-              },
-              {
-                "uprn": "10023264891",
-                "address": "63, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
-                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
-              }
-            ]
-          }
-        },
-        {
-          "tool": "os_places.search",
-          "request": {
-            "text": "18 Mill Bridge Close, Retford, DN22 6FE"
-          },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 331.25,
-          "cached": false,
-          "source": "OS Places live",
-          "liveEvidence": true,
-          "responseSummary": {
-            "count": 25,
-            "sample": [
-              {
-                "uprn": "10023264881",
-                "address": "18, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
-                "classification": "Terraced"
-              },
-              {
-                "uprn": "10023264875",
-                "address": "1, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
-                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
-              },
-              {
-                "uprn": "10023264878",
-                "address": "10, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
-                "classification": "Terraced"
-              }
-            ]
-          }
-        },
-        {
-          "tool": "os_places.search",
-          "request": {
-            "text": "115 Mill Bridge Close, Retford, DN22 6FE"
-          },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 218.03,
-          "cached": false,
-          "source": "OS Places live",
-          "liveEvidence": true,
-          "responseSummary": {
-            "count": 25,
-            "sample": [
-              {
-                "uprn": "10023264984",
-                "address": "115, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
-                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
-              },
-              {
-                "uprn": "10013972835",
-                "address": "11, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
-                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
-              },
-              {
-                "uprn": "10023264910",
-                "address": "111, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
-                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
-              }
-            ]
-          }
-        },
-        {
-          "tool": "os_places.search",
-          "request": {
-            "text": "13 Welham Road, Retford, DN22 6TN"
-          },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 1798.39,
-          "cached": false,
-          "source": "OS Places live",
-          "liveEvidence": true,
-          "responseSummary": {
-            "count": 25,
-            "sample": [
-              {
-                "uprn": "100031279587",
-                "address": "13, WELHAM ROAD, RETFORD, DN22 6TN",
-                "classification": "Semi-Detached"
-              },
-              {
-                "uprn": "100031279577",
-                "address": "1, WELHAM ROAD, RETFORD, DN22 6TN",
-                "classification": "Semi-Detached"
-              },
-              {
-                "uprn": "100031279584",
-                "address": "10, WELHAM ROAD, RETFORD, DN22 6TN",
-                "classification": "Detached"
-              }
-            ]
-          }
-        },
-        {
-          "tool": "os_places.search",
-          "request": {
-            "text": "22A Chapelgate, Retford, DN22 6PJ"
-          },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 220.94,
-          "cached": false,
-          "source": "OS Places live",
-          "liveEvidence": true,
-          "responseSummary": {
-            "count": 25,
-            "sample": [
-              {
-                "uprn": "100031269830",
-                "address": "20, CHAPELGATE, RETFORD, DN22 6PJ",
-                "classification": "Detached"
-              },
-              {
-                "uprn": "100032031406",
-                "address": "26, CHAPELGATE, RETFORD, DN22 6PJ",
-                "classification": "Terraced"
-              },
-              {
-                "uprn": "100032031280",
-                "address": "12, CHAPELGATE, RETFORD, DN22 6PJ",
-                "classification": "Shop / Showroom"
-              }
-            ]
+            "workflowId": "incident_impact",
+            "answerStatus": "ready_for_review",
+            "productSurfaceReady": true,
+            "reviewQueueCount": 0,
+            "inputRecords": 7,
+            "affectedRecords": 2,
+            "highConfidenceMatches": null
           }
         },
         {
@@ -361,16 +189,17 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 3771.84,
+          "durationMs": 5744.47,
           "cached": false,
           "source": "Admin lookup live",
           "liveEvidence": true,
           "responseSummary": {
-            "count": 8,
+            "count": 9,
             "levels": [
               "OA",
               "LSOA",
               "MSOA",
+              "PARISH",
               "WARD",
               "DISTRICT",
               "COUNTY",
@@ -394,13 +223,13 @@
           }
         },
         {
-          "tool": "os_places.search",
-          "calls": 7,
-          "ok": 7,
-          "liveEvidenceCalls": 7,
+          "tool": "os_workflows.query",
+          "calls": 1,
+          "ok": 1,
+          "liveEvidenceCalls": 1,
           "cached": 0,
           "sources": {
-            "OS Places live": 7
+            "Workflow engine": 1
           }
         }
       ]
@@ -410,462 +239,256 @@
       "title": "Batch match free-text addresses to UPRNs at scale",
       "benchmarkSupportLevel": "partial",
       "liveOutcome": "partial",
-      "firstClassProductReady": false,
-      "summary": "Live OS Places can now batch-resolve the benchmark address file record by record. The run produced candidate UPRNs for all 10 rows, but the conservative scorer only cleared 2 as high-confidence, pushed 6 into review, and left 2 unmatched. Native MCP-Geo support remains partial because the batch loop, confidence labelling, and review/export queue are still external orchestration.",
+      "firstClassProductReady": true,
+      "summary": "MCP-Geo now exposes SG02 as a native batch address-matching workflow. The workflow resolves rows through OS Places when enabled, applies confidence bands, flags duplicate UPRNs and returns review/export queues.",
       "evidence": {
         "inputRecords": 10,
+        "workflowAnswerStatus": "ready_for_review",
+        "workflowProductSurfaceReady": true,
         "highConfidenceMatches": 2,
-        "reviewMatches": 6,
-        "unmatched": 2,
+        "reviewMatches": 4,
+        "unmatched": 4,
         "duplicateUprnInputs": [
           "100031282954"
         ],
         "reviewQueue": [
           {
-            "sourceId": "ADDR-003",
+            "recordId": "ADDR-003",
+            "address": "6 Millbridge Close, Retford DN22 6FE",
             "uprn": "10023264877",
-            "reason": "manual_review"
+            "reason": "low_similarity"
           },
           {
-            "sourceId": "ADDR-004",
+            "recordId": "ADDR-004",
+            "address": "Canalside Wharf 6 Wharf Road, Retford DN22 6JL",
             "uprn": "10093191764",
-            "reason": "manual_review"
+            "reason": "review"
           },
           {
-            "sourceId": "ADDR-005",
+            "recordId": "ADDR-005",
+            "address": "22A Chapel Gate, Retford, DN22 6PJ",
             "uprn": "100032031280",
             "reason": "low_similarity"
           },
           {
-            "sourceId": "ADDR-006",
+            "recordId": "ADDR-006",
+            "address": "Church Lane 1 The Close, Carlton in Lindrick, Worksop S81 9EH",
             "uprn": "100031284208",
-            "reason": "manual_review"
+            "reason": "review"
           },
           {
-            "sourceId": "ADDR-007",
+            "recordId": "ADDR-007",
+            "address": "50 Canal Rd, Worksop S80 2EH",
             "uprn": "100031282954",
-            "reason": "duplicate_input_same_uprn"
+            "reason": "duplicate_input"
           },
           {
-            "sourceId": "ADDR-008",
+            "recordId": "ADDR-008",
+            "address": "50 Canal Road, Worksop, S80 2EH",
             "uprn": "100031282954",
-            "reason": "duplicate_input_same_uprn"
+            "reason": "duplicate_input"
           },
           {
-            "sourceId": "ADDR-009",
+            "recordId": "ADDR-009",
+            "address": "The Old Farm House 1 Corner Farm Dr, Everton DN10 5AN",
             "uprn": "10093190272",
-            "reason": "manual_review"
+            "reason": "low_similarity"
           },
           {
-            "sourceId": "ADDR-010",
-            "uprn": "10090590222",
+            "recordId": "ADDR-010",
+            "address": "Ragnall Stable, Main Street, Ragnall NG22 ORU",
+            "uprn": "10013978958",
             "reason": "low_similarity"
           }
         ],
         "matchedRows": [
           {
-            "sourceId": "ADDR-001",
+            "recordId": "ADDR-001",
+            "address": "81 COBWELL RD, RETFORD DN22 7DD",
+            "postcode": "DN227DD",
             "uprn": "100031270361",
-            "matchType": "high_confidence",
-            "score": 1.0
+            "confidenceBand": "high_confidence",
+            "status": "matched",
+            "score": 1.0,
+            "reviewReason": null
           },
           {
-            "sourceId": "ADDR-002",
+            "recordId": "ADDR-002",
+            "address": "Navigation Lodge, Wharf Rd, Retford DN22 6EN",
+            "postcode": "DN226EN",
             "uprn": "100031280113",
-            "matchType": "high_confidence",
-            "score": 1.0
+            "confidenceBand": "high_confidence",
+            "status": "matched",
+            "score": 1.0,
+            "reviewReason": null
           },
           {
-            "sourceId": "ADDR-003",
+            "recordId": "ADDR-003",
+            "address": "6 Millbridge Close, Retford DN22 6FE",
+            "postcode": "DN226FE",
             "uprn": "10023264877",
-            "matchType": "review",
-            "score": 0.65
+            "confidenceBand": "unmatched",
+            "status": "unmatched",
+            "score": 0.6,
+            "reviewReason": "low_similarity"
           },
           {
-            "sourceId": "ADDR-004",
+            "recordId": "ADDR-004",
+            "address": "Canalside Wharf 6 Wharf Road, Retford DN22 6JL",
+            "postcode": "DN226JL",
             "uprn": "10093191764",
-            "matchType": "review",
-            "score": 0.75
+            "confidenceBand": "review",
+            "status": "needs_review",
+            "score": 0.7,
+            "reviewReason": null
           },
           {
-            "sourceId": "ADDR-005",
+            "recordId": "ADDR-005",
+            "address": "22A Chapel Gate, Retford, DN22 6PJ",
+            "postcode": "DN226PJ",
             "uprn": "100032031280",
-            "matchType": "unmatched",
-            "score": 0.51
+            "confidenceBand": "unmatched",
+            "status": "unmatched",
+            "score": 0.55,
+            "reviewReason": "low_similarity"
           },
           {
-            "sourceId": "ADDR-006",
+            "recordId": "ADDR-006",
+            "address": "Church Lane 1 The Close, Carlton in Lindrick, Worksop S81 9EH",
+            "postcode": "S819EH",
             "uprn": "100031284208",
-            "matchType": "review",
-            "score": 0.75
+            "confidenceBand": "review",
+            "status": "needs_review",
+            "score": 0.7,
+            "reviewReason": null
           },
           {
-            "sourceId": "ADDR-007",
+            "recordId": "ADDR-007",
+            "address": "50 Canal Rd, Worksop S80 2EH",
+            "postcode": "S802EH",
             "uprn": "100031282954",
-            "matchType": "review",
-            "score": 1.0
+            "confidenceBand": "review",
+            "status": "needs_review",
+            "score": 1.0,
+            "reviewReason": "duplicate_input"
           },
           {
-            "sourceId": "ADDR-008",
+            "recordId": "ADDR-008",
+            "address": "50 Canal Road, Worksop, S80 2EH",
+            "postcode": "S802EH",
             "uprn": "100031282954",
-            "matchType": "review",
-            "score": 1.0
+            "confidenceBand": "review",
+            "status": "needs_review",
+            "score": 1.0,
+            "reviewReason": "duplicate_input"
           },
           {
-            "sourceId": "ADDR-009",
+            "recordId": "ADDR-009",
+            "address": "The Old Farm House 1 Corner Farm Dr, Everton DN10 5AN",
+            "postcode": "DN105AN",
             "uprn": "10093190272",
-            "matchType": "review",
-            "score": 0.7083
+            "confidenceBand": "unmatched",
+            "status": "unmatched",
+            "score": 0.625,
+            "reviewReason": "low_similarity"
           },
           {
-            "sourceId": "ADDR-010",
-            "uprn": "10090590222",
-            "matchType": "unmatched",
-            "score": 0.225
+            "recordId": "ADDR-010",
+            "address": "Ragnall Stable, Main Street, Ragnall NG22 ORU",
+            "postcode": "",
+            "uprn": "10013978958",
+            "confidenceBand": "unmatched",
+            "status": "unmatched",
+            "score": 0.2,
+            "reviewReason": "low_similarity"
           }
         ]
       },
       "confirmedCapabilities": [
-        "Live OS Places matching works on the full 10-row benchmark input.",
-        "Duplicate input rows can be detected reliably once candidate UPRNs are resolved."
+        "Native os_workflows.query batch_address_match workflow now covers SG02.",
+        "Duplicate and low-confidence rows are surfaced in a first-class review queue."
       ],
       "confirmedGaps": [
-        "MCP-Geo still lacks a first-class batch matcher with confidence buckets and review exports."
+        "Operational acceptance still depends on user-tuned confidence thresholds."
       ],
-      "toolCallCount": 10,
-      "successfulToolCalls": 10,
-      "liveEvidenceCalls": 10,
+      "toolCallCount": 1,
+      "successfulToolCalls": 1,
+      "liveEvidenceCalls": 1,
       "toolCalls": [
         {
-          "tool": "os_places.search",
+          "tool": "os_workflows.query",
           "request": {
-            "text": "81 COBWELL RD, RETFORD DN22 7DD"
+            "workflowId": "batch_address_match",
+            "records": [
+              {
+                "source_id": "ADDR-001",
+                "address_text": "81 COBWELL RD, RETFORD DN22 7DD"
+              },
+              {
+                "source_id": "ADDR-002",
+                "address_text": "Navigation Lodge, Wharf Rd, Retford DN22 6EN"
+              },
+              {
+                "source_id": "ADDR-003",
+                "address_text": "6 Millbridge Close, Retford DN22 6FE"
+              },
+              {
+                "source_id": "ADDR-004",
+                "address_text": "Canalside Wharf 6 Wharf Road, Retford DN22 6JL"
+              },
+              {
+                "source_id": "ADDR-005",
+                "address_text": "22A Chapel Gate, Retford, DN22 6PJ"
+              },
+              {
+                "source_id": "ADDR-006",
+                "address_text": "Church Lane 1 The Close, Carlton in Lindrick, Worksop S81 9EH"
+              },
+              {
+                "source_id": "ADDR-007",
+                "address_text": "50 Canal Rd, Worksop S80 2EH"
+              },
+              {
+                "source_id": "ADDR-008",
+                "address_text": "50 Canal Road, Worksop, S80 2EH"
+              },
+              {
+                "source_id": "ADDR-009",
+                "address_text": "The Old Farm House 1 Corner Farm Dr, Everton DN10 5AN"
+              },
+              {
+                "source_id": "ADDR-010",
+                "address_text": "Ragnall Stable, Main Street, Ragnall NG22 ORU"
+              }
+            ],
+            "resolveAddresses": true
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 350.22,
+          "durationMs": 7788.1,
           "cached": false,
-          "source": "OS Places live",
+          "source": "Workflow engine",
           "liveEvidence": true,
           "responseSummary": {
-            "count": 25,
-            "sample": [
-              {
-                "uprn": "100031270361",
-                "address": "81, COBWELL ROAD, RETFORD, DN22 7DD",
-                "classification": "Terraced"
-              },
-              {
-                "uprn": "100031270360",
-                "address": "80, COBWELL ROAD, RETFORD, DN22 7DD",
-                "classification": "Terraced"
-              },
-              {
-                "uprn": "100031270362",
-                "address": "82, COBWELL ROAD, RETFORD, DN22 7DD",
-                "classification": "Terraced"
-              }
-            ]
-          }
-        },
-        {
-          "tool": "os_places.search",
-          "request": {
-            "text": "Navigation Lodge, Wharf Rd, Retford DN22 6EN"
-          },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 341.0,
-          "cached": false,
-          "source": "OS Places live",
-          "liveEvidence": true,
-          "responseSummary": {
-            "count": 25,
-            "sample": [
-              {
-                "uprn": "100031280113",
-                "address": "NAVIGATION LODGE, WHARF ROAD, RETFORD, DN22 6EN",
-                "classification": "Detached"
-              },
-              {
-                "uprn": "200002769091",
-                "address": "NAVIGATION FLAT, WHARF ROAD, RETFORD, DN22 6EN",
-                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
-              },
-              {
-                "uprn": "10093191656",
-                "address": "SUITS MARIE, WHARF ROAD, RETFORD, DN22 6EN",
-                "classification": "Shop / Showroom"
-              }
-            ]
-          }
-        },
-        {
-          "tool": "os_places.search",
-          "request": {
-            "text": "6 Millbridge Close, Retford DN22 6FE"
-          },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 221.8,
-          "cached": false,
-          "source": "OS Places live",
-          "liveEvidence": true,
-          "responseSummary": {
-            "count": 25,
-            "sample": [
-              {
-                "uprn": "10023264877",
-                "address": "6, MILL BRIDGE CLOSE, RETFORD, DN22 6FE",
-                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
-              },
-              {
-                "uprn": "10013978163",
-                "address": "6, WILLOWBRIDGE CLOSE, RETFORD, DN22 6PG",
-                "classification": "Terraced"
-              },
-              {
-                "uprn": "100031274433",
-                "address": "6, MILLFIELD CLOSE, RETFORD, DN22 7TW",
-                "classification": "Semi-Detached"
-              }
-            ]
-          }
-        },
-        {
-          "tool": "os_places.search",
-          "request": {
-            "text": "Canalside Wharf 6 Wharf Road, Retford DN22 6JL"
-          },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 1811.24,
-          "cached": false,
-          "source": "OS Places live",
-          "liveEvidence": true,
-          "responseSummary": {
-            "count": 25,
-            "sample": [
-              {
-                "uprn": "10093191764",
-                "address": "6 CANALSIDE WHARF, WHARF ROAD, RETFORD, DN22 6JL",
-                "classification": "Terraced"
-              },
-              {
-                "uprn": "10093191760",
-                "address": "1 CANALSIDE WHARF, WHARF ROAD, RETFORD, DN22 6JL",
-                "classification": "Terraced"
-              },
-              {
-                "uprn": "10093191501",
-                "address": "2 CANALSIDE WHARF, WHARF ROAD, RETFORD, DN22 6JL",
-                "classification": "Terraced"
-              }
-            ]
-          }
-        },
-        {
-          "tool": "os_places.search",
-          "request": {
-            "text": "22A Chapel Gate, Retford, DN22 6PJ"
-          },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 314.24,
-          "cached": false,
-          "source": "OS Places live",
-          "liveEvidence": true,
-          "responseSummary": {
-            "count": 25,
-            "sample": [
-              {
-                "uprn": "100032031280",
-                "address": "12, CHAPELGATE, RETFORD, DN22 6PJ",
-                "classification": "Shop / Showroom"
-              },
-              {
-                "uprn": "100032275148",
-                "address": "4, CHAPELGATE, RETFORD, DN22 6PJ",
-                "classification": "Property Shell"
-              },
-              {
-                "uprn": "100031269827",
-                "address": "8, CHAPELGATE, RETFORD, DN22 6PJ",
-                "classification": "Shop / Showroom"
-              }
-            ]
-          }
-        },
-        {
-          "tool": "os_places.search",
-          "request": {
-            "text": "Church Lane 1 The Close, Carlton in Lindrick, Worksop S81 9EH"
-          },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 1360.34,
-          "cached": false,
-          "source": "OS Places live",
-          "liveEvidence": true,
-          "responseSummary": {
-            "count": 25,
-            "sample": [
-              {
-                "uprn": "100031284208",
-                "address": "1 THE CLOSE, CHURCH LANE, CARLTON-IN-LINDRICK, WORKSOP, S81 9EH",
-                "classification": "Semi-Detached"
-              },
-              {
-                "uprn": "100031284209",
-                "address": "2 THE CLOSE, CHURCH LANE, CARLTON-IN-LINDRICK, WORKSOP, S81 9EH",
-                "classification": "Semi-Detached"
-              },
-              {
-                "uprn": "10090590354",
-                "address": "CHURCH VIEW, CHURCH LANE, CARLTON-IN-LINDRICK, WORKSOP, S81 9EH",
-                "classification": "Terraced"
-              }
-            ]
-          }
-        },
-        {
-          "tool": "os_places.search",
-          "request": {
-            "text": "50 Canal Rd, Worksop S80 2EH"
-          },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 420.98,
-          "cached": false,
-          "source": "OS Places live",
-          "liveEvidence": true,
-          "responseSummary": {
-            "count": 25,
-            "sample": [
-              {
-                "uprn": "100031282954",
-                "address": "50, CANAL ROAD, WORKSOP, S80 2EH",
-                "classification": "Terraced"
-              },
-              {
-                "uprn": "100031282955",
-                "address": "52, CANAL ROAD, WORKSOP, S80 2EH",
-                "classification": "Terraced"
-              },
-              {
-                "uprn": "100031282956",
-                "address": "54, CANAL ROAD, WORKSOP, S80 2EH",
-                "classification": "Terraced"
-              }
-            ]
-          }
-        },
-        {
-          "tool": "os_places.search",
-          "request": {
-            "text": "50 Canal Road, Worksop, S80 2EH"
-          },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 1569.88,
-          "cached": false,
-          "source": "OS Places live",
-          "liveEvidence": true,
-          "responseSummary": {
-            "count": 25,
-            "sample": [
-              {
-                "uprn": "100031282954",
-                "address": "50, CANAL ROAD, WORKSOP, S80 2EH",
-                "classification": "Terraced"
-              },
-              {
-                "uprn": "100031282955",
-                "address": "52, CANAL ROAD, WORKSOP, S80 2EH",
-                "classification": "Terraced"
-              },
-              {
-                "uprn": "100031282956",
-                "address": "54, CANAL ROAD, WORKSOP, S80 2EH",
-                "classification": "Terraced"
-              }
-            ]
-          }
-        },
-        {
-          "tool": "os_places.search",
-          "request": {
-            "text": "The Old Farm House 1 Corner Farm Dr, Everton DN10 5AN"
-          },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 882.64,
-          "cached": false,
-          "source": "OS Places live",
-          "liveEvidence": true,
-          "responseSummary": {
-            "count": 25,
-            "sample": [
-              {
-                "uprn": "10008521054",
-                "address": "THE OLD FARM HOUSE, KEDDINGTON CORNER, LOUTH, LN11 7DX",
-                "classification": "Detached"
-              },
-              {
-                "uprn": "10093190272",
-                "address": "1, CORNER FARM DRIVE, EVERTON, DONCASTER, DN10 5AN",
-                "classification": "Terraced"
-              },
-              {
-                "uprn": "100031263877",
-                "address": "THE OLD SCHOOL HOUSE, MILL LANE, EVERTON, DONCASTER, DN10 5DG",
-                "classification": "Detached"
-              }
-            ]
-          }
-        },
-        {
-          "tool": "os_places.search",
-          "request": {
-            "text": "Ragnall Stable, Main Street, Ragnall NG22 ORU"
-          },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 321.0,
-          "cached": false,
-          "source": "OS Places live",
-          "liveEvidence": true,
-          "responseSummary": {
-            "count": 25,
-            "sample": [
-              {
-                "uprn": "10023271791",
-                "address": "RAGNALL STABLES, MAIN STREET, RAGNALL, NEWARK, NG22 0UR",
-                "classification": "Detached"
-              },
-              {
-                "uprn": "10090590222",
-                "address": "RAGNALL HALL, MAIN STREET, RAGNALL, NEWARK, NG22 0UR",
-                "classification": "Detached"
-              },
-              {
-                "uprn": "10013978958",
-                "address": "RAGNALL HOUSE, MAIN STREET, RAGNALL, NEWARK, NG22 0UR",
-                "classification": "Detached"
-              }
-            ]
+            "workflowId": "batch_address_match",
+            "answerStatus": "ready_for_review",
+            "productSurfaceReady": true,
+            "reviewQueueCount": 8,
+            "inputRecords": 10,
+            "affectedRecords": null,
+            "highConfidenceMatches": 2
           }
         }
       ],
       "toolCallAggregate": [
         {
-          "tool": "os_places.search",
-          "calls": 10,
-          "ok": 10,
-          "liveEvidenceCalls": 10,
+          "tool": "os_workflows.query",
+          "calls": 1,
+          "ok": 1,
+          "liveEvidenceCalls": 1,
           "cached": 0,
           "sources": {
-            "OS Places live": 10
+            "Workflow engine": 1
           }
         }
       ]
@@ -874,9 +497,9 @@
       "scenarioId": "SG03",
       "title": "Shortest route between two premises using authoritative road network constraints",
       "benchmarkSupportLevel": "partial",
-      "liveOutcome": "full",
-      "firstClassProductReady": true,
-      "summary": "The live rerun now classifies the SG03 prompt correctly, exposes the dedicated routing surface, and returns a grounded route with distance, duration, steps, and graph provenance.",
+      "liveOutcome": "blocked",
+      "firstClassProductReady": false,
+      "summary": "The live rerun confirms that MCP-Geo now has the right routing product shape for SG03, but this environment still lacks an active MRN graph, so the scenario remains blocked at graph readiness rather than prompt classification or missing tool surface.",
       "evidence": {
         "originUprn": "100032031210",
         "destinationUprn": "100032031287",
@@ -886,31 +509,32 @@
           "os_route.get",
           "os_apps.render_route_planner"
         ],
-        "graphReady": true,
-        "graphReason": null,
-        "graphVersion": "stakeholder-benchmark-2026-03-10",
-        "graphSourceProduct": "Benchmark seeded route graph",
-        "routeStatusCode": 200,
-        "routeCode": null,
-        "routeProfile": "emergency",
-        "routeDistanceMeters": 365.0,
-        "routeDurationSeconds": 40.0,
-        "routeWarningsCount": 1,
+        "graphReady": false,
+        "graphReason": "route_graph_disabled",
+        "graphVersion": null,
+        "graphSourceProduct": null,
+        "routeStatusCode": 503,
+        "routeCode": "ROUTE_GRAPH_NOT_READY",
+        "routeProfile": null,
+        "routeDistanceMeters": null,
+        "routeDurationSeconds": null,
+        "routeWarningsCount": 0,
         "routePlannerResource": "ui://mcp-geo/route-planner",
         "interactiveCompanionTool": "os_apps.render_route_planner",
-        "distanceReturned": true,
-        "turnByTurnReturned": true
+        "distanceReturned": false,
+        "turnByTurnReturned": false
       },
       "confirmedCapabilities": [
-        "Both benchmark premises resolve to authoritative locations before routing.",
-        "The router correctly recommends `os_route.get` for this emergency routing prompt.",
-        "The live route tool returns computed geometry, distance, duration, and turn-by-turn steps."
+        "Both benchmark premises can be resolved to authoritative locations.",
+        "The router now classifies the prompt as `route_planning` and recommends `os_route.get`.",
+        "The route planner remains available as an interactive companion."
       ],
       "confirmedGaps": [
-        "Restriction richness still depends on the currently loaded MRN and restriction tables."
+        "No active MRN route graph is ready in this environment.",
+        "Restriction-aware routing cannot execute until the graph build is provisioned and enabled."
       ],
       "toolCallCount": 6,
-      "successfulToolCalls": 6,
+      "successfulToolCalls": 5,
       "liveEvidenceCalls": 2,
       "toolCalls": [
         {
@@ -920,7 +544,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 367.86,
+          "durationMs": 337.84,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -952,7 +576,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 626.07,
+          "durationMs": 525.7,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -984,7 +608,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 4.28,
+          "durationMs": 4.1,
           "cached": false,
           "source": "Router",
           "liveEvidence": false,
@@ -1002,15 +626,15 @@
           "request": {},
           "statusCode": 200,
           "ok": true,
-          "durationMs": 53.66,
+          "durationMs": 1.58,
           "cached": false,
           "source": "Routing engine",
           "liveEvidence": false,
           "responseSummary": {
-            "status": "ready",
-            "graphReady": true,
-            "graphReason": null,
-            "graphVersion": "stakeholder-benchmark-2026-03-10"
+            "status": "not_ready",
+            "graphReady": false,
+            "graphReason": "route_graph_disabled",
+            "graphVersion": null
           }
         },
         {
@@ -1026,26 +650,20 @@
             ],
             "profile": "emergency",
             "constraints": {
-              "avoidAreas": [
-                "flood"
-              ],
+              "avoidAreas": [],
               "avoidIds": [],
               "softAvoid": true
             }
           },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 548.25,
+          "statusCode": 503,
+          "ok": false,
+          "durationMs": 343.95,
           "cached": false,
-          "source": "Routing engine",
+          "source": "error",
           "liveEvidence": false,
           "responseSummary": {
-            "profile": "emergency",
-            "distanceMeters": 365.0,
-            "durationSeconds": 40.0,
-            "stepCount": 1,
-            "warningCount": 1,
-            "graphVersion": "stakeholder-benchmark-2026-03-10"
+            "code": "ROUTE_GRAPH_NOT_READY",
+            "message": "Route graph is not ready."
           }
         },
         {
@@ -1061,16 +679,14 @@
             ],
             "profile": "emergency",
             "constraints": {
-              "avoidAreas": [
-                "flood"
-              ],
+              "avoidAreas": [],
               "avoidIds": [],
               "softAvoid": true
             }
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 2.89,
+          "durationMs": 2.74,
           "cached": false,
           "source": "UI shell",
           "liveEvidence": false,
@@ -1124,11 +740,11 @@
         {
           "tool": "os_route.get",
           "calls": 1,
-          "ok": 1,
+          "ok": 0,
           "liveEvidenceCalls": 0,
           "cached": 0,
           "sources": {
-            "Routing engine": 1
+            "error": 1
           }
         }
       ]
@@ -1143,10 +759,10 @@
       "evidence": {
         "districtId": "E06000017",
         "bbox": [
-          -0.8268286652905535,
-          52.52152179827406,
-          -0.4263419092637883,
-          52.76208348039028
+          -0.8268325879948367,
+          52.52137446297019,
+          -0.4263419091990354,
+          52.7620834812794
         ],
         "roadLinkCollectionPresent": false,
         "sampleSegmentCount": 5,
@@ -1157,8 +773,8 @@
           "alternatename2_text",
           "capturespecification",
           "changetype",
-          "cyclefacility",
-          "cyclefacility_wholelink"
+          "description",
+          "directionality"
         ],
         "maintainabilityFieldObserved": false
       },
@@ -1181,12 +797,12 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 3072.62,
+          "durationMs": 2635.56,
           "cached": false,
           "source": "Admin lookup live",
           "liveEvidence": true,
           "responseSummary": {
-            "count": 16,
+            "count": 18,
             "sample": [
               {
                 "id": "E06000017",
@@ -1224,17 +840,17 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 2156.55,
+          "durationMs": 2029.26,
           "cached": false,
           "source": "Admin lookup live",
           "liveEvidence": true,
           "responseSummary": {
             "id": "E06000017",
             "bbox": [
-              -0.8268286652905535,
-              52.52152179827406,
-              -0.4263419092637883,
-              52.76208348039028
+              -0.8268325879948367,
+              52.52137446297019,
+              -0.4263419091990354,
+              52.7620834812794
             ],
             "live": true
           }
@@ -1244,12 +860,12 @@
           "request": {},
           "statusCode": 200,
           "ok": true,
-          "durationMs": 427.36,
+          "durationMs": 440.95,
           "cached": false,
           "source": "OS NGD live",
           "liveEvidence": true,
           "responseSummary": {
-            "count": 91,
+            "count": 94,
             "hasRoadLink": false
           }
         },
@@ -1258,21 +874,21 @@
           "request": {
             "collection": "trn-ntwk-roadlink",
             "bbox": [
-              -0.8268286652905535,
-              52.52152179827406,
-              -0.4263419092637883,
-              52.76208348039028
+              -0.8268325879948367,
+              52.52137446297019,
+              -0.4263419091990354,
+              52.7620834812794
             ],
             "limit": 5
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 4147.43,
+          "durationMs": 854.15,
           "cached": false,
           "source": "OS NGD live",
           "liveEvidence": true,
           "responseSummary": {
-            "collection": "trn-ntwk-roadlink",
+            "collection": "trn-ntwk-roadlink-5",
             "count": 5,
             "live": true,
             "samplePropertyKeys": [
@@ -1282,8 +898,8 @@
               "alternatename2_text",
               "capturespecification",
               "changetype",
-              "cyclefacility",
-              "cyclefacility_wholelink"
+              "description",
+              "directionality"
             ]
           }
         }
@@ -1337,23 +953,27 @@
       "benchmarkSupportLevel": "partial",
       "liveOutcome": "partial",
       "firstClassProductReady": false,
-      "summary": "The site itself can be resolved live and placed in its containing administrative areas, but the constraint answer remains partial because MCP-Geo still does not expose planning.data or local-plan policy layers as first-class spatial evidence sources.",
+      "summary": "MCP-Geo now exposes a native planning-constraints workflow contract for SG05. The site itself can be resolved live and placed in its containing administrative areas, but the answer remains partial until planning.data and local-plan layers are ingested as live connector-backed evidence.",
       "evidence": {
         "siteUprn": "100032031287",
         "district": "Bassetlaw",
+        "workflowAnswerStatus": "needs_external_layers",
+        "workflowProductSurfaceReady": true,
+        "workflowReviewQueueCount": 4,
         "planningKeywordCollections": [],
         "planningKeywordCollectionCount": 0
       },
       "confirmedCapabilities": [
         "Live site resolution works for the benchmark planning site.",
-        "Administrative context can be recovered live from coordinates."
+        "Administrative context can be recovered live from coordinates.",
+        "A native planning_constraints workflow now records the connector gap explicitly."
       ],
       "confirmedGaps": [
         "Planning-constraint and local-plan policy layers are still missing from the MCP-Geo tool surface.",
         "Any intersection evidence beyond OS base layers still has to be sourced externally."
       ],
-      "toolCallCount": 3,
-      "successfulToolCalls": 3,
+      "toolCallCount": 4,
+      "successfulToolCalls": 4,
       "liveEvidenceCalls": 3,
       "toolCalls": [
         {
@@ -1363,7 +983,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 626.07,
+          "durationMs": 525.7,
           "cached": true,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -1389,6 +1009,28 @@
           }
         },
         {
+          "tool": "os_workflows.query",
+          "request": {
+            "workflowId": "planning_constraints",
+            "site": "Goodwin Hall, Chancery Lane, Retford, DN22 6DF"
+          },
+          "statusCode": 200,
+          "ok": true,
+          "durationMs": 2.93,
+          "cached": false,
+          "source": "Workflow engine",
+          "liveEvidence": false,
+          "responseSummary": {
+            "workflowId": "planning_constraints",
+            "answerStatus": "needs_external_layers",
+            "productSurfaceReady": true,
+            "reviewQueueCount": 4,
+            "inputRecords": null,
+            "affectedRecords": null,
+            "highConfidenceMatches": null
+          }
+        },
+        {
           "tool": "admin_lookup.containing_areas",
           "request": {
             "lat": 53.3219807,
@@ -1396,16 +1038,17 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 2994.14,
+          "durationMs": 4464.38,
           "cached": false,
           "source": "Admin lookup live",
           "liveEvidence": true,
           "responseSummary": {
-            "count": 8,
+            "count": 9,
             "levels": [
               "OA",
               "LSOA",
               "MSOA",
+              "PARISH",
               "WARD",
               "DISTRICT",
               "COUNTY",
@@ -1421,12 +1064,12 @@
           "request": {},
           "statusCode": 200,
           "ok": true,
-          "durationMs": 427.36,
+          "durationMs": 440.95,
           "cached": true,
           "source": "OS NGD live",
           "liveEvidence": true,
           "responseSummary": {
-            "count": 91,
+            "count": 94,
             "hasRoadLink": false
           }
         }
@@ -1460,6 +1103,16 @@
           "cached": 1,
           "sources": {
             "OS Places live": 1
+          }
+        },
+        {
+          "tool": "os_workflows.query",
+          "calls": 1,
+          "ok": 1,
+          "liveEvidenceCalls": 0,
+          "cached": 0,
+          "sources": {
+            "Workflow engine": 1
           }
         }
       ]
@@ -1550,7 +1203,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 279.8,
+          "durationMs": 223.98,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -1567,7 +1220,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 174.18,
+          "durationMs": 154.79,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -1584,7 +1237,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 256.43,
+          "durationMs": 143.46,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -1601,7 +1254,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 215.28,
+          "durationMs": 227.91,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -1618,7 +1271,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 234.51,
+          "durationMs": 145.02,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -1635,7 +1288,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 149.67,
+          "durationMs": 158.87,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -1652,7 +1305,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 157.61,
+          "durationMs": 220.35,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -1755,8 +1408,8 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1685.73,
-          "cached": true,
+          "durationMs": 1570.53,
+          "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
           "responseSummary": {
@@ -1787,8 +1440,8 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 215.99,
-          "cached": true,
+          "durationMs": 884.32,
+          "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
           "responseSummary": {
@@ -1819,8 +1472,8 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 331.25,
-          "cached": true,
+          "durationMs": 275.29,
+          "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
           "responseSummary": {
@@ -1851,8 +1504,8 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 218.03,
-          "cached": true,
+          "durationMs": 662.23,
+          "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
           "responseSummary": {
@@ -1883,7 +1536,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 782.44,
+          "durationMs": 697.2,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -1915,8 +1568,8 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1798.39,
-          "cached": true,
+          "durationMs": 1564.69,
+          "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
           "responseSummary": {
@@ -1947,8 +1600,8 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 220.94,
-          "cached": true,
+          "durationMs": 343.29,
+          "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
           "responseSummary": {
@@ -1979,7 +1632,7 @@
           "calls": 7,
           "ok": 7,
           "liveEvidenceCalls": 7,
-          "cached": 6,
+          "cached": 0,
           "sources": {
             "OS Places live": 7
           }
@@ -1999,7 +1652,7 @@
         "wardResolutionResults": [
           {
             "ward": "Cayton",
-            "resultCount": 1
+            "resultCount": 3
           },
           {
             "ward": "Ripon South",
@@ -2049,17 +1702,27 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 3814.18,
+          "durationMs": 2511.66,
           "cached": false,
           "source": "Admin lookup live",
           "liveEvidence": true,
           "responseSummary": {
-            "count": 1,
+            "count": 3,
             "sample": [
               {
-                "id": "E05012374",
+                "id": "E05014265",
                 "level": "WARD",
                 "name": "Cayton"
+              },
+              {
+                "id": "E04007663",
+                "level": "PARISH",
+                "name": "Cayton"
+              },
+              {
+                "id": "E04007418",
+                "level": "PARISH",
+                "name": "South Stainley with Cayton"
               }
             ],
             "live": true
@@ -2072,7 +1735,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 3657.28,
+          "durationMs": 2664.58,
           "cached": false,
           "source": "Admin lookup live",
           "liveEvidence": true,
@@ -2089,7 +1752,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 389.15,
+          "durationMs": 218.08,
           "cached": false,
           "source": "Admin lookup live",
           "liveEvidence": true,
@@ -2106,7 +1769,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 3129.01,
+          "durationMs": 2908.68,
           "cached": false,
           "source": "Admin lookup live",
           "liveEvidence": true,
@@ -2114,7 +1777,7 @@
             "count": 1,
             "sample": [
               {
-                "id": "E05010057",
+                "id": "E05014315",
                 "level": "WARD",
                 "name": "Selby West"
               }
@@ -2182,7 +1845,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 234.51,
+          "durationMs": 145.02,
           "cached": true,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -2199,7 +1862,7 @@
           },
           "statusCode": 404,
           "ok": false,
-          "durationMs": 9.28,
+          "durationMs": 3.84,
           "cached": false,
           "source": "error",
           "liveEvidence": false,
@@ -2216,7 +1879,7 @@
           },
           "statusCode": 404,
           "ok": false,
-          "durationMs": 1.6,
+          "durationMs": 2.51,
           "cached": false,
           "source": "error",
           "liveEvidence": false,
@@ -2295,7 +1958,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 340.89,
+          "durationMs": 245.74,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -2327,7 +1990,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1762.34,
+          "durationMs": 2029.43,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -2359,8 +2022,8 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 221.8,
-          "cached": true,
+          "durationMs": 830.07,
+          "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
           "responseSummary": {
@@ -2391,7 +2054,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 244.12,
+          "durationMs": 653.52,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -2423,7 +2086,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1804.66,
+          "durationMs": 1661.77,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -2455,8 +2118,8 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1569.88,
-          "cached": true,
+          "durationMs": 1529.41,
+          "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
           "responseSummary": {
@@ -2487,7 +2150,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1223.0,
+          "durationMs": 1071.98,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -2519,7 +2182,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 209.83,
+          "durationMs": 711.69,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -2551,7 +2214,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1533.84,
+          "durationMs": 1371.0,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -2583,7 +2246,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 298.48,
+          "durationMs": 206.42,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -2615,7 +2278,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 949.8,
+          "durationMs": 202.62,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -2647,7 +2310,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 199.9,
+          "durationMs": 660.67,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -2679,7 +2342,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1712.32,
+          "durationMs": 1625.21,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -2711,7 +2374,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 729.39,
+          "durationMs": 671.02,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -2743,7 +2406,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 198.62,
+          "durationMs": 187.96,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -2775,7 +2438,7 @@
           "calls": 15,
           "ok": 15,
           "liveEvidenceCalls": 15,
-          "cached": 2,
+          "cached": 0,
           "sources": {
             "OS Places live": 15
           }
@@ -2826,7 +2489,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 159.75,
+          "durationMs": 158.85,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -2858,16 +2521,16 @@
       "scenarioId": "SG12",
       "title": "Coordinate-to-address incident resolution and quickest responder comparison",
       "benchmarkSupportLevel": "partial",
-      "liveOutcome": "partial",
+      "liveOutcome": "blocked",
       "firstClassProductReady": false,
-      "summary": "The incident coordinate and both responder sites resolve cleanly, and the seeded benchmark route graph now allows a grounded fastest-responder comparison. MCP-Geo still only partially supports the use case because the multi-resource comparison and dispatch decision remain external orchestration rather than a native mobilisation workflow.",
+      "summary": "The live rerun can ground the incident and responder locations, but a fastest-responder answer still depends on an active route graph. Without it, the scenario stops at authoritative address resolution.",
       "evidence": {
         "incidentAddress": "GOODWIN HALL, CHANCERY LANE, RETFORD, DN22 6DF",
         "incidentUprn": "100032031287",
         "incidentClassification": "Public / Village Hall / Other Community Facility",
-        "graphReady": true,
-        "graphReason": null,
-        "graphVersion": "stakeholder-benchmark-2026-03-10",
+        "graphReady": false,
+        "graphReason": "route_graph_disabled",
+        "graphVersion": null,
         "resolvedResponders": [
           {
             "resourceId": "FR-001",
@@ -2886,35 +2549,18 @@
             "score": 1.0
           }
         ],
-        "routeComparisons": [
-          {
-            "resourceName": "Retford Fire Station",
-            "ok": true,
-            "distanceMeters": 470.0,
-            "durationSeconds": 50.0,
-            "routeCode": null
-          },
-          {
-            "resourceName": "Tuxford Fire Station",
-            "ok": true,
-            "distanceMeters": 11100.0,
-            "durationSeconds": 900.0,
-            "routeCode": null
-          }
-        ],
-        "fastestResponder": "Retford Fire Station"
+        "routeComparisons": [],
+        "fastestResponder": null
       },
       "confirmedCapabilities": [
-        "Live nearest-address resolution works for the incident coordinate.",
-        "The responder sites resolve to authoritative OS premises records.",
-        "The active route graph supports route comparison to identify the faster benchmark responder."
+        "The incident coordinate can still be resolved to an authoritative premises context.",
+        "Responder premises can be resolved even when routing is unavailable."
       ],
       "confirmedGaps": [
-        "Responder ranking is still orchestrated outside MCP-Geo rather than returned as a native dispatch tool output.",
-        "Control-room policy and appliance availability remain out of scope."
+        "No active route graph is ready for responder comparison."
       ],
-      "toolCallCount": 6,
-      "successfulToolCalls": 6,
+      "toolCallCount": 4,
+      "successfulToolCalls": 4,
       "liveEvidenceCalls": 3,
       "toolCalls": [
         {
@@ -2925,7 +2571,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 247.69,
+          "durationMs": 233.64,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -2945,15 +2591,15 @@
           "request": {},
           "statusCode": 200,
           "ok": true,
-          "durationMs": 53.66,
+          "durationMs": 1.58,
           "cached": true,
           "source": "Routing engine",
           "liveEvidence": false,
           "responseSummary": {
-            "status": "ready",
-            "graphReady": true,
-            "graphReason": null,
-            "graphVersion": "stakeholder-benchmark-2026-03-10"
+            "status": "not_ready",
+            "graphReady": false,
+            "graphReason": "route_graph_disabled",
+            "graphVersion": null
           }
         },
         {
@@ -2963,7 +2609,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1633.34,
+          "durationMs": 1519.87,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -2989,41 +2635,13 @@
           }
         },
         {
-          "tool": "os_route.get",
-          "request": {
-            "stops": [
-              {
-                "uprn": "100032031320"
-              },
-              {
-                "uprn": "100032031287"
-              }
-            ],
-            "profile": "emergency"
-          },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 596.13,
-          "cached": false,
-          "source": "Routing engine",
-          "liveEvidence": false,
-          "responseSummary": {
-            "profile": "emergency",
-            "distanceMeters": 470.0,
-            "durationSeconds": 50.0,
-            "stepCount": 1,
-            "warningCount": 0,
-            "graphVersion": "stakeholder-benchmark-2026-03-10"
-          }
-        },
-        {
           "tool": "os_places.search",
           "request": {
             "text": "Nottinghamshire Fire & Rescue Service, Tuxford Fire Station, Clark Lane, Tuxford, Newark, NG22 0LZ"
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 782.04,
+          "durationMs": 605.02,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -3046,34 +2664,6 @@
                 "classification": "Fire Station"
               }
             ]
-          }
-        },
-        {
-          "tool": "os_route.get",
-          "request": {
-            "stops": [
-              {
-                "uprn": "200002776288"
-              },
-              {
-                "uprn": "100032031287"
-              }
-            ],
-            "profile": "emergency"
-          },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 503.02,
-          "cached": false,
-          "source": "Routing engine",
-          "liveEvidence": false,
-          "responseSummary": {
-            "profile": "emergency",
-            "distanceMeters": 11100.0,
-            "durationSeconds": 900.0,
-            "stepCount": 1,
-            "warningCount": 0,
-            "graphVersion": "stakeholder-benchmark-2026-03-10"
           }
         }
       ],
@@ -3106,16 +2696,6 @@
           "cached": 1,
           "sources": {
             "Routing engine": 1
-          }
-        },
-        {
-          "tool": "os_route.get",
-          "calls": 2,
-          "ok": 2,
-          "liveEvidenceCalls": 0,
-          "cached": 0,
-          "sources": {
-            "Routing engine": 2
           }
         }
       ]
@@ -3190,7 +2770,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 224.54,
+          "durationMs": 229.46,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -3222,7 +2802,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 155.26,
+          "durationMs": 235.52,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -3239,7 +2819,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1634.8,
+          "durationMs": 1519.6,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -3271,7 +2851,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 237.7,
+          "durationMs": 146.17,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -3288,7 +2868,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 215.99,
+          "durationMs": 884.32,
           "cached": true,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -3320,7 +2900,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 157.98,
+          "durationMs": 135.75,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -3337,7 +2917,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 367.86,
+          "durationMs": 337.84,
           "cached": true,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -3369,7 +2949,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 174.18,
+          "durationMs": 154.79,
           "cached": true,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -3461,7 +3041,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 272.14,
+          "durationMs": 274.13,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -3493,7 +3073,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 588.98,
+          "durationMs": 525.59,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -3511,9 +3091,9 @@
                 "classification": "Property Shell"
               },
               {
-                "uprn": "10034763932",
-                "address": "7A, TOFT GREEN, YORK, YO1 6JT",
-                "classification": "Self Contained Flat (Includes Maisonette / Apartment)"
+                "uprn": "100052212210",
+                "address": "20, TOFT GREEN, YORK, YO1 6JT",
+                "classification": "Shop / Showroom"
               }
             ]
           }
@@ -3525,7 +3105,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 572.58,
+          "durationMs": 514.28,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -3557,7 +3137,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 216.13,
+          "durationMs": 349.16,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -3589,7 +3169,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1723.88,
+          "durationMs": 1533.68,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -3621,7 +3201,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 917.57,
+          "durationMs": 1074.22,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -3651,12 +3231,12 @@
           "request": {},
           "statusCode": 200,
           "ok": true,
-          "durationMs": 427.36,
+          "durationMs": 440.95,
           "cached": true,
           "source": "OS NGD live",
           "liveEvidence": true,
           "responseSummary": {
-            "count": 91,
+            "count": 94,
             "hasRoadLink": false
           }
         },
@@ -3674,7 +3254,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 274.93,
+          "durationMs": 327.2,
           "cached": false,
           "source": "OS NGD live",
           "liveEvidence": true,
@@ -3736,11 +3316,23 @@
       "firstClassProductReady": false,
       "summary": "The live rerun now exercises both exact and best-fit UPRN geography lookup directly, including explicit `NOT_FOUND` branches. The scenario remains partial because the cache is still intentionally sparse and the multi-row comparison/export workflow is not native to MCP-Geo.",
       "evidence": {
-        "cacheStatus": "ready",
+        "cacheStatus": "degraded",
         "cacheAvailable": true,
         "cacheProductCount": 4,
-        "coveredRows": 2,
+        "coveredRows": 0,
         "missingRows": [
+          {
+            "uprn": "100023336959",
+            "label": "Foreign, Commonwealth & Development Office, King Charles Street",
+            "exactStatus": "NOT_FOUND",
+            "bestFitStatus": "NOT_FOUND"
+          },
+          {
+            "uprn": "100120786206",
+            "label": "3 The Magnolias, Bicester",
+            "exactStatus": "NOT_FOUND",
+            "bestFitStatus": "NOT_FOUND"
+          },
           {
             "uprn": "100032031210",
             "label": "Retford Library",
@@ -3748,22 +3340,7 @@
             "bestFitStatus": "NOT_FOUND"
           }
         ],
-        "comparisonRows": [
-          {
-            "uprn": "100023336959",
-            "address": "FOREIGN COMMONWEALTH & DEVELOPMENT OFFICE, KING CHARLES STREET, LONDON, SW1A 2AH",
-            "exactLad": null,
-            "bestFitLad": null,
-            "differenceFlag": false
-          },
-          {
-            "uprn": "100120786206",
-            "address": "3, THE MAGNOLIAS, BICESTER, OX26 3YG",
-            "exactLad": null,
-            "bestFitLad": null,
-            "differenceFlag": false
-          }
-        ]
+        "comparisonRows": []
       },
       "confirmedCapabilities": [
         "Exact and best-fit ONS geography lookups can be compared directly for the same UPRN.",
@@ -3774,7 +3351,7 @@
         "Batch comparison, mismatch highlighting, and export shaping still require orchestration outside MCP-Geo."
       ],
       "toolCallCount": 10,
-      "successfulToolCalls": 8,
+      "successfulToolCalls": 4,
       "liveEvidenceCalls": 3,
       "toolCalls": [
         {
@@ -3782,12 +3359,12 @@
           "request": {},
           "statusCode": 200,
           "ok": true,
-          "durationMs": 3.64,
+          "durationMs": 3.41,
           "cached": false,
           "source": "ONS geography cache",
           "liveEvidence": false,
           "responseSummary": {
-            "status": "ready",
+            "status": "degraded",
             "available": true,
             "productCount": 4,
             "primaryDerivationMode": "exact"
@@ -3800,7 +3377,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 160.52,
+          "durationMs": 146.13,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -3815,16 +3392,15 @@
           "request": {
             "uprn": "100023336959"
           },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 2.4,
+          "statusCode": 404,
+          "ok": false,
+          "durationMs": 5.3,
           "cached": false,
-          "source": "ONS geography cache",
+          "source": "error",
           "liveEvidence": false,
           "responseSummary": {
-            "uprn": null,
-            "derivationMode": null,
-            "geographyCount": 2
+            "code": "NOT_FOUND",
+            "message": "No geography mapping found for uprn 100023336959 in exact mode."
           }
         },
         {
@@ -3833,16 +3409,15 @@
             "uprn": "100023336959",
             "derivationMode": "best_fit"
           },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 1.49,
+          "statusCode": 404,
+          "ok": false,
+          "durationMs": 4.54,
           "cached": false,
-          "source": "ONS geography cache",
+          "source": "error",
           "liveEvidence": false,
           "responseSummary": {
-            "uprn": null,
-            "derivationMode": null,
-            "geographyCount": 2
+            "code": "NOT_FOUND",
+            "message": "No geography mapping found for uprn 100023336959 in best_fit mode."
           }
         },
         {
@@ -3852,7 +3427,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 194.8,
+          "durationMs": 240.34,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -3867,16 +3442,15 @@
           "request": {
             "uprn": "100120786206"
           },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 3.63,
+          "statusCode": 404,
+          "ok": false,
+          "durationMs": 5.96,
           "cached": false,
-          "source": "ONS geography cache",
+          "source": "error",
           "liveEvidence": false,
           "responseSummary": {
-            "uprn": null,
-            "derivationMode": null,
-            "geographyCount": 2
+            "code": "NOT_FOUND",
+            "message": "No geography mapping found for uprn 100120786206 in exact mode."
           }
         },
         {
@@ -3885,16 +3459,15 @@
             "uprn": "100120786206",
             "derivationMode": "best_fit"
           },
-          "statusCode": 200,
-          "ok": true,
-          "durationMs": 2.59,
+          "statusCode": 404,
+          "ok": false,
+          "durationMs": 3.88,
           "cached": false,
-          "source": "ONS geography cache",
+          "source": "error",
           "liveEvidence": false,
           "responseSummary": {
-            "uprn": null,
-            "derivationMode": null,
-            "geographyCount": 2
+            "code": "NOT_FOUND",
+            "message": "No geography mapping found for uprn 100120786206 in best_fit mode."
           }
         },
         {
@@ -3904,7 +3477,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 174.18,
+          "durationMs": 154.79,
           "cached": true,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -3921,7 +3494,7 @@
           },
           "statusCode": 404,
           "ok": false,
-          "durationMs": 1.85,
+          "durationMs": 2.96,
           "cached": false,
           "source": "error",
           "liveEvidence": false,
@@ -3938,7 +3511,7 @@
           },
           "statusCode": 404,
           "ok": false,
-          "durationMs": 1.6,
+          "durationMs": 2.79,
           "cached": false,
           "source": "error",
           "liveEvidence": false,
@@ -3952,12 +3525,11 @@
         {
           "tool": "ons_geo.by_uprn",
           "calls": 6,
-          "ok": 4,
+          "ok": 0,
           "liveEvidenceCalls": 0,
           "cached": 0,
           "sources": {
-            "ONS geography cache": 4,
-            "error": 2
+            "error": 6
           }
         },
         {
@@ -4051,7 +3623,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 884.56,
+          "durationMs": 733.24,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -4083,7 +3655,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1226.21,
+          "durationMs": 863.29,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -4115,7 +3687,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1740.8,
+          "durationMs": 1609.57,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -4147,7 +3719,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1569.88,
+          "durationMs": 1529.41,
           "cached": true,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -4179,7 +3751,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1429.97,
+          "durationMs": 1118.81,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -4211,7 +3783,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1223.0,
+          "durationMs": 1071.98,
           "cached": true,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -4243,7 +3815,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 209.83,
+          "durationMs": 711.69,
           "cached": true,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -4275,7 +3847,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1629.24,
+          "durationMs": 1416.82,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -4347,7 +3919,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 409.17,
+          "durationMs": 211.52,
           "cached": false,
           "source": "OS Names live",
           "liveEvidence": true,
@@ -4386,7 +3958,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 328.76,
+          "durationMs": 274.63,
           "cached": false,
           "source": "OS Names live",
           "liveEvidence": true,
@@ -4425,7 +3997,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 361.03,
+          "durationMs": 227.75,
           "cached": false,
           "source": "OS Names live",
           "liveEvidence": true,
@@ -4464,7 +4036,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 359.2,
+          "durationMs": 276.09,
           "cached": false,
           "source": "OS Names live",
           "liveEvidence": true,
@@ -4503,7 +4075,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 327.31,
+          "durationMs": 266.2,
           "cached": false,
           "source": "OS Names live",
           "liveEvidence": true,
@@ -4539,12 +4111,12 @@
           "request": {},
           "statusCode": 200,
           "ok": true,
-          "durationMs": 427.36,
+          "durationMs": 440.95,
           "cached": true,
           "source": "OS NGD live",
           "liveEvidence": true,
           "responseSummary": {
-            "count": 91,
+            "count": 94,
             "hasRoadLink": false
           }
         }
@@ -4630,7 +4202,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 570.09,
+          "durationMs": 396.4,
           "cached": false,
           "source": "Admin lookup live",
           "liveEvidence": true,
@@ -4657,7 +4229,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 339.86,
+          "durationMs": 380.76,
           "cached": false,
           "source": "Admin lookup live",
           "liveEvidence": true,
@@ -4684,7 +4256,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 355.08,
+          "durationMs": 203.36,
           "cached": false,
           "source": "Admin lookup live",
           "liveEvidence": true,
@@ -4711,7 +4283,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 250.57,
+          "durationMs": 320.54,
           "cached": false,
           "source": "Admin lookup live",
           "liveEvidence": true,
@@ -4738,7 +4310,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 396.39,
+          "durationMs": 273.81,
           "cached": false,
           "source": "Admin lookup live",
           "liveEvidence": true,
@@ -4761,7 +4333,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 243.84,
+          "durationMs": 1668.14,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -4793,7 +4365,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1791.84,
+          "durationMs": 1610.79,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -4825,7 +4397,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 755.33,
+          "durationMs": 740.95,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -4931,7 +4503,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 398.08,
+          "durationMs": 294.19,
           "cached": false,
           "source": "OS Names live",
           "liveEvidence": true,
@@ -4970,7 +4542,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 326.37,
+          "durationMs": 330.5,
           "cached": false,
           "source": "OS Names live",
           "liveEvidence": true,
@@ -5009,7 +4581,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 267.08,
+          "durationMs": 193.8,
           "cached": false,
           "source": "OS Names live",
           "liveEvidence": true,
@@ -5048,7 +4620,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 374.48,
+          "durationMs": 288.36,
           "cached": false,
           "source": "OS Names live",
           "liveEvidence": true,
@@ -5087,7 +4659,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 273.13,
+          "durationMs": 269.86,
           "cached": false,
           "source": "OS Names live",
           "liveEvidence": true,
@@ -5125,7 +4697,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 668.47,
+          "durationMs": 618.96,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -5157,7 +4729,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 912.69,
+          "durationMs": 784.98,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -5189,7 +4761,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 825.29,
+          "durationMs": 526.85,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -5300,7 +4872,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 4.44,
+          "durationMs": 8.87,
           "cached": false,
           "source": "Router",
           "liveEvidence": false,
@@ -5320,7 +4892,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 240.63,
+          "durationMs": 253.42,
           "cached": false,
           "source": "OS Names live",
           "liveEvidence": true,
@@ -5359,7 +4931,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 369.49,
+          "durationMs": 245.31,
           "cached": false,
           "source": "OS Names live",
           "liveEvidence": true,
@@ -5398,7 +4970,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 346.68,
+          "durationMs": 262.45,
           "cached": false,
           "source": "OS Names live",
           "liveEvidence": true,
@@ -5406,7 +4978,7 @@
             "count": 10,
             "sample": [
               {
-                "id": "0dfaab49-4b61-4941-9d22-af616b92703b",
+                "id": "cefa8fe1-ed08-4bfd-a345-c0d7557b2e95",
                 "name1": "Tuxford Road",
                 "localType": "Section Of Named Road",
                 "lat": null,
@@ -5437,7 +5009,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 299.01,
+          "durationMs": 222.77,
           "cached": false,
           "source": "OS Names live",
           "liveEvidence": true,
@@ -5475,7 +5047,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 884.28,
+          "durationMs": 826.39,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,
@@ -5507,7 +5079,7 @@
           },
           "statusCode": 200,
           "ok": true,
-          "durationMs": 1615.59,
+          "durationMs": 1619.76,
           "cached": false,
           "source": "OS Places live",
           "liveEvidence": true,

@@ -360,6 +360,33 @@ def test_route_query_without_if_possible_preserves_hard_avoid():
     assert params["constraints"]["softAvoid"] is False
 
 
+def test_route_query_incident_impact_routes_to_native_workflow():
+    body = _route(
+        "Which premises and vulnerable households are affected by this incident area?"
+    )
+
+    assert body["intent"] == "operational_workflow"
+    assert body["recommended_tool"] == "os_workflows.query"
+    assert body["recommended_parameters"]["workflowId"] == "incident_impact"
+    assert body["workflow_steps"] == ["os_workflows.descriptor", "os_workflows.query"]
+
+
+def test_route_query_batch_address_matching_routes_to_native_workflow():
+    body = _route("Batch match free-text addresses to UPRNs and produce a review queue")
+
+    assert body["intent"] == "operational_workflow"
+    assert body["recommended_tool"] == "os_workflows.query"
+    assert body["recommended_parameters"]["workflowId"] == "batch_address_match"
+
+
+def test_route_query_planning_constraints_routes_to_native_workflow():
+    body = _route("Summarise planning constraints for a proposed site")
+
+    assert body["intent"] == "operational_workflow"
+    assert body["recommended_tool"] == "os_workflows.query"
+    assert body["recommended_parameters"]["workflowId"] == "planning_constraints"
+
+
 def test_route_query_surfaces_unresolved_avoid_text_without_invalid_parameters():
     body = _route(
         "Plan the best route from Coventry rail station to London Euston and "

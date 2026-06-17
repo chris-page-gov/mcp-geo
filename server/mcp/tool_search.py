@@ -50,6 +50,7 @@ _PREFIX_CATEGORY: dict[str, ToolCategory] = {
     "os_downloads": ToolCategory.UTILITY,
     "os_map": ToolCategory.MAPS,
     "os_offline": ToolCategory.MAPS,
+    "os_workflows": ToolCategory.UTILITY,
     "landis_catalog": ToolCategory.UTILITY,
     "landis_metadata": ToolCategory.UTILITY,
     "landis_archive": ToolCategory.UTILITY,
@@ -86,6 +87,18 @@ _PREFIX_KEYWORDS: dict[str, list[str]] = {
     "os_downloads": ["downloads", "product", "export", "package"],
     "os_map": ["map", "inventory", "export", "layers", "aggregation", "boundary"],
     "os_offline": ["map", "offline", "pmtiles", "mbtiles", "pack", "descriptor", "handoff"],
+    "os_workflows": [
+        "workflow",
+        "stakeholder",
+        "incident",
+        "batch",
+        "address",
+        "planning",
+        "constraints",
+        "poc",
+        "review",
+        "export",
+    ],
     "landis_catalog": ["landis", "soil", "catalog", "products", "metadata"],
     "landis_metadata": ["landis", "soil", "metadata", "provenance", "license"],
     "landis_archive": ["landis", "archive", "inventory", "portal", "release", "data.gov"],
@@ -155,6 +168,8 @@ STARTER_TOOLS: tuple[str, ...] = (
     "os_mcp.route_query",
     "os_mcp.select_toolsets",
     "os_mcp.stats_routing",
+    "os_workflows.descriptor",
+    "os_workflows.query",
     "os_names.find",
     "os_linked_ids.get",
     "os_places.by_postcode",
@@ -196,6 +211,7 @@ TOOLSET_PATTERNS: dict[str, tuple[str, ...]] = {
     "nomis_data": ("nomis.*",),
     "property_tax": ("council_tax.*",),
     "apps_ui": ("os_apps.render_*", "os_apps.log_event"),
+    "operational_workflows": ("os_workflows.*",),
 }
 
 ALWAYS_LOADED_TOOLS: Set[str] = {

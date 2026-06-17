@@ -1,6 +1,7 @@
 # MCP-Geo Stakeholder Evaluation Live Rerun
 
-Generated: 2026-03-10
+Generated: 2026-06-17
+Benchmark reference date: 2026-03-10
 
 This report reruns the 20 stakeholder scenarios against the live MCP-Geo surface in the current Codex session.
 It is separate from the benchmark pack so the gold/reference answers remain stable while the live tool evidence changes.
@@ -10,7 +11,7 @@ It is separate from the benchmark pack so the gold/reference answers remain stab
 - `OS_API_KEY` loaded in this session: `True`
 - `OS_API_KEY_FILE` visible in this session: `/Users/crpage/.secrets/os_api_key`
 - Boundary cache enabled for this run: `False`
-- Route graph enabled for this run: `True`
+- Route graph enabled for this run: `False`
 - Route graph DSN present for this run: `True`
 - Machine-readable live results: `data/benchmarking/stakeholder_eval/live_run_2026-03-10.json`
 
@@ -22,29 +23,29 @@ It is separate from the benchmark pack so the gold/reference answers remain stab
 ## Overall Summary
 
 - Scenarios rerun: `20`
-- First-class-ready scenarios: `1`
-- Live outcomes: `{'blocked': 2, 'full': 1, 'partial': 17}`
+- First-class-ready scenarios: `2`
+- Live outcomes: `{'blocked': 4, 'partial': 16}`
 - Scenarios with authoritative live evidence: `20`
 
 ## Scenario Table
 
 | Scenario | Benchmark support | Live outcome | First-class ready | Successful calls | Live evidence calls |
 | --- | --- | --- | --- | ---: | ---: |
-| SG01 | partial | partial | False | 8/8 | 8 |
-| SG02 | partial | partial | False | 10/10 | 10 |
-| SG03 | partial | full | True | 6/6 | 2 |
+| SG01 | partial | partial | True | 2/2 | 2 |
+| SG02 | partial | partial | True | 1/1 | 1 |
+| SG03 | partial | blocked | False | 5/6 | 2 |
 | SG04 | partial | partial | False | 4/4 | 4 |
-| SG05 | partial | partial | False | 3/3 | 3 |
+| SG05 | partial | partial | False | 4/4 | 3 |
 | SG06 | partial | partial | False | 7/7 | 7 |
 | SG07 | partial | partial | False | 7/7 | 7 |
 | SG08 | partial | partial | False | 4/4 | 4 |
 | SG09 | partial | partial | False | 1/3 | 1 |
 | SG10 | partial | partial | False | 15/15 | 15 |
 | SG11 | partial | partial | False | 1/1 | 1 |
-| SG12 | partial | partial | False | 6/6 | 3 |
+| SG12 | partial | blocked | False | 4/4 | 3 |
 | SG13 | partial | partial | False | 8/8 | 8 |
 | SG14 | partial | partial | False | 8/8 | 8 |
-| SG15 | partial | partial | False | 8/10 | 3 |
+| SG15 | partial | partial | False | 4/10 | 3 |
 | SG16 | partial | partial | False | 8/8 | 8 |
 | SG17 | blocked | blocked | False | 6/6 | 6 |
 | SG18 | partial | partial | False | 8/8 | 8 |
@@ -57,70 +58,76 @@ It is separate from the benchmark pack so the gold/reference answers remain stab
 
 - Benchmark support level: `partial`
 - Live outcome: `partial`
-- First-class ready now: `False`
-- Summary: Live OS Places resolved all 7 benchmark addresses, but only 2 records fall strictly inside the clipped benchmark polygon when the returned address points are used directly. That is materially lower than the benchmark reference answer, so the live rerun reinforces that MCP-Geo still lacks the native flood-geometry, building-footprint, and record-join workflow needed to treat the benchmark total as authoritative live truth.
+- First-class ready now: `True`
+- Summary: MCP-Geo now exposes SG01 as a native incident-impact workflow: it resolves address rows, applies point-in-polygon filtering, deduplicates premises and returns a review/export queue. The vulnerability data remains synthetic, so the output is still decision-support evidence rather than authoritative emergency truth.
 
 **Confirmed capabilities**
-- Live OS Places address resolution works for the benchmark addresses.
+- Native os_workflows.query incident_impact workflow now covers SG01 orchestration.
 - Live containing-area lookup confirms the affected sample sits in Bassetlaw.
 
 **Confirmed gaps**
 - The vulnerable-household data remains synthetic and external to MCP-Geo.
-- Point-in-polygon filtering and record dedupe still require external orchestration.
+- Operational use still needs access-controlled real support data and incident perimeter QA.
 
 **Evidence snapshot**
 - `inputRecords`: `7`
-- `resolvedRecords`: `7`
+- `workflowAnswerStatus`: `ready_for_review`
+- `workflowProductSurfaceReady`: `True`
+- `resolvedRecords`: `6`
 - `insidePolygonRecords`: `2`
 - `insideUniquePremises`: `2`
 - `duplicateInsideUprns`: `[]`
 - `districtFromLiveLookup`: `Bassetlaw`
-- `matchedRows`: `[{"recordId": "VH-001", "uprn": "100031280113", "matchType": "high_confidence", "score": 1.0, "insidePolygon": false}, {"recordId": "VH-002", "uprn": "10023264877", "matchType": "high_confidence", "score": 1.0, "insidePolygon": false}, {"recordId": "VH-003", "uprn": "10023264877", "matchType": "high_confidence", "score": 1.0, "insidePolygon": false}, {"recordId": "VH-004", "uprn": "10023264881", "matchType": "high_confidence", "score": 1.0, "insidePolygon": true}, {"recordId": "VH-005", "uprn": "10023264984", "matchType": "high_confidence", "score": 1.0, "insidePolygon": true}, {"recordId": "VH-006", "uprn": "100031279587", "matchType": "high_confidence", "score": 1.0, "insidePolygon": false}, {"recordId": "VH-007", "uprn": "100031269830", "matchType": "review", "score": 0.65, "insidePolygon": false}]`
+- `matchedRows`: `[{"recordId": "VH-004", "address": "18 Mill Bridge Close, Retford, DN22 6FE", "uprn": "10023264881", "category": "young_children", "lat": 53.3188671, "lon": -0.9447751}, {"recordId": "VH-005", "address": "115 Mill Bridge Close, Retford, DN22 6FE", "uprn": "10023264984", "category": "visual_impairment", "lat": 53.3189102, "lon": -0.9455847}]`
+- `reviewQueueCount`: `0`
 
 **Tool calls**
 - `admin_lookup.containing_areas`: calls=1, ok=1, liveEvidence=1, cached=0
-- `os_places.search`: calls=7, ok=7, liveEvidence=7, cached=0
+- `os_workflows.query`: calls=1, ok=1, liveEvidence=1, cached=0
 
 ### SG02 Batch match free-text addresses to UPRNs at scale
 
 - Benchmark support level: `partial`
 - Live outcome: `partial`
-- First-class ready now: `False`
-- Summary: Live OS Places can now batch-resolve the benchmark address file record by record. The run produced candidate UPRNs for all 10 rows, but the conservative scorer only cleared 2 as high-confidence, pushed 6 into review, and left 2 unmatched. Native MCP-Geo support remains partial because the batch loop, confidence labelling, and review/export queue are still external orchestration.
+- First-class ready now: `True`
+- Summary: MCP-Geo now exposes SG02 as a native batch address-matching workflow. The workflow resolves rows through OS Places when enabled, applies confidence bands, flags duplicate UPRNs and returns review/export queues.
 
 **Confirmed capabilities**
-- Live OS Places matching works on the full 10-row benchmark input.
-- Duplicate input rows can be detected reliably once candidate UPRNs are resolved.
+- Native os_workflows.query batch_address_match workflow now covers SG02.
+- Duplicate and low-confidence rows are surfaced in a first-class review queue.
 
 **Confirmed gaps**
-- MCP-Geo still lacks a first-class batch matcher with confidence buckets and review exports.
+- Operational acceptance still depends on user-tuned confidence thresholds.
 
 **Evidence snapshot**
 - `inputRecords`: `10`
+- `workflowAnswerStatus`: `ready_for_review`
+- `workflowProductSurfaceReady`: `True`
 - `highConfidenceMatches`: `2`
-- `reviewMatches`: `6`
-- `unmatched`: `2`
+- `reviewMatches`: `4`
+- `unmatched`: `4`
 - `duplicateUprnInputs`: `["100031282954"]`
-- `reviewQueue`: `[{"sourceId": "ADDR-003", "uprn": "10023264877", "reason": "manual_review"}, {"sourceId": "ADDR-004", "uprn": "10093191764", "reason": "manual_review"}, {"sourceId": "ADDR-005", "uprn": "100032031280", "reason": "low_similarity"}, {"sourceId": "ADDR-006", "uprn": "100031284208", "reason": "manual_review"}, {"sourceId": "ADDR-007", "uprn": "100031282954", "reason": "duplicate_input_same_uprn"}, {"sourceId": "ADDR-008", "uprn": "100031282954", "reason": "duplicate_input_same_uprn"}, {"sourceId": "ADDR-009", "uprn": "10093190272", "reason": "manual_review"}, {"sourceId": "ADDR-010", "uprn": "10090590222", "reason": "low_similarity"}]`
-- `matchedRows`: `[{"sourceId": "ADDR-001", "uprn": "100031270361", "matchType": "high_confidence", "score": 1.0}, {"sourceId": "ADDR-002", "uprn": "100031280113", "matchType": "high_confidence", "score": 1.0}, {"sourceId": "ADDR-003", "uprn": "10023264877", "matchType": "review", "score": 0.65}, {"sourceId": "ADDR-004", "uprn": "10093191764", "matchType": "review", "score": 0.75}, {"sourceId": "ADDR-005", "uprn": "100032031280", "matchType": "unmatched", "score": 0.51}, {"sourceId": "ADDR-006", "uprn": "100031284208", "matchType": "review", "score": 0.75}, {"sourceId": "ADDR-007", "uprn": "100031282954", "matchType": "review", "score": 1.0}, {"sourceId": "ADDR-008", "uprn": "100031282954", "matchType": "review", "score": 1.0}, {"sourceId": "ADDR-009", "uprn": "10093190272", "matchType": "review", "score": 0.7083}, {"sourceId": "ADDR-010", "uprn": "10090590222", "matchType": "unmatched", "score": 0.225}]`
+- `reviewQueue`: `[{"recordId": "ADDR-003", "address": "6 Millbridge Close, Retford DN22 6FE", "uprn": "10023264877", "reason": "low_similarity"}, {"recordId": "ADDR-004", "address": "Canalside Wharf 6 Wharf Road, Retford DN22 6JL", "uprn": "10093191764", "reason": "review"}, {"recordId": "ADDR-005", "address": "22A Chapel Gate, Retford, DN22 6PJ", "uprn": "100032031280", "reason": "low_similarity"}, {"recordId": "ADDR-006", "address": "Church Lane 1 The Close, Carlton in Lindrick, Worksop S81 9EH", "uprn": "100031284208", "reason": "review"}, {"recordId": "ADDR-007", "address": "50 Canal Rd, Worksop S80 2EH", "uprn": "100031282954", "reason": "duplicate_input"}, {"recordId": "ADDR-008", "address": "50 Canal Road, Worksop, S80 2EH", "uprn": "100031282954", "reason": "duplicate_input"}, {"recordId": "ADDR-009", "address": "The Old Farm House 1 Corner Farm Dr, Everton DN10 5AN", "uprn": "10093190272", "reason": "low_similarity"}, {"recordId": "ADDR-010", "address": "Ragnall Stable, Main Street, Ragnall NG22 ORU", "uprn": "10013978958", "reason": "low_similarity"}]`
+- `matchedRows`: `[{"recordId": "ADDR-001", "address": "81 COBWELL RD, RETFORD DN22 7DD", "postcode": "DN227DD", "uprn": "100031270361", "confidenceBand": "high_confidence", "status": "matched", "score": 1.0, "reviewReason": null}, {"recordId": "ADDR-002", "address": "Navigation Lodge, Wharf Rd, Retford DN22 6EN", "postcode": "DN226EN", "uprn": "100031280113", "confidenceBand": "high_confidence", "status": "matched", "score": 1.0, "reviewReason": null}, {"recordId": "ADDR-003", "address": "6 Millbridge Close, Retford DN22 6FE", "postcode": "DN226FE", "uprn": "10023264877", "confidenceBand": "unmatched", "status": "unmatched", "score": 0.6, "reviewReason": "low_similarity"}, {"recordId": "ADDR-004", "address": "Canalside Wharf 6 Wharf Road, Retford DN22 6JL", "postcode": "DN226JL", "uprn": "10093191764", "confidenceBand": "review", "status": "needs_review", "score": 0.7, "reviewReason": null}, {"recordId": "ADDR-005", "address": "22A Chapel Gate, Retford, DN22 6PJ", "postcode": "DN226PJ", "uprn": "100032031280", "confidenceBand": "unmatched", "status": "unmatched", "score": 0.55, "reviewReason": "low_similarity"}, {"recordId": "ADDR-006", "address": "Church Lane 1 The Close, Carlton in Lindrick, Worksop S81 9EH", "postcode": "S819EH", "uprn": "100031284208", "confidenceBand": "review", "status": "needs_review", "score": 0.7, "reviewReason": null}, {"recordId": "ADDR-007", "address": "50 Canal Rd, Worksop S80 2EH", "postcode": "S802EH", "uprn": "100031282954", "confidenceBand": "review", "status": "needs_review", "score": 1.0, "reviewReason": "duplicate_input"}, {"recordId": "ADDR-008", "address": "50 Canal Road, Worksop, S80 2EH", "postcode": "S802EH", "uprn": "100031282954", "confidenceBand": "review", "status": "needs_review", "score": 1.0, "reviewReason": "duplicate_input"}, {"recordId": "ADDR-009", "address": "The Old Farm House 1 Corner Farm Dr, Everton DN10 5AN", "postcode": "DN105AN", "uprn": "10093190272", "confidenceBand": "unmatched", "status": "unmatched", "score": 0.625, "reviewReason": "low_similarity"}, {"recordId": "ADDR-010", "address": "Ragnall Stable, Main Street, Ragnall NG22 ORU", "postcode": "", "uprn": "10013978958", "confidenceBand": "unmatched", "status": "unmatched", "score": 0.2, "reviewReason": "low_similarity"}]`
 
 **Tool calls**
-- `os_places.search`: calls=10, ok=10, liveEvidence=10, cached=0
+- `os_workflows.query`: calls=1, ok=1, liveEvidence=1, cached=0
 
 ### SG03 Shortest route between two premises using authoritative road network constraints
 
 - Benchmark support level: `partial`
-- Live outcome: `full`
-- First-class ready now: `True`
-- Summary: The live rerun now classifies the SG03 prompt correctly, exposes the dedicated routing surface, and returns a grounded route with distance, duration, steps, and graph provenance.
+- Live outcome: `blocked`
+- First-class ready now: `False`
+- Summary: The live rerun confirms that MCP-Geo now has the right routing product shape for SG03, but this environment still lacks an active MRN graph, so the scenario remains blocked at graph readiness rather than prompt classification or missing tool surface.
 
 **Confirmed capabilities**
-- Both benchmark premises resolve to authoritative locations before routing.
-- The router correctly recommends `os_route.get` for this emergency routing prompt.
-- The live route tool returns computed geometry, distance, duration, and turn-by-turn steps.
+- Both benchmark premises can be resolved to authoritative locations.
+- The router now classifies the prompt as `route_planning` and recommends `os_route.get`.
+- The route planner remains available as an interactive companion.
 
 **Confirmed gaps**
-- Restriction richness still depends on the currently loaded MRN and restriction tables.
+- No active MRN route graph is ready in this environment.
+- Restriction-aware routing cannot execute until the graph build is provisioned and enabled.
 
 **Evidence snapshot**
 - `originUprn`: `100032031210`
@@ -128,27 +135,27 @@ It is separate from the benchmark pack so the gold/reference answers remain stab
 - `routeQueryIntent`: `route_planning`
 - `routeQueryRecommendedTool`: `os_route.get`
 - `routeQueryWorkflowSteps`: `["os_route.get", "os_apps.render_route_planner"]`
-- `graphReady`: `True`
-- `graphReason`: `None`
-- `graphVersion`: `stakeholder-benchmark-2026-03-10`
-- `graphSourceProduct`: `Benchmark seeded route graph`
-- `routeStatusCode`: `200`
-- `routeCode`: `None`
-- `routeProfile`: `emergency`
-- `routeDistanceMeters`: `365.0`
-- `routeDurationSeconds`: `40.0`
-- `routeWarningsCount`: `1`
+- `graphReady`: `False`
+- `graphReason`: `route_graph_disabled`
+- `graphVersion`: `None`
+- `graphSourceProduct`: `None`
+- `routeStatusCode`: `503`
+- `routeCode`: `ROUTE_GRAPH_NOT_READY`
+- `routeProfile`: `None`
+- `routeDistanceMeters`: `None`
+- `routeDurationSeconds`: `None`
+- `routeWarningsCount`: `0`
 - `routePlannerResource`: `ui://mcp-geo/route-planner`
 - `interactiveCompanionTool`: `os_apps.render_route_planner`
-- `distanceReturned`: `True`
-- `turnByTurnReturned`: `True`
+- `distanceReturned`: `False`
+- `turnByTurnReturned`: `False`
 
 **Tool calls**
 - `os_apps.render_route_planner`: calls=1, ok=1, liveEvidence=0, cached=0
 - `os_mcp.route_query`: calls=1, ok=1, liveEvidence=0, cached=0
 - `os_places.search`: calls=2, ok=2, liveEvidence=2, cached=0
 - `os_route.descriptor`: calls=1, ok=1, liveEvidence=0, cached=0
-- `os_route.get`: calls=1, ok=1, liveEvidence=0, cached=0
+- `os_route.get`: calls=1, ok=0, liveEvidence=0, cached=0
 
 ### SG04 Maintainable road segments and total length by class
 
@@ -167,10 +174,10 @@ It is separate from the benchmark pack so the gold/reference answers remain stab
 
 **Evidence snapshot**
 - `districtId`: `E06000017`
-- `bbox`: `[-0.8268286652905535, 52.52152179827406, -0.4263419092637883, 52.76208348039028]`
+- `bbox`: `[-0.8268325879948367, 52.52137446297019, -0.4263419091990354, 52.7620834812794]`
 - `roadLinkCollectionPresent`: `False`
 - `sampleSegmentCount`: `5`
-- `samplePropertyKeys`: `["alternatename1_language", "alternatename1_text", "alternatename2_language", "alternatename2_text", "capturespecification", "changetype", "cyclefacility", "cyclefacility_wholelink"]`
+- `samplePropertyKeys`: `["alternatename1_language", "alternatename1_text", "alternatename2_language", "alternatename2_text", "capturespecification", "changetype", "description", "directionality"]`
 - `maintainabilityFieldObserved`: `False`
 
 **Tool calls**
@@ -184,11 +191,12 @@ It is separate from the benchmark pack so the gold/reference answers remain stab
 - Benchmark support level: `partial`
 - Live outcome: `partial`
 - First-class ready now: `False`
-- Summary: The site itself can be resolved live and placed in its containing administrative areas, but the constraint answer remains partial because MCP-Geo still does not expose planning.data or local-plan policy layers as first-class spatial evidence sources.
+- Summary: MCP-Geo now exposes a native planning-constraints workflow contract for SG05. The site itself can be resolved live and placed in its containing administrative areas, but the answer remains partial until planning.data and local-plan layers are ingested as live connector-backed evidence.
 
 **Confirmed capabilities**
 - Live site resolution works for the benchmark planning site.
 - Administrative context can be recovered live from coordinates.
+- A native planning_constraints workflow now records the connector gap explicitly.
 
 **Confirmed gaps**
 - Planning-constraint and local-plan policy layers are still missing from the MCP-Geo tool surface.
@@ -197,6 +205,9 @@ It is separate from the benchmark pack so the gold/reference answers remain stab
 **Evidence snapshot**
 - `siteUprn`: `100032031287`
 - `district`: `Bassetlaw`
+- `workflowAnswerStatus`: `needs_external_layers`
+- `workflowProductSurfaceReady`: `True`
+- `workflowReviewQueueCount`: `4`
 - `planningKeywordCollections`: `[]`
 - `planningKeywordCollectionCount`: `0`
 
@@ -204,6 +215,7 @@ It is separate from the benchmark pack so the gold/reference answers remain stab
 - `admin_lookup.containing_areas`: calls=1, ok=1, liveEvidence=1, cached=0
 - `os_features.collections`: calls=1, ok=1, liveEvidence=1, cached=1
 - `os_places.search`: calls=1, ok=1, liveEvidence=1, cached=1
+- `os_workflows.query`: calls=1, ok=1, liveEvidence=0, cached=0
 
 ### SG06 Council asset register linked to UPRNs and overlaid with flood risk
 
@@ -252,7 +264,7 @@ It is separate from the benchmark pack so the gold/reference answers remain stab
 - `verificationPriorityRows`: `[{"propertyId": "PROP-001", "uprn": "100031280113", "classification": "Detached", "priority": "outside_clipped_polygon"}, {"propertyId": "PROP-002", "uprn": "10023264877", "classification": "Self Contained Flat (Includes Maisonette / Apartment)", "priority": "outside_clipped_polygon"}, {"propertyId": "PROP-003", "uprn": "10023264881", "classification": "Terraced", "priority": "field_check_required"}, {"propertyId": "PROP-004", "uprn": "10023264984", "classification": "Self Contained Flat (Includes Maisonette / Apartment)", "priority": "field_check_required"}, {"propertyId": "PROP-005", "uprn": "10023264955", "classification": "Self Contained Flat (Includes Maisonette / Apartment)", "priority": "field_check_required"}, {"propertyId": "PROP-006", "uprn": "100031279587", "classification": "Semi-Detached", "priority": "outside_clipped_polygon"}, {"propertyId": "PROP-007", "uprn": "100031269830", "classification": "Detached", "priority": "outside_clipped_polygon"}]`
 
 **Tool calls**
-- `os_places.search`: calls=7, ok=7, liveEvidence=7, cached=6
+- `os_places.search`: calls=7, ok=7, liveEvidence=7, cached=0
 
 ### SG08 Normalise fragmented housing development sources and summarise by polling district or ward
 
@@ -272,7 +284,7 @@ It is separate from the benchmark pack so the gold/reference answers remain stab
 **Evidence snapshot**
 - `inputRows`: `9`
 - `uniqueWards`: `4`
-- `wardResolutionResults`: `[{"ward": "Cayton", "resultCount": 1}, {"ward": "Ripon South", "resultCount": 0}, {"ward": "Scarborough North", "resultCount": 0}, {"ward": "Selby West", "resultCount": 1}]`
+- `wardResolutionResults`: `[{"ward": "Cayton", "resultCount": 3}, {"ward": "Ripon South", "resultCount": 0}, {"ward": "Scarborough North", "resultCount": 0}, {"ward": "Selby West", "resultCount": 1}]`
 - `duplicateCandidateGroups`: `{"ABBEY QUARTER": ["ALLOC-001", "PERM-011", "PROM-101"], "CAYTON EAST": ["ALLOC-002", "PROM-103"], "RIPON SOUTH YARD": ["ALLOC-003", "PERM-013"]}`
 
 **Tool calls**
@@ -334,7 +346,7 @@ It is separate from the benchmark pack so the gold/reference answers remain stab
 - `unmatchedDatasetBUprns`: `["100031275744"]`
 
 **Tool calls**
-- `os_places.search`: calls=15, ok=15, liveEvidence=15, cached=2
+- `os_places.search`: calls=15, ok=15, liveEvidence=15, cached=0
 
 ### SG11 Authoritative postcode result set with cache-freshness guidance
 
@@ -362,35 +374,32 @@ It is separate from the benchmark pack so the gold/reference answers remain stab
 ### SG12 Coordinate-to-address incident resolution and quickest responder comparison
 
 - Benchmark support level: `partial`
-- Live outcome: `partial`
+- Live outcome: `blocked`
 - First-class ready now: `False`
-- Summary: The incident coordinate and both responder sites resolve cleanly, and the seeded benchmark route graph now allows a grounded fastest-responder comparison. MCP-Geo still only partially supports the use case because the multi-resource comparison and dispatch decision remain external orchestration rather than a native mobilisation workflow.
+- Summary: The live rerun can ground the incident and responder locations, but a fastest-responder answer still depends on an active route graph. Without it, the scenario stops at authoritative address resolution.
 
 **Confirmed capabilities**
-- Live nearest-address resolution works for the incident coordinate.
-- The responder sites resolve to authoritative OS premises records.
-- The active route graph supports route comparison to identify the faster benchmark responder.
+- The incident coordinate can still be resolved to an authoritative premises context.
+- Responder premises can be resolved even when routing is unavailable.
 
 **Confirmed gaps**
-- Responder ranking is still orchestrated outside MCP-Geo rather than returned as a native dispatch tool output.
-- Control-room policy and appliance availability remain out of scope.
+- No active route graph is ready for responder comparison.
 
 **Evidence snapshot**
 - `incidentAddress`: `GOODWIN HALL, CHANCERY LANE, RETFORD, DN22 6DF`
 - `incidentUprn`: `100032031287`
 - `incidentClassification`: `Public / Village Hall / Other Community Facility`
-- `graphReady`: `True`
-- `graphReason`: `None`
-- `graphVersion`: `stakeholder-benchmark-2026-03-10`
+- `graphReady`: `False`
+- `graphReason`: `route_graph_disabled`
+- `graphVersion`: `None`
 - `resolvedResponders`: `[{"resourceId": "FR-001", "resourceName": "Retford Fire Station", "uprn": "100032031320", "matched": true, "matchType": "high_confidence", "score": 1.0}, {"resourceId": "FR-002", "resourceName": "Tuxford Fire Station", "uprn": "200002776288", "matched": true, "matchType": "high_confidence", "score": 1.0}]`
-- `routeComparisons`: `[{"resourceName": "Retford Fire Station", "ok": true, "distanceMeters": 470.0, "durationSeconds": 50.0, "routeCode": null}, {"resourceName": "Tuxford Fire Station", "ok": true, "distanceMeters": 11100.0, "durationSeconds": 900.0, "routeCode": null}]`
-- `fastestResponder`: `Retford Fire Station`
+- `routeComparisons`: `[]`
+- `fastestResponder`: `None`
 
 **Tool calls**
 - `os_places.nearest`: calls=1, ok=1, liveEvidence=1, cached=0
 - `os_places.search`: calls=2, ok=2, liveEvidence=2, cached=0
 - `os_route.descriptor`: calls=1, ok=1, liveEvidence=0, cached=1
-- `os_route.get`: calls=2, ok=2, liveEvidence=0, cached=0
 
 ### SG13 UKHSA-style property-setting classification from authoritative address records
 
@@ -460,15 +469,15 @@ It is separate from the benchmark pack so the gold/reference answers remain stab
 - Batch comparison, mismatch highlighting, and export shaping still require orchestration outside MCP-Geo.
 
 **Evidence snapshot**
-- `cacheStatus`: `ready`
+- `cacheStatus`: `degraded`
 - `cacheAvailable`: `True`
 - `cacheProductCount`: `4`
-- `coveredRows`: `2`
-- `missingRows`: `[{"uprn": "100032031210", "label": "Retford Library", "exactStatus": "NOT_FOUND", "bestFitStatus": "NOT_FOUND"}]`
-- `comparisonRows`: `[{"uprn": "100023336959", "address": "FOREIGN COMMONWEALTH & DEVELOPMENT OFFICE, KING CHARLES STREET, LONDON, SW1A 2AH", "exactLad": null, "bestFitLad": null, "differenceFlag": false}, {"uprn": "100120786206", "address": "3, THE MAGNOLIAS, BICESTER, OX26 3YG", "exactLad": null, "bestFitLad": null, "differenceFlag": false}]`
+- `coveredRows`: `0`
+- `missingRows`: `[{"uprn": "100023336959", "label": "Foreign, Commonwealth & Development Office, King Charles Street", "exactStatus": "NOT_FOUND", "bestFitStatus": "NOT_FOUND"}, {"uprn": "100120786206", "label": "3 The Magnolias, Bicester", "exactStatus": "NOT_FOUND", "bestFitStatus": "NOT_FOUND"}, {"uprn": "100032031210", "label": "Retford Library", "exactStatus": "NOT_FOUND", "bestFitStatus": "NOT_FOUND"}]`
+- `comparisonRows`: `[]`
 
 **Tool calls**
-- `ons_geo.by_uprn`: calls=6, ok=4, liveEvidence=0, cached=0
+- `ons_geo.by_uprn`: calls=6, ok=0, liveEvidence=0, cached=0
 - `ons_geo.cache_status`: calls=1, ok=1, liveEvidence=0, cached=0
 - `os_places.by_uprn`: calls=3, ok=3, liveEvidence=3, cached=1
 
