@@ -21,6 +21,7 @@ from server.circuit_breaker import get_circuit_breaker
 from server.config import settings
 from server.error_taxonomy import classify_error
 from server.logging import log_upstream_error
+from server.security import configured_secrets, mask_in_text
 
 DEFAULT_TIMEOUT = 5
 DEFAULT_RETRIES = 3
@@ -192,6 +193,46 @@ class OSClient:
             "message": "OS API credential missing.",
         }
 
+    def _secrets(self) -> list[str]:
+        values = [self.api_key, self.access_token, *configured_secrets(settings)]
+        return [value for value in values if value]
+
+    def _safe_text(self, value: Any, *, limit: int | None = None) -> str:
+        text = str(value)
+        masked = mask_in_text(text, self._secrets())
+        return masked[:limit] if limit is not None else masked
+
+    def _response_text(self, resp: Any, *, limit: int = 200) -> str:
+        return self._safe_text(getattr(resp, "text", ""), limit=limit)
+
+    def _request_no_redirects(
+        self,
+        method: str,
+        url: str,
+        *,
+        params: dict[str, Any],
+        headers: dict[str, str],
+        timeout: float | tuple[float, float],
+        body: dict[str, Any] | None = None,
+    ):
+        if requests is None:
+            raise RuntimeError("requests is not installed")
+        request_kwargs: dict[str, Any] = {
+            "params": params,
+            "timeout": timeout,
+        }
+        if headers:
+            request_kwargs["headers"] = headers
+        if body is not None:
+            request_kwargs["json"] = body
+        request_func = requests.post if method == "post" else requests.get
+        try:
+            return request_func(url, allow_redirects=False, **request_kwargs)
+        except TypeError as exc:
+            if "allow_redirects" not in str(exc):
+                raise
+            return request_func(url, **request_kwargs)
+
     def _get(
         self,
         url: str,
@@ -200,9 +241,13 @@ class OSClient:
         headers: dict[str, str],
         timeout: float | tuple[float, float],
     ):
-        if headers:
-            return requests.get(url, params=params, headers=headers, timeout=timeout)
-        return requests.get(url, params=params, timeout=timeout)
+        return self._request_no_redirects(
+            "get",
+            url,
+            params=params,
+            headers=headers,
+            timeout=timeout,
+        )
 
     def _post(
         self,
@@ -213,9 +258,14 @@ class OSClient:
         body: dict[str, Any],
         timeout: float | tuple[float, float],
     ):
-        if headers:
-            return requests.post(url, params=params, headers=headers, json=body, timeout=timeout)
-        return requests.post(url, params=params, json=body, timeout=timeout)
+        return self._request_no_redirects(
+            "post",
+            url,
+            params=params,
+            headers=headers,
+            body=body,
+            timeout=timeout,
+        )
 
     def _effective_timeout(
         self,
@@ -284,7 +334,7 @@ class OSClient:
                             status_code=resp.status_code,
                             url=getattr(resp, "url", url),
                             params=merged,
-                            detail=resp.text[:200],
+                            detail=self._response_text(resp),
                             attempt=attempt,
                             error_category=classify_error(code),
                         )
@@ -303,7 +353,7 @@ class OSClient:
                         status_code=resp.status_code,
                         url=resp_url,
                         params=merged,
-                        detail=resp.text[:200],
+                        detail=self._response_text(resp),
                         attempt=attempt,
                         error_category=classify_error("OS_API_ERROR"),
                     )
@@ -312,7 +362,7 @@ class OSClient:
                         {
                             "isError": True,
                             "code": "OS_API_ERROR",
-                            "message": f"OS API error: {resp.text[:200]}",
+                            "message": f"OS API error: {self._response_text(resp)}",
                         },
                     )
                 self._breaker.record_success()
@@ -326,7 +376,7 @@ class OSClient:
                         status_code=resp.status_code,
                         url=getattr(resp, "url", url),
                         params=merged,
-                        detail=f"{exc}: {resp.text[:200]}",
+                        detail=f"{self._safe_text(exc)}: {self._response_text(resp)}",
                         attempt=attempt,
                         error_category=classify_error("UPSTREAM_INVALID_RESPONSE"),
                     )
@@ -343,11 +393,15 @@ class OSClient:
                     code="UPSTREAM_TLS_ERROR",
                     url=url,
                     params=merged,
-                    detail=str(exc),
+                    detail=self._safe_text(exc),
                     attempt=attempt,
                     error_category=classify_error("UPSTREAM_TLS_ERROR"),
                 )
-                return 501, {"isError": True, "code": "UPSTREAM_TLS_ERROR", "message": str(exc)}
+                return 501, {
+                    "isError": True,
+                    "code": "UPSTREAM_TLS_ERROR",
+                    "message": self._safe_text(exc),
+                }
             except (req_exc.ConnectionError, req_exc.Timeout) as exc:
                 last_exc = exc
                 self._breaker.record_failure()
@@ -357,14 +411,14 @@ class OSClient:
                         code="UPSTREAM_CONNECT_ERROR",
                         url=url,
                         params=merged,
-                        detail=str(exc),
+                        detail=self._safe_text(exc),
                         attempt=attempt,
                         error_category=classify_error("UPSTREAM_CONNECT_ERROR"),
                     )
                     return 501, {
                         "isError": True,
                         "code": "UPSTREAM_CONNECT_ERROR",
-                        "message": str(exc),
+                        "message": self._safe_text(exc),
                     }
                 _sleep_with_jitter(attempt, base=0.1, cap=1.0)
             except Exception as exc:  # pragma: no cover
@@ -374,19 +428,19 @@ class OSClient:
                     code="INTEGRATION_ERROR",
                     url=url,
                     params=merged,
-                    detail=str(exc),
+                    detail=self._safe_text(exc),
                     attempt=attempt,
                     error_category=classify_error("INTEGRATION_ERROR"),
                 )
                 return 500, {
                     "isError": True,
                     "code": "INTEGRATION_ERROR",
-                    "message": str(exc),
+                    "message": self._safe_text(exc),
                 }
         return 501, {
             "isError": True,
             "code": "UPSTREAM_CONNECT_ERROR",
-            "message": f"Failed after {max_attempts} attempt(s): {last_exc}",
+            "message": f"Failed after {max_attempts} attempt(s): {self._safe_text(last_exc)}",
         }
 
     def post_json(
@@ -438,7 +492,7 @@ class OSClient:
                             status_code=resp.status_code,
                             url=getattr(resp, "url", url),
                             params=merged,
-                            detail=resp.text[:200],
+                            detail=self._response_text(resp),
                             attempt=attempt,
                             error_category=classify_error(code),
                         )
@@ -457,7 +511,7 @@ class OSClient:
                         status_code=resp.status_code,
                         url=resp_url,
                         params=merged,
-                        detail=resp.text[:200],
+                        detail=self._response_text(resp),
                         attempt=attempt,
                         error_category=classify_error("OS_API_ERROR"),
                     )
@@ -466,7 +520,7 @@ class OSClient:
                         {
                             "isError": True,
                             "code": "OS_API_ERROR",
-                            "message": f"OS API error: {resp.text[:200]}",
+                            "message": f"OS API error: {self._response_text(resp)}",
                         },
                     )
                 self._breaker.record_success()
@@ -480,7 +534,7 @@ class OSClient:
                         status_code=resp.status_code,
                         url=getattr(resp, "url", url),
                         params=merged,
-                        detail=f"{exc}: {resp.text[:200]}",
+                        detail=f"{self._safe_text(exc)}: {self._response_text(resp)}",
                         attempt=attempt,
                         error_category=classify_error("UPSTREAM_INVALID_RESPONSE"),
                     )
@@ -497,11 +551,15 @@ class OSClient:
                     code="UPSTREAM_TLS_ERROR",
                     url=url,
                     params=merged,
-                    detail=str(exc),
+                    detail=self._safe_text(exc),
                     attempt=attempt,
                     error_category=classify_error("UPSTREAM_TLS_ERROR"),
                 )
-                return 501, {"isError": True, "code": "UPSTREAM_TLS_ERROR", "message": str(exc)}
+                return 501, {
+                    "isError": True,
+                    "code": "UPSTREAM_TLS_ERROR",
+                    "message": self._safe_text(exc),
+                }
             except (req_exc.ConnectionError, req_exc.Timeout) as exc:
                 last_exc = exc
                 self._breaker.record_failure()
@@ -511,14 +569,14 @@ class OSClient:
                         code="UPSTREAM_CONNECT_ERROR",
                         url=url,
                         params=merged,
-                        detail=str(exc),
+                        detail=self._safe_text(exc),
                         attempt=attempt,
                         error_category=classify_error("UPSTREAM_CONNECT_ERROR"),
                     )
                     return 501, {
                         "isError": True,
                         "code": "UPSTREAM_CONNECT_ERROR",
-                        "message": str(exc),
+                        "message": self._safe_text(exc),
                     }
                 _sleep_with_jitter(attempt, base=0.1, cap=1.0)
             except Exception as exc:  # pragma: no cover
@@ -528,19 +586,19 @@ class OSClient:
                     code="INTEGRATION_ERROR",
                     url=url,
                     params=merged,
-                    detail=str(exc),
+                    detail=self._safe_text(exc),
                     attempt=attempt,
                     error_category=classify_error("INTEGRATION_ERROR"),
                 )
                 return 500, {
                     "isError": True,
                     "code": "INTEGRATION_ERROR",
-                    "message": str(exc),
+                    "message": self._safe_text(exc),
                 }
         return 501, {
             "isError": True,
             "code": "UPSTREAM_CONNECT_ERROR",
-            "message": f"Failed after {max_attempts} attempt(s): {last_exc}",
+            "message": f"Failed after {max_attempts} attempt(s): {self._safe_text(last_exc)}",
         }
 
     def get_bytes(
@@ -585,7 +643,7 @@ class OSClient:
                             status_code=resp.status_code,
                             url=getattr(resp, "url", url),
                             params=merged,
-                            detail=resp.text[:200],
+                            detail=self._response_text(resp),
                             attempt=attempt,
                             error_category=classify_error(code),
                         )
@@ -604,7 +662,7 @@ class OSClient:
                         status_code=resp.status_code,
                         url=resp_url,
                         params=merged,
-                        detail=resp.text[:200],
+                        detail=self._response_text(resp),
                         attempt=attempt,
                         error_category=classify_error("OS_API_ERROR"),
                     )
@@ -613,7 +671,7 @@ class OSClient:
                         {
                             "isError": True,
                             "code": "OS_API_ERROR",
-                            "message": f"OS API error: {resp.text[:200]}",
+                            "message": f"OS API error: {self._response_text(resp)}",
                         },
                     )
                 self._breaker.record_success()
@@ -630,11 +688,15 @@ class OSClient:
                     code="UPSTREAM_TLS_ERROR",
                     url=url,
                     params=merged,
-                    detail=str(exc),
+                    detail=self._safe_text(exc),
                     attempt=attempt,
                     error_category=classify_error("UPSTREAM_TLS_ERROR"),
                 )
-                return 501, {"isError": True, "code": "UPSTREAM_TLS_ERROR", "message": str(exc)}
+                return 501, {
+                    "isError": True,
+                    "code": "UPSTREAM_TLS_ERROR",
+                    "message": self._safe_text(exc),
+                }
             except (req_exc.ConnectionError, req_exc.Timeout) as exc:
                 last_exc = exc
                 self._breaker.record_failure()
@@ -644,14 +706,14 @@ class OSClient:
                         code="UPSTREAM_CONNECT_ERROR",
                         url=url,
                         params=merged,
-                        detail=str(exc),
+                        detail=self._safe_text(exc),
                         attempt=attempt,
                         error_category=classify_error("UPSTREAM_CONNECT_ERROR"),
                     )
                     return 501, {
                         "isError": True,
                         "code": "UPSTREAM_CONNECT_ERROR",
-                        "message": str(exc),
+                        "message": self._safe_text(exc),
                     }
                 _sleep_with_jitter(attempt, base=0.1, cap=1.0)
             except Exception as exc:  # pragma: no cover
@@ -661,19 +723,19 @@ class OSClient:
                     code="INTEGRATION_ERROR",
                     url=url,
                     params=merged,
-                    detail=str(exc),
+                    detail=self._safe_text(exc),
                     attempt=attempt,
                     error_category=classify_error("INTEGRATION_ERROR"),
                 )
                 return 500, {
                     "isError": True,
                     "code": "INTEGRATION_ERROR",
-                    "message": str(exc),
+                    "message": self._safe_text(exc),
                 }
         return 501, {
             "isError": True,
             "code": "UPSTREAM_CONNECT_ERROR",
-            "message": f"Failed after {max_attempts} attempt(s): {last_exc}",
+            "message": f"Failed after {max_attempts} attempt(s): {self._safe_text(last_exc)}",
         }
 
 

@@ -131,6 +131,58 @@ def test_vector_proxy_falls_back_to_env_key(monkeypatch: pytest.MonkeyPatch) -> 
     assert resp.content == b"tile-bytes"
 
 
+def test_vector_proxy_requires_http_auth_before_using_server_key(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from server.mcp import http_transport
+
+    client = TestClient(app)
+    http_transport._SESSION_STATE.clear()
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "static_bearer")
+    monkeypatch.setenv("MCP_HTTP_AUTH_TOKEN", "maps-token")
+    monkeypatch.setattr("server.maps_proxy.settings.OS_API_KEY", "env-key", raising=False)
+    calls: list[dict[str, object]] = []
+
+    def fake_get(
+        url: str,
+        params: dict[str, str] | None = None,
+        headers: dict[str, str] | None = None,
+        timeout: float | None = None,
+        allow_redirects: bool | None = None,
+    ) -> _FakeResponse:
+        calls.append(
+            {
+                "url": url,
+                "params": dict(params or {}),
+                "headers": dict(headers or {}),
+                "allow_redirects": allow_redirects,
+            }
+        )
+        return _FakeResponse(200, b"tile-bytes", {"content-type": "application/x-protobuf"})
+
+    monkeypatch.setattr("server.maps_proxy.requests.get", fake_get)
+
+    unauthorized = client.get("/maps/vector/vts/tile/7/42/63.pbf", params={"srs": "3857"})
+    assert unauthorized.status_code == 401
+    assert calls == []
+
+    authorized = client.get(
+        "/maps/vector/vts/tile/7/42/63.pbf",
+        params={"srs": "3857"},
+        headers={"Authorization": "Bearer maps-token"},
+    )
+    assert authorized.status_code == 200
+    assert authorized.content == b"tile-bytes"
+    assert calls == [
+        {
+            "url": "https://api.os.uk/maps/vector/v1/vts/tile/7/42/63.pbf",
+            "params": {"srs": "3857", "key": "env-key"},
+            "headers": {},
+            "allow_redirects": False,
+        }
+    ]
+
+
 def test_vector_proxy_supports_key_header(monkeypatch: pytest.MonkeyPatch) -> None:
     client = TestClient(app)
 
@@ -158,6 +210,24 @@ def test_vector_proxy_supports_key_header(monkeypatch: pytest.MonkeyPatch) -> No
     )
     assert resp.status_code == 200
     assert resp.content == b"tile-bytes"
+
+
+def test_vector_style_urls_reject_untrusted_origins() -> None:
+    from fastapi import HTTPException
+    from server import maps_proxy
+
+    with pytest.raises(HTTPException) as excinfo:
+        maps_proxy._normalize_style_url("//169.254.169.254/latest/meta-data", "server-key")
+
+    assert excinfo.value.status_code == 502
+
+    resolved, _has_key = maps_proxy._normalize_style_url(
+        "vts/resources/styles/OS_VTS_3857_Light.json",
+        "server-key",
+    )
+    assert resolved == (
+        "https://api.os.uk/maps/vector/v1/vts/resources/styles/OS_VTS_3857_Light.json"
+    )
 
 
 def test_vector_proxy_requires_auth_when_no_key_or_token(monkeypatch: pytest.MonkeyPatch) -> None:

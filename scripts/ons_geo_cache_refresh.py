@@ -37,6 +37,7 @@ from server.ons_geo_cache import (
     normalize_key,
     normalize_postcode,
     normalize_uprn,
+    validate_cache_db_name,
 )
 from server.ons_geo_freshness import (
     load_addressbase_epoch_schedule,
@@ -3051,7 +3052,10 @@ def main() -> int:
     sources_path = Path(args.sources).resolve()
     cache_dir = Path(args.cache_dir).resolve()
     index_path = Path(args.index_path).resolve()
-    db_name = str(args.db_name)
+    try:
+        db_name = validate_cache_db_name(str(args.db_name))
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
     raw_root = cache_dir / "raw"
 
     try:
@@ -3068,7 +3072,11 @@ def main() -> int:
     cache_dir.mkdir(parents=True, exist_ok=True)
     raw_root.mkdir(parents=True, exist_ok=True)
 
-    db_path = cache_dir / db_name
+    db_path = (cache_dir / db_name).resolve()
+    try:
+        db_path.relative_to(cache_dir)
+    except ValueError as exc:
+        raise SystemExit("ONS geo cache database path must stay inside cache-dir") from exc
     conn: sqlite3.Connection | None = None
     code_references = CodeReferenceStore()
     summary_products: list[dict[str, Any]] = []

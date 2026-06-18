@@ -106,7 +106,7 @@ def _cleanup_sessions(now: float) -> None:
             _SESSION_STATE.pop(sid, None)
 
 
-def _get_session(request: Request) -> tuple[str, dict[str, Any]]:
+def _get_session(request: Request, *, persist: bool = True) -> tuple[str, dict[str, Any]]:
     session_id = request.headers.get("mcp-session-id")
     now = time.time()
     _cleanup_sessions(now)
@@ -117,8 +117,17 @@ def _get_session(request: Request) -> tuple[str, dict[str, Any]]:
             return session_id, state
         resolved = session_id or str(uuid.uuid4())
         state = {"capabilities": {}, "last_seen": now}
-        _SESSION_STATE[resolved] = state
+        if persist:
+            _SESSION_STATE[resolved] = state
         return resolved, state
+
+
+def _persist_session(session_id: str, session_state: dict[str, Any]) -> None:
+    if session_state.get("stateless") is True:
+        return
+    session_state["last_seen"] = time.time()
+    with _SESSION_LOCK:
+        _SESSION_STATE[session_id] = session_state
 
 
 def _request_wants_stateless_2026_rc(
@@ -941,7 +950,7 @@ async def mcp_endpoint(request: Request):
     if requested_session_id:
         with _SESSION_LOCK:
             requested_session_existed = requested_session_id in _SESSION_STATE
-    session_id, session_state = _get_session(request)
+    session_id, session_state = _get_session(request, persist=False)
     headers = {"mcp-session-id": session_id}
     msg_id: Any = None
     method: str | None = None
@@ -989,6 +998,7 @@ async def mcp_endpoint(request: Request):
             return _authentication_failure_response(msg_id, headers)
         except AuthorizationError:
             return _authorization_failure_response(msg_id, headers)
+        _persist_session(session_id, session_state)
         if msg_id is not None and ("result" in msg or "error" in msg):
             result = msg.get("result")
             if not _resolve_pending(session_state, msg_id, result):
@@ -1055,6 +1065,7 @@ async def mcp_endpoint(request: Request):
         return _authorization_failure_response(msg_id, headers)
     except SessionQuotaExceeded:
         return _session_quota_failure_response(msg_id, headers)
+    _persist_session(session_id, session_state)
     if msg_id is None:
         try:
             _dispatch(method, params, session_state, protocol_version)

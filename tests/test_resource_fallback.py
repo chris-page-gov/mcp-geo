@@ -619,7 +619,12 @@ def test_authorize_http_route_records_authorization_failure_metric(monkeypatch) 
     http_transport._AUTH_FAILURES_TOTAL.clear()
 
     monkeypatch.setattr(http_transport, "_auth_mode", lambda: "static_bearer", raising=True)
-    monkeypatch.setattr(http_transport, "_get_session", lambda _request: ("session-1", {}), raising=True)
+    monkeypatch.setattr(
+        http_transport,
+        "_get_session",
+        lambda _request, **_kwargs: ("session-1", {}),
+        raising=True,
+    )
 
     def _raise_authorization(_request, _session_state):
         raise http_transport.AuthorizationError("Forbidden")
@@ -634,6 +639,66 @@ def test_authorize_http_route_records_authorization_failure_metric(monkeypatch) 
     assert auth_error.status_code == 403
     lines = "\n".join(http_transport.build_prometheus_lines())
     assert 'mcp_http_auth_failures_total{reason="authorization"} 1' in lines
+
+
+def test_failed_http_auth_does_not_persist_new_session_ids(client, monkeypatch) -> None:
+    from server.mcp import http_transport
+
+    http_transport._SESSION_STATE.clear()
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "static_bearer")
+    monkeypatch.setenv("MCP_HTTP_AUTH_TOKEN", "raw-token")
+
+    raw_route = client.get("/tools/list", headers={"mcp-session-id": "attacker-raw"})
+    assert raw_route.status_code == 401
+    assert raw_route.headers.get("mcp-session-id") == "attacker-raw"
+    assert "attacker-raw" not in http_transport._SESSION_STATE
+
+    mcp_route = client.post(
+        "/mcp",
+        headers={"mcp-session-id": "attacker-mcp"},
+        json=_initialize_payload(),
+    )
+    assert mcp_route.status_code == 401
+    assert mcp_route.headers.get("mcp-session-id") == "attacker-mcp"
+    assert "attacker-mcp" not in http_transport._SESSION_STATE
+
+
+def test_ui_resource_routes_require_auth_when_enabled(client, monkeypatch) -> None:
+    from server.mcp import http_transport
+
+    http_transport._SESSION_STATE.clear()
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "static_bearer")
+    monkeypatch.setenv("MCP_HTTP_AUTH_TOKEN", "ui-token")
+
+    unauthorized_page = client.get("/ui/geography-selector")
+    assert unauthorized_page.status_code == 401
+    assert unauthorized_page.headers.get("mcp-session-id")
+
+    unauthorized_asset = client.get("/ui/shared/compact_contract.css")
+    assert unauthorized_asset.status_code == 401
+    assert unauthorized_asset.headers.get("mcp-session-id")
+
+    unauthorized_redirect = client.get("/simple-map-lab", follow_redirects=False)
+    assert unauthorized_redirect.status_code == 401
+    assert unauthorized_redirect.headers.get("mcp-session-id")
+
+    headers = {"Authorization": "Bearer ui-token"}
+    authorized_page = client.get("/ui/geography-selector", headers=headers)
+    assert authorized_page.status_code == 200
+    assert authorized_page.headers.get("mcp-session-id")
+    assert "text/html" in authorized_page.headers.get("content-type", "")
+
+    authorized_asset = client.get("/ui/shared/compact_contract.css", headers=headers)
+    assert authorized_asset.status_code == 200
+    assert authorized_asset.headers.get("mcp-session-id")
+
+    authorized_redirect = client.get(
+        "/simple-map-lab",
+        headers=headers,
+        follow_redirects=False,
+    )
+    assert authorized_redirect.status_code == 307
+    assert authorized_redirect.headers.get("mcp-session-id")
 
 
 def test_raw_resources_read_errors_keep_session_header(client, monkeypatch) -> None:

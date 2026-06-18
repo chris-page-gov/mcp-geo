@@ -70,6 +70,7 @@ playground/test-results/
 test-results/
 tmp/stakeholder_benchmark_sources/
 output/playwright/teignmouth-peninsula-*.png
+output/owasp-mcp-validation/
 
 # Translations
 *.mo

@@ -17,6 +17,7 @@ from server.geography_levels import (
 KEY_TYPES = {"postcode", "uprn"}
 DERIVATION_MODES = {"exact", "best_fit"}
 POSTCODE_REGEX = re.compile(r"^[A-Z]{1,2}[0-9][0-9A-Z]?[0-9][A-Z]{2}$")
+SAFE_CACHE_DB_NAME_REGEX = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]*$")
 
 _GEOGRAPHY_SUFFIX_RE = re.compile(r"^(?P<stem>[A-Za-z0-9_]+?)(?P<suffix>CD|NM|NMW|NW)$")
 
@@ -50,6 +51,21 @@ def normalize_key(key_type: str, value: str) -> str | None:
     if kind == "uprn":
         return normalize_uprn(value)
     return None
+
+
+def validate_cache_db_name(value: str) -> str:
+    name = str(value or "").strip()
+    path = Path(name)
+    if (
+        not name
+        or path.is_absolute()
+        or path.name != name
+        or name in {".", ".."}
+        or ".." in path.parts
+        or not SAFE_CACHE_DB_NAME_REGEX.fullmatch(name)
+    ):
+        raise ValueError("ONS geo cache database name must be a safe filename")
+    return name
 
 
 def normalize_derivation_mode(value: str) -> str | None:
@@ -299,6 +315,7 @@ class ONSGeoCache:
             getattr(settings, "ONS_GEO_CACHE_DB", "ons_geo_cache.sqlite")
             or "ons_geo_cache.sqlite"
         )
+        db_name = validate_cache_db_name(db_name)
         index_path = _resolve_path(
             getattr(settings, "ONS_GEO_CACHE_INDEX_PATH", None),
             "resources/ons_geo_cache_index.json",
@@ -307,7 +324,13 @@ class ONSGeoCache:
 
     @property
     def db_path(self) -> Path:
-        return self.cache_dir / self.db_name
+        cache_dir = self.cache_dir.resolve()
+        db_path = (cache_dir / validate_cache_db_name(self.db_name)).resolve()
+        try:
+            db_path.relative_to(cache_dir)
+        except ValueError as exc:
+            raise ValueError("ONS geo cache database path must stay inside cache_dir") from exc
+        return db_path
 
     def available(self) -> bool:
         return self.db_path.exists() and self.db_path.is_file()

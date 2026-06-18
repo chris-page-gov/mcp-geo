@@ -85,3 +85,50 @@ def test_audit_api_lists_packs_with_pagination(client, monkeypatch, tmp_path: Pa
     assert len(payload_second["packs"]) == 1
     listed_ids = {payload_first["packs"][0]["packId"], payload_second["packs"][0]["packId"]}
     assert listed_ids == {first["packId"], second["packId"]}
+
+
+def test_audit_api_requires_http_auth_and_rejects_external_output_paths(
+    client,
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    from server.mcp import http_transport
+
+    http_transport._SESSION_STATE.clear()
+    pack_root = tmp_path / "packs"
+    pack_root.mkdir()
+    monkeypatch.setattr(settings, "AUDIT_PACK_ROOT", str(pack_root), raising=False)
+    monkeypatch.setenv("MCP_HTTP_AUTH_MODE", "static_bearer")
+    monkeypatch.setenv("MCP_HTTP_AUTH_TOKEN", "audit-token")
+    session_dir = build_live_style_session(tmp_path / "session")
+    outside_output = tmp_path / "outside-ledger.jsonl"
+
+    unauthorized = client.post(
+        "/audit/normalise",
+        json={"sessionDir": str(session_dir), "outputPath": str(outside_output)},
+    )
+    assert unauthorized.status_code == 401
+    assert unauthorized.json()["code"] == "AUTHENTICATION_FAILED"
+    assert not outside_output.exists()
+
+    headers = {"Authorization": "Bearer audit-token"}
+    rejected_output = client.post(
+        "/audit/normalise",
+        headers=headers,
+        json={"sessionDir": str(session_dir), "outputPath": str(outside_output)},
+    )
+    assert rejected_output.status_code == 400
+    assert "audit pack root" in rejected_output.text
+    assert not outside_output.exists()
+
+    allowed_output = pack_root / "event-ledger.jsonl"
+    allowed = client.post(
+        "/audit/normalise",
+        headers=headers,
+        json={"sessionDir": str(session_dir), "outputPath": str(allowed_output)},
+    )
+    assert allowed.status_code == 200
+    assert allowed_output.exists()
+
+    unauth_list = client.get("/audit/packs")
+    assert unauth_list.status_code == 401

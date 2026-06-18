@@ -87,7 +87,10 @@ def _ui_asset_media_type(path: Path) -> str:
 
 
 def _static_asset_response(
-    asset_name: str, response: Response, if_none_match: Optional[str]
+    asset_name: str,
+    response: Response,
+    if_none_match: Optional[str],
+    auth_headers: dict[str, str],
 ) -> Response:
     asset_path = _UI_STATIC_ASSETS.get(asset_name)
     if asset_path is None:
@@ -100,12 +103,15 @@ def _static_asset_response(
     if _etag_match(if_none_match, etag):
         response.status_code = 304
         response.headers["ETag"] = etag
+        apply_auth_headers(response, auth_headers)
         return response
 
+    headers = {"ETag": etag, "Cache-Control": "public, max-age=300"}
+    headers.update(auth_headers)
     return Response(
         content=asset_path.read_bytes(),
         media_type=_ui_asset_media_type(asset_path),
-        headers={"ETag": etag, "Cache-Control": "public, max-age=300"},
+        headers=headers,
     )
 
 
@@ -259,101 +265,135 @@ def read_resource(
 @router.get("/ui/{slug}")
 def render_ui_resource(
     slug: str,
+    request: Request,
     response: Response,
     if_none_match: Optional[str] = Header(
         default=None, alias="If-None-Match", convert_underscores=False
     ),
 ) -> Response:
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
     uri = f"ui://mcp-geo/{slug}"
     ui_entry = resolve_ui_resource(uri)
     if not ui_entry:
-        raise HTTPException(status_code=404, detail="UI resource not found")
+        _raise_http_route_error(404, "UI resource not found", auth_headers)
     content, etag = load_ui_content(ui_entry, asset_mode="absolute")
     if if_none_match:
         candidates = {token.strip() for token in if_none_match.split(",") if token.strip()}
         if etag in candidates or "*" in candidates:
             response.status_code = 304
             response.headers["ETag"] = etag
+            apply_auth_headers(response, auth_headers)
             return response
     cache_control = (
         "no-store, max-age=0" if slug == "simple-map-lab" else "public, max-age=300"
     )
+    headers = {"ETag": etag, "Cache-Control": cache_control}
+    headers.update(auth_headers)
     return Response(
         content=content,
         media_type="text/html",
-        headers={"ETag": etag, "Cache-Control": cache_control},
+        headers=headers,
     )
 
 
 @router.get("/ui/shared/compact_contract.css")
 def render_ui_shared_compact_contract_css(
+    request: Request,
     response: Response,
     if_none_match: Optional[str] = Header(
         default=None, alias="If-None-Match", convert_underscores=False
     ),
 ) -> Response:
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
     return _static_asset_response(
-        "shared/compact_contract.css", response, if_none_match
+        "shared/compact_contract.css", response, if_none_match, auth_headers
     )
 
 
 @router.get("/ui/shared/compact_contract.js")
 def render_ui_shared_compact_contract_js(
+    request: Request,
     response: Response,
     if_none_match: Optional[str] = Header(
         default=None, alias="If-None-Match", convert_underscores=False
     ),
 ) -> Response:
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
     return _static_asset_response(
-        "shared/compact_contract.js", response, if_none_match
+        "shared/compact_contract.js", response, if_none_match, auth_headers
     )
 
 
 @router.get("/ui/vendor/maplibre-gl.css")
 def render_ui_vendor_maplibre_css(
+    request: Request,
     response: Response,
     if_none_match: Optional[str] = Header(
         default=None, alias="If-None-Match", convert_underscores=False
     ),
 ) -> Response:
-    return _static_asset_response("vendor/maplibre-gl.css", response, if_none_match)
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    return _static_asset_response("vendor/maplibre-gl.css", response, if_none_match, auth_headers)
 
 
 @router.get("/ui/vendor/maplibre-gl.js")
 def render_ui_vendor_maplibre_js(
+    request: Request,
     response: Response,
     if_none_match: Optional[str] = Header(
         default=None, alias="If-None-Match", convert_underscores=False
     ),
 ) -> Response:
-    return _static_asset_response("vendor/maplibre-gl.js", response, if_none_match)
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    return _static_asset_response("vendor/maplibre-gl.js", response, if_none_match, auth_headers)
 
 
 @router.get("/ui/vendor/maplibre-gl-csp-worker.js")
 def render_ui_vendor_maplibre_worker_js(
+    request: Request,
     response: Response,
     if_none_match: Optional[str] = Header(
         default=None, alias="If-None-Match", convert_underscores=False
     ),
 ) -> Response:
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
     return _static_asset_response(
-        "vendor/maplibre-gl-csp-worker.js", response, if_none_match
+        "vendor/maplibre-gl-csp-worker.js", response, if_none_match, auth_headers
     )
 
 
 @router.get("/ui/vendor/shp.min.js")
 def render_ui_vendor_shp_js(
+    request: Request,
     response: Response,
     if_none_match: Optional[str] = Header(
         default=None, alias="If-None-Match", convert_underscores=False
     ),
 ) -> Response:
-    return _static_asset_response("vendor/shp.min.js", response, if_none_match)
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    return _static_asset_response("vendor/shp.min.js", response, if_none_match, auth_headers)
 
 
 @router.get("/simple-map-lab", include_in_schema=False)
-def simple_map_lab_redirect() -> RedirectResponse:
-    return RedirectResponse(url="/ui/simple-map-lab", status_code=307)
+def simple_map_lab_redirect(request: Request) -> Response:
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    return RedirectResponse(url="/ui/simple-map-lab", status_code=307, headers=auth_headers)
 
 
 @router.get("/resources/download")

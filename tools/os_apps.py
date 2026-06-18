@@ -284,12 +284,24 @@ def _build_widget_response(
 
 
 def _looks_sensitive(key: str) -> bool:
-    key_norm = key.lower()
-    if key_norm in _SENSITIVE_KEY_MARKERS:
+    key_norm = re.sub(r"[^a-z0-9]+", "", key.lower())
+    marker_norms = {re.sub(r"[^a-z0-9]+", "", marker) for marker in _SENSITIVE_KEY_MARKERS}
+    if key_norm in marker_norms:
         return True
-    if key_norm.endswith("_key") or key_norm.endswith("_token"):
+    if key_norm.endswith("key") or key_norm.endswith("token"):
         return True
     if key_norm.startswith("bearer"):
+        return True
+    sensitive_fragments = (
+        "accesstoken",
+        "authorization",
+        "credential",
+        "privatekey",
+        "refreshtoken",
+        "secret",
+        "sessiontoken",
+    )
+    if any(fragment in key_norm for fragment in sensitive_fragments):
         return True
     return False
 

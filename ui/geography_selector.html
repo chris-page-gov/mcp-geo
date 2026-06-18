@@ -1076,10 +1076,23 @@
         return normalized.length ? normalized : DEFAULT_GEOGRAPHY_LEVELS;
       }
 
+      function textElement(tag, className, text) {
+        const element = document.createElement(tag);
+        if (className) {
+          element.className = className;
+        }
+        element.textContent = text == null ? "" : String(text);
+        return element;
+      }
+
+      function replaceWithMessage(parent, className, text) {
+        parent.replaceChildren(textElement("div", className, text));
+      }
+
       function rebuildLevelOptions(levels) {
         const current = levelSelect.value;
         state.supportedLevels = normalizeSupportedLevels(levels);
-        levelSelect.innerHTML = "";
+        levelSelect.replaceChildren();
         state.supportedLevels.forEach((entry) => {
           const option = document.createElement("option");
           option.value = entry.value;
@@ -1303,20 +1316,23 @@
           ? `Admin lookup: ${state.adminLookupStatus.replace(/_/g, " ")}`
           : null;
         const style = mapStyleSelect?.value || "n/a";
-        debugBadgesEl.innerHTML = `
-          <span class="debug-badge">Mode: ${mode}</span>
-          <span class="debug-badge">Cards: ${cardCount}</span>
-          <span class="debug-badge">Addresses: ${addrCount}</span>
-          <span class="debug-badge">UPRN dots: ${pointCount}</span>
-          <span class="debug-badge">Boundaries: ${boundaryCount}</span>
-          <span class="debug-badge">Sources: ${sources}</span>
-          <span class="debug-badge">MapLibre: ${maplibreStatus}</span>
-          <span class="debug-badge">Addr layer: ${addressLayer}</span>
-          <span class="debug-badge">Boundary layer: ${boundaryLayer}</span>
-          ${adminLookupLabel ? `<span class="debug-badge">${adminLookupLabel}</span>` : ""}
-          ${errorLabel ? `<span class="debug-badge">${errorLabel}</span>` : ""}
-          <span class="debug-badge">Style: ${style}</span>
-        `;
+        const labels = [
+          `Mode: ${mode}`,
+          `Cards: ${cardCount}`,
+          `Addresses: ${addrCount}`,
+          `UPRN dots: ${pointCount}`,
+          `Boundaries: ${boundaryCount}`,
+          `Sources: ${sources}`,
+          `MapLibre: ${maplibreStatus}`,
+          `Addr layer: ${addressLayer}`,
+          `Boundary layer: ${boundaryLayer}`,
+          adminLookupLabel,
+          errorLabel,
+          `Style: ${style}`,
+        ].filter(Boolean);
+        debugBadgesEl.replaceChildren(
+          ...labels.map((label) => textElement("span", "debug-badge", label))
+        );
       }
 
       function redactSecrets(text) {
@@ -2250,17 +2266,20 @@
       }
 
       function renderResults(items) {
-        resultsEl.innerHTML = "";
+        resultsEl.replaceChildren();
         state.resultCount = items.length;
         if (!items.length) {
-          resultsEl.innerHTML = '<div class="result-meta">No results yet.</div>';
+          replaceWithMessage(resultsEl, "result-meta", "No results yet.");
           scheduleDiagnosticsUpdate();
           return;
         }
         items.forEach((item) => {
           const card = document.createElement("div");
           card.className = "result-card";
-          card.innerHTML = `<strong>${item.title}</strong><div class="result-meta">${item.subtitle}</div>`;
+          const title = textElement("strong", "", item.title);
+          const subtitle = textElement("div", "result-meta", item.subtitle);
+          card.appendChild(title);
+          card.appendChild(subtitle);
           card.addEventListener("click", (event) => selectResult(item, event));
           resultsEl.appendChild(card);
         });
@@ -2400,7 +2419,7 @@
       }
 
       function renderError(message) {
-        resultsEl.innerHTML = `<div class="result-error">${message}</div>`;
+        replaceWithMessage(resultsEl, "result-error", message || "Search failed.");
         state.resultCount = 0;
         setFlowStatus("error", message || "Search failed.");
         scheduleDiagnosticsUpdate();
@@ -2410,25 +2429,39 @@
         const addressEntries = [...state.selectedAddresses.entries()];
         const areaEntries = [...state.selectedAreas.entries()];
         if (!addressEntries.length && !areaEntries.length) {
-          selectionEl.innerHTML = '<div class="result-meta">No selection yet.</div>';
+          replaceWithMessage(selectionEl, "result-meta", "No selection yet.");
           return;
         }
-        const addressHtml = addressEntries
-          .map(([uprn, entry]) =>
-            `<button class="selection-item" data-kind="address" data-key="${uprn}">${entry.address || uprn}</button>`
-          )
-          .join("");
-        const areaHtml = areaEntries
-          .map(([id, entry]) =>
-            `<button class="selection-item" data-kind="area" data-key="${id}">${entry.name || id}</button>`
-          )
-          .join("");
-        selectionEl.innerHTML = `
-          <div class="result-meta">Selected UPRNs (${addressEntries.length})</div>
-          <div class="selection-list">${addressHtml || '<div class="result-meta">None</div>'}</div>
-          <div class="result-meta">Selected areas (${areaEntries.length})</div>
-          <div class="selection-list">${areaHtml || '<div class="result-meta">None</div>'}</div>
-        `;
+        const addressList = document.createElement("div");
+        addressList.className = "selection-list";
+        if (addressEntries.length) {
+          addressEntries.forEach(([uprn, entry]) => {
+            const button = textElement("button", "selection-item", entry.address || uprn);
+            button.dataset.kind = "address";
+            button.dataset.key = uprn;
+            addressList.appendChild(button);
+          });
+        } else {
+          addressList.appendChild(textElement("div", "result-meta", "None"));
+        }
+        const areaList = document.createElement("div");
+        areaList.className = "selection-list";
+        if (areaEntries.length) {
+          areaEntries.forEach(([id, entry]) => {
+            const button = textElement("button", "selection-item", entry.name || id);
+            button.dataset.kind = "area";
+            button.dataset.key = id;
+            areaList.appendChild(button);
+          });
+        } else {
+          areaList.appendChild(textElement("div", "result-meta", "None"));
+        }
+        selectionEl.replaceChildren(
+          textElement("div", "result-meta", `Selected UPRNs (${addressEntries.length})`),
+          addressList,
+          textElement("div", "result-meta", `Selected areas (${areaEntries.length})`),
+          areaList
+        );
       }
 
       async function selectResult(item, event) {

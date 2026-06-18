@@ -570,6 +570,31 @@ def test_ons_geo_cache_refresh_reports_partial_failure_for_missing_support_datas
     assert rgc["errorCode"] == "RESOLVE_ERROR"
 
 
+def test_ons_geo_cache_refresh_rejects_unsafe_db_name(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "scripts/ons_geo_cache_refresh.py",
+            "--cache-dir",
+            str(tmp_path / "cache"),
+            "--index-path",
+            str(tmp_path / "ons_geo_cache_index.json"),
+            "--db-name",
+            "../escape.sqlite",
+        ],
+    )
+
+    with pytest.raises(SystemExit) as excinfo:
+        refresh.main()
+
+    assert "safe filename" in str(excinfo.value)
+    assert not (tmp_path / "escape.sqlite").exists()
+
+
 def test_index_health_requires_each_key_type_per_mode() -> None:
     products = [
         {

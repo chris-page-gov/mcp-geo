@@ -14,7 +14,7 @@ def authorize_http_route(
     if http_transport._auth_mode() == "off":
         return {}, None
 
-    session_id, session_state = http_transport._get_session(request)
+    session_id, session_state = http_transport._get_session(request, persist=False)
     headers = {"mcp-session-id": session_id}
     try:
         claims = http_transport._authenticate_request(request, session_state)
@@ -53,6 +53,7 @@ def authorize_http_route(
             },
             headers=headers,
         )
+    http_transport._persist_session(session_id, session_state)
     return headers, None
 
 

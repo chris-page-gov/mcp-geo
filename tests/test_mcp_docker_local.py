@@ -4,6 +4,8 @@ import os
 import subprocess
 from pathlib import Path
 
+import pytest
+
 
 def _write_executable(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
@@ -773,6 +775,9 @@ def test_mcp_docker_local_plan_mounts_relative_boundary_runs_dir_from_repo(tmp_p
     fake_docker = tmp_path / "docker"
     boundary_runs_dir = repo_root / "data" / "boundary_runs"
     created = False
+
+    if boundary_runs_dir.is_symlink() and not boundary_runs_dir.exists():
+        pytest.skip("local data/boundary_runs symlink target is unavailable")
 
     if not boundary_runs_dir.exists():
         boundary_runs_dir.mkdir(parents=True)

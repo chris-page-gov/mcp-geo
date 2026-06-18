@@ -379,6 +379,38 @@ def test_header_auth_mode_uses_key_header(monkeypatch):
     assert seen["headers"] == {"key": "header-key"}
 
 
+def test_os_client_disables_redirects_and_masks_secret_error_text(monkeypatch):
+    seen: dict[str, object] = {}
+
+    def fake_get(_url, params=None, headers=None, timeout=5, allow_redirects=True):
+        seen["allow_redirects"] = allow_redirects
+        seen["headers"] = dict(headers or {})
+        return DummyResp(302, text="redirected with header-secret in body")
+
+    monkeypatch.setattr(requests, "get", fake_get)
+    client_obj = OSClient(api_key="header-secret", auth_mode="header", retries=1)
+    code, payload = client_obj.get_json("https://api.os.uk/test", {})
+    assert code == 302
+    assert payload["code"] == "OS_API_ERROR"
+    assert seen["allow_redirects"] is False
+    assert seen["headers"] == {"key": "header-secret"}
+    assert "header-secret" not in payload["message"]
+    assert "[REDACTED]" in payload["message"]
+
+
+def test_os_client_masks_exception_secret_text(monkeypatch):
+    def fake_get(_url, params=None, timeout=5, allow_redirects=True):
+        raise requests.exceptions.ConnectionError("failed for query-secret")
+
+    monkeypatch.setattr(requests, "get", fake_get)
+    client_obj = OSClient(api_key="query-secret", retries=1)
+    code, payload = client_obj.get_json("https://api.os.uk/test", {})
+    assert code == 501
+    assert payload["code"] == "UPSTREAM_CONNECT_ERROR"
+    assert "query-secret" not in payload["message"]
+    assert "[REDACTED]" in payload["message"]
+
+
 def test_bearer_auth_mode_uses_authorization_header_for_all_methods(monkeypatch):
     seen_gets: list[tuple[dict[str, object], dict[str, str]]] = []
     seen_posts: list[tuple[dict[str, object], dict[str, str], dict[str, object]]] = []

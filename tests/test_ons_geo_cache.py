@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import sqlite3
 
+import pytest
+
 from server.geography_levels import (
     AREA_SUMMARY_LEVEL_RANK,
     NOMIS_GEOGRAPHY_TYPE_MATCHERS,
@@ -22,6 +24,7 @@ from server.ons_geo_cache import (
     normalize_derivation_mode,
     normalize_postcode,
     normalize_uprn,
+    validate_cache_db_name,
 )
 
 
@@ -37,6 +40,22 @@ def test_normalize_postcode_and_uprn() -> None:
     assert infer_area_level_from_code("E04000001") == "PARISH"
     assert infer_area_level_from_code("W04000001") == "PARISH"
     assert infer_area_level_from_code("E43000246") == "PARISH"
+
+
+def test_ons_geo_cache_db_name_must_be_safe_filename(tmp_path) -> None:
+    assert validate_cache_db_name("ons_geo_cache.sqlite") == "ons_geo_cache.sqlite"
+
+    for unsafe in ("../escape.sqlite", "/tmp/escape.sqlite", "nested/cache.sqlite", "..", ""):
+        with pytest.raises(ValueError, match="safe filename"):
+            validate_cache_db_name(unsafe)
+
+    cache = ONSGeoCache(
+        cache_dir=tmp_path,
+        db_name="../escape.sqlite",
+        index_path=tmp_path / "ons_geo_cache_index.json",
+    )
+    with pytest.raises(ValueError, match="safe filename"):
+        _ = cache.db_path
 
 
 def test_shared_geography_level_registry_covers_parish_and_country_aliases() -> None:

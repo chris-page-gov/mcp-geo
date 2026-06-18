@@ -18,6 +18,7 @@ from PIL import Image, UnidentifiedImageError
 
 from server.circuit_breaker import get_circuit_breaker
 from server.config import settings
+from server.mcp.http_route_auth import apply_auth_headers, authorize_http_route
 from server.security import mask_in_text
 from tools.os_common import DEFAULT_TIMEOUT, OSClient, classify_os_api_key_error, req_exc, requests
 
@@ -38,6 +39,7 @@ _MAX_LAT = 85.05112878
 _OS_BREAKER = get_circuit_breaker("os")
 _OS_KEY_PLACEHOLDER = "OS_API_KEY"
 _KEY_QUERY_RE = re.compile(r"([?&]key=)[^&#]+", re.IGNORECASE)
+_ALLOWED_OS_NETLOCS = {urlparse(_OS_BASE).netloc.lower()}
 
 
 def _osm_tile_base() -> str:
@@ -397,7 +399,18 @@ def _normalize_style_url(url: str, key: str) -> tuple[str, bool]:
         normalized_pairs.append((name, value))
     parsed = parsed._replace(query=urlencode(normalized_pairs, doseq=True))
     url = urlunparse(parsed)
+    if parsed.scheme != "https" or parsed.netloc.lower() not in _ALLOWED_OS_NETLOCS:
+        raise HTTPException(status_code=502, detail="Rejected untrusted OS style URL")
     return url, has_key
+
+
+def _requests_get_no_redirects(url: str, **kwargs: Any) -> requests.Response:
+    try:
+        return requests.get(url, allow_redirects=False, **kwargs)
+    except TypeError as exc:
+        if "allow_redirects" not in str(exc):
+            raise
+        return requests.get(url, **kwargs)
 
 
 def _get_upstream(
@@ -409,7 +422,12 @@ def _get_upstream(
     if not _OS_BREAKER.allow():
         raise HTTPException(status_code=503, detail="OS upstream circuit breaker is open.")
     try:
-        return requests.get(url, params=params, headers=headers, timeout=DEFAULT_TIMEOUT)
+        return _requests_get_no_redirects(
+            url,
+            params=params,
+            headers=headers,
+            timeout=DEFAULT_TIMEOUT,
+        )
     except (req_exc.ConnectionError, req_exc.Timeout) as exc:
         safe = mask_in_text(str(exc), secrets)
         _OS_BREAKER.record_failure()
@@ -465,7 +483,17 @@ def _get_upstream_style(
     return last_resp if last_resp is not None else resp
 
 
-def _apply_cors(response: Response, request: Request) -> Response:
+def _authorize_map_route(request: Request) -> tuple[dict[str, str], Response | None]:
+    return authorize_http_route(request)
+
+
+def _apply_cors(
+    response: Response,
+    request: Request,
+    auth_headers: dict[str, str] | None = None,
+) -> Response:
+    if auth_headers:
+        apply_auth_headers(response, auth_headers)
     origin = request.headers.get("origin")
     if origin is None:
         return response
@@ -483,6 +511,9 @@ def _apply_cors(response: Response, request: Request) -> Response:
 
 @router.get("/maps/worker/maplibre-gl-csp-worker.js")
 def serve_maplibre_worker(request: Request) -> Response:
+    auth_headers, auth_error = _authorize_map_route(request)
+    if auth_error is not None:
+        return auth_error
     if not _MAPLIBRE_WORKER_PATH.is_file():
         raise HTTPException(status_code=404, detail="MapLibre worker not found")
     response = Response(
@@ -490,13 +521,16 @@ def serve_maplibre_worker(request: Request) -> Response:
         media_type="application/javascript",
         headers={"Cache-Control": "public, max-age=86400"},
     )
-    return _apply_cors(response, request)
+    return _apply_cors(response, request, auth_headers)
 
 
 @router.get("/maps/vector/{path:path}")
 def proxy_vector_tiles(path: str, request: Request) -> Response:
     if requests is None:
         raise HTTPException(status_code=501, detail="requests is not installed")
+    auth_headers, auth_error = _authorize_map_route(request)
+    if auth_error is not None:
+        return auth_error
     upstream_headers, auth_query, secrets = _resolve_upstream_auth(request)
     key = auth_query.get("key", "")
     params = dict(request.query_params)
@@ -511,7 +545,7 @@ def proxy_vector_tiles(path: str, request: Request) -> Response:
                 style_name = path.split(f"{_STYLE_INDEX_PATH}/", 1)[1]
             local_style = _load_local_style(style_name)
             if local_style:
-                return JSONResponse(
+                response = JSONResponse(
                     content=_rewrite_style_urls(
                         local_style,
                         key,
@@ -519,12 +553,13 @@ def proxy_vector_tiles(path: str, request: Request) -> Response:
                         str(request.base_url).rstrip("/"),
                     )
                 )
+                return _apply_cors(response, request, auth_headers)
             resp = _get_upstream_style(style_name, params, upstream_headers, key, secrets)
         elif path in {"styles", "styles.json", _STYLE_INDEX_PATH, f"{_STYLE_INDEX_PATH}.json"}:
             style_name = request.query_params.get("style")
             local_style = _load_local_style(style_name)
             if local_style:
-                return JSONResponse(
+                response = JSONResponse(
                     content=_rewrite_style_urls(
                         local_style,
                         key,
@@ -532,6 +567,7 @@ def proxy_vector_tiles(path: str, request: Request) -> Response:
                         str(request.base_url).rstrip("/"),
                     )
                 )
+                return _apply_cors(response, request, auth_headers)
             resp = _get_upstream_style(style_name, params, upstream_headers, key, secrets)
         else:
             upstream_url = f"{_OS_BASE}/{path}"
@@ -550,7 +586,7 @@ def proxy_vector_tiles(path: str, request: Request) -> Response:
                 status_code=resp.status_code,
                 content={"isError": True, "code": code, "message": message},
             )
-            return _apply_cors(response, request)
+            return _apply_cors(response, request, auth_headers)
         safe = mask_in_text(resp.text[:200], secrets)
         response = JSONResponse(
             status_code=resp.status_code,
@@ -560,7 +596,7 @@ def proxy_vector_tiles(path: str, request: Request) -> Response:
                 "message": f"OS API error: {safe}",
             },
         )
-        return _apply_cors(response, request)
+        return _apply_cors(response, request, auth_headers)
     _OS_BREAKER.record_success()
     if "application/json" in content_type or "application/vnd.mapbox-style+json" in content_type:
         try:
@@ -569,25 +605,28 @@ def proxy_vector_tiles(path: str, request: Request) -> Response:
             response = Response(
                 content=resp.content, status_code=resp.status_code, media_type=content_type
             )
-            return _apply_cors(response, request)
+            return _apply_cors(response, request, auth_headers)
         rewritten = _rewrite_style_urls(payload, key, srs, str(request.base_url).rstrip("/"))
         response = JSONResponse(content=rewritten)
-        return _apply_cors(response, request)
+        return _apply_cors(response, request, auth_headers)
     response = Response(content=resp.content, status_code=resp.status_code, media_type=content_type)
-    return _apply_cors(response, request)
+    return _apply_cors(response, request, auth_headers)
 
 
 @router.get("/maps/raster/osm/{z}/{x}/{y}.png")
 def proxy_osm_tiles(z: int, x: int, y: int, request: Request) -> Response:
     if requests is None:
         raise HTTPException(status_code=501, detail="requests is not installed")
+    auth_headers, auth_error = _authorize_map_route(request)
+    if auth_error is not None:
+        return auth_error
     cache_key = _osm_cache_key(z, x, y)
     cached = _get_cached_osm_tile(cache_key)
     if cached:
         if_none_match = request.headers.get("if-none-match")
         if if_none_match and if_none_match == cached.get("etag"):
             response = Response(status_code=304, headers=_osm_cache_headers(cached.get("etag")))
-            return _apply_cors(response, request)
+            return _apply_cors(response, request, auth_headers)
         headers = _osm_cache_headers(cached.get("etag"))
         headers["X-Cache"] = "HIT"
         response = Response(
@@ -596,7 +635,7 @@ def proxy_osm_tiles(z: int, x: int, y: int, request: Request) -> Response:
             media_type=cached.get("content_type", "image/png"),
             headers=headers,
         )
-        return _apply_cors(response, request)
+        return _apply_cors(response, request, auth_headers)
     url = _osm_tile_url(z, x, y)
     try:
         resp = requests.get(
@@ -613,7 +652,7 @@ def proxy_osm_tiles(z: int, x: int, y: int, request: Request) -> Response:
             status_code=resp.status_code,
             media_type=content_type,
         )
-        return _apply_cors(response, request)
+        return _apply_cors(response, request, auth_headers)
     etag = _store_osm_tile(cache_key, resp.content, content_type)
     headers = _osm_cache_headers(etag)
     headers["X-Cache"] = "MISS"
@@ -623,7 +662,7 @@ def proxy_osm_tiles(z: int, x: int, y: int, request: Request) -> Response:
         media_type=content_type,
         headers=headers,
     )
-    return _apply_cors(response, request)
+    return _apply_cors(response, request, auth_headers)
 
 
 @router.get("/maps/static/osm")
@@ -635,6 +674,9 @@ def render_static_osm(
 ) -> Response:
     if requests is None:
         raise HTTPException(status_code=501, detail="requests is not installed")
+    auth_headers, auth_error = _authorize_map_route(request)
+    if auth_error is not None:
+        return auth_error
     try:
         parts = [float(part) for part in bbox.split(",")]
     except Exception as exc:
@@ -661,7 +703,7 @@ def render_static_osm(
             media_type=content_type,
             headers=headers,
         )
-        return _apply_cors(response, request)
+        return _apply_cors(response, request, auth_headers)
 
     center_px_x, center_px_y = _lonlat_to_pixel(center_lon, center_lat, map_zoom)
     half = target_px / 2.0
@@ -712,4 +754,4 @@ def render_static_osm(
         media_type="image/png",
         headers=headers,
     )
-    return _apply_cors(response, request)
+    return _apply_cors(response, request, auth_headers)

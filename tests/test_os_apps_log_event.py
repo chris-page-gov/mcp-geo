@@ -18,7 +18,16 @@ def test_os_apps_log_event_writes(tmp_path):
                 "tool": "os_apps.log_event",
                 "eventType": "select_result",
                 "source": "geography-selector",
-                "payload": {"api_key": "secret", "label": "Westminster"},
+                "payload": {
+                    "api_key": "secret",
+                    "label": "Westminster",
+                    "sessionToken": "session-secret",
+                    "nested": {
+                        "refreshToken": "refresh-secret",
+                        "clientSecret": "client-secret",
+                        "privateKey": "private-secret",
+                    },
+                },
             },
         )
         assert resp.status_code == 200
@@ -28,6 +37,10 @@ def test_os_apps_log_event_writes(tmp_path):
         record = json.loads(log_path.read_text().splitlines()[0])
         assert record["eventType"] == "select_result"
         assert record["payload"]["api_key"] == "***"
+        assert record["payload"]["sessionToken"] == "***"
+        assert record["payload"]["nested"]["refreshToken"] == "***"
+        assert record["payload"]["nested"]["clientSecret"] == "***"
+        assert record["payload"]["nested"]["privateKey"] == "***"
         assert record["payload"]["label"] == "Westminster"
     finally:
         settings.UI_EVENT_LOG_PATH = original
