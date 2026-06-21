@@ -1,0 +1,43 @@
+{
+  "id": "client_interop_full_v1",
+  "title": "Client interop full matrix scenarios",
+  "description": "Full optional client interop matrix pack. This is the union of naming compatibility and core capability coverage and is intended for release-grade or high-risk MCP interface changes.",
+  "version": "2026-06-17",
+  "extendsScenarioPack": "codex_vs_claude_host_scenarios_v1.json",
+  "scenarioIds": [
+    "address_lookup_postcode",
+    "ambiguous_westminster_data",
+    "tool_search_postcode",
+    "skills_guide_resource",
+    "static_map_render",
+    "geography_selector_widget",
+    "boundary_explorer_widget",
+    "boundary_not_found_recovery"
+  ],
+  "scenarioOverrides": {
+    "address_lookup_postcode": {
+      "riskTags": ["live_os_lookup", "tool_naming", "schema"]
+    },
+    "ambiguous_westminster_data": {
+      "riskTags": ["routing", "discovery", "tool_naming"]
+    },
+    "tool_search_postcode": {
+      "riskTags": ["tool-search", "discovery", "tool_naming"]
+    },
+    "skills_guide_resource": {
+      "riskTags": ["resource_contract", "resources_read"]
+    },
+    "static_map_render": {
+      "riskTags": ["map_descriptor", "schema"]
+    },
+    "geography_selector_widget": {
+      "riskTags": ["ui", "ui_fallback", "resource_contract"]
+    },
+    "boundary_explorer_widget": {
+      "riskTags": ["ui", "ui_fallback", "resource_contract"]
+    },
+    "boundary_not_found_recovery": {
+      "riskTags": ["error_recovery", "admin_lookup"]
+    }
+  }
+}

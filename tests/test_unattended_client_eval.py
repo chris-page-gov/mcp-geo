@@ -536,6 +536,77 @@ def test_run_claude_track_uses_env_placeholders_in_temp_config(monkeypatch, tmp_
     assert envs[0]["OS_API_KEY"] == "secret"
 
 
+def test_run_opencode_track_writes_workspace_config_and_runs_prompt(
+    monkeypatch, tmp_path: Path
+) -> None:
+    session_root = tmp_path / "logs" / "sessions"
+    session_root.mkdir(parents=True)
+    workspaces = tmp_path / "benchmark-workspaces"
+    commands: list[list[str]] = []
+    cwds: list[Path] = []
+    envs: list[dict[str, str] | None] = []
+
+    monkeypatch.setattr(unattended_client_eval, "DEFAULT_WORKSPACE_ROOT", workspaces)
+    monkeypatch.setattr(
+        unattended_client_eval.host_benchmark,
+        "_build_temp_stdio_server",
+        lambda *_args, **_kwargs: {
+            "command": "python",
+            "args": ["server.py"],
+            "env": {"OS_API_KEY": "secret", "A": "B"},
+        },
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "_build_inherited_env",
+        lambda: {"OS_API_KEY": "secret"},
+    )
+    monkeypatch.setattr(
+        unattended_client_eval,
+        "resolved_process_env",
+        lambda: {"OS_API_KEY": "secret", "MCP_GEO_DOCKER_BUILD": "never"},
+    )
+    monkeypatch.setattr(unattended_client_eval, "_client_version", lambda _command: "opencode test")
+
+    def fake_run(command: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
+        commands.append(command)
+        cwds.append(kwargs["cwd"])
+        envs.append(kwargs.get("env"))
+        return subprocess.CompletedProcess(command, 0, stdout='{"ok":true}', stderr="")
+
+    monkeypatch.setattr(unattended_client_eval.subprocess, "run", fake_run)
+
+    session_dir, exit_code, blocker = unattended_client_eval._run_opencode_track(
+        task={"id": "readiness_probe", "label": "Readiness", "prompt": "Call the descriptor."},
+        scenario_pack_id="pack-id",
+        session_root=session_root,
+        model="anthropic/claude-test",
+        timeout_sec=5,
+        attempt_kind="readiness",
+    )
+
+    workspace_dir = Path(
+        json.loads((session_dir / "session.json").read_text())["benchmarkWorkspace"]
+    )
+    config = json.loads((workspace_dir / "opencode.jsonc").read_text(encoding="utf-8"))
+    server = config["mcp"][unattended_client_eval.DEFAULT_OPENCODE_SERVER]
+    assert session_dir.exists()
+    assert exit_code == 0
+    assert blocker is None
+    assert commands[0][:5] == ["opencode", "run", "--format", "json", "--dir"]
+    assert commands[0][5] == str(workspace_dir)
+    assert "--dangerously-skip-permissions" in commands[0]
+    model_index = commands[0].index("--model")
+    assert commands[0][model_index + 1] == "anthropic/claude-test"
+    assert unattended_client_eval.OPENCODE_READINESS_TOOL_ALIAS in commands[0][-1]
+    assert cwds[0] == workspace_dir
+    assert envs[0]["OS_API_KEY"] == "secret"
+    assert server["type"] == "local"
+    assert server["command"] == ["python", "server.py"]
+    assert server["environment"]["OS_API_KEY"] == "${env:OS_API_KEY}"
+    assert server["environment"]["A"] == "B"
+
+
 def test_run_vscode_track_uses_workspace_mcp_config_and_session_window(
     monkeypatch, tmp_path: Path
 ) -> None:
@@ -892,6 +963,33 @@ def test_readiness_task_for_vscode_uses_resource_probe() -> None:
 
     assert readiness_task["expectedTools"] == ["os_resources.get"]
     assert readiness_task["toolFamily"] == "resource_bridge"
+
+
+def test_default_registry_includes_opencode_track() -> None:
+    assert "opencode_cli" in unattended_client_eval.DEFAULT_TRACKS
+    track = unattended_client_eval.TRACK_BY_ID["opencode_cli"]
+    assert track["label"] == "OpenCode CLI"
+    assert track["configStrategy"] == "workspace_opencode_jsonc"
+    assert "stdio" in track["supportedSurfaces"]
+
+
+def test_task_prompt_uses_opencode_server_prefixed_tool_alias() -> None:
+    prompt = unattended_client_eval._task_prompt(
+        {"id": "readiness_probe", "prompt": "Call the descriptor."},
+        track_id="opencode_cli",
+        server_name=unattended_client_eval.DEFAULT_OPENCODE_SERVER,
+    )
+
+    assert unattended_client_eval.OPENCODE_READINESS_TOOL_ALIAS in prompt
+    assert "OpenCode prefixes MCP tool names" in prompt
+    assert "Do not inspect the repository" in prompt
+
+
+def test_readiness_task_for_opencode_uses_server_prefixed_probe_prompt() -> None:
+    readiness_task = unattended_client_eval._readiness_task_for_track("opencode_cli")
+
+    assert readiness_task["expectedTools"] == ["os_mcp.descriptor"]
+    assert unattended_client_eval.OPENCODE_READINESS_TOOL_ALIAS in readiness_task["prompt"]
 
 
 def test_run_track_readiness_limits_recovery_to_one_attempt(monkeypatch) -> None:
@@ -1284,3 +1382,66 @@ def test_summarize_attempts_supports_requested_track_subset() -> None:
     assert list(aggregate["tracks"]) == ["vscode_ide"]
     assert "| VS Code Agent |" in markdown
     assert "| Codex CLI |" not in markdown
+
+
+def test_recommend_scenario_packs_flags_naming_and_ui_changes() -> None:
+    recommendations = unattended_client_eval._recommend_scenario_packs_for_paths(
+        ["server/tool_naming.py", "server/mcp/tools.py", "ui/geography_selector.html"]
+    )
+
+    assert recommendations["fullMatrixSuggested"] is True
+    assert recommendations["recommendedPacks"] == ["core_capability", "naming_compat"]
+    assert "opencode_cli" in recommendations["recommendedTracks"]
+    assert "vscode_ide" in recommendations["recommendedTracks"]
+
+
+def test_recommend_scenario_packs_defaults_to_smoke_for_non_mcp_change() -> None:
+    recommendations = unattended_client_eval._recommend_scenario_packs_for_paths(
+        ["server/ons_geo_cache.py"]
+    )
+
+    assert recommendations["recommendedPacks"] == ["smoke"]
+    assert recommendations["fullMatrixSuggested"] is False
+    assert recommendations["recommendedTracks"] == ["codex_cli"]
+
+
+def test_eval_comparison_marks_readiness_loss_and_score_regression() -> None:
+    baseline = {
+        "scenarioPack": "client_interop_naming_compat_v1",
+        "tracks": {"opencode_cli": {"readiness": {"outcome": "ready"}}},
+        "attempts": [
+            {
+                "trackId": "opencode_cli",
+                "attemptKind": "capability",
+                "scenarioId": "tool_search_postcode",
+                "runStatus": "scored",
+                "overallScore": 0.9,
+            }
+        ],
+    }
+    candidate = {
+        "scenarioPack": "client_interop_naming_compat_v1",
+        "tracks": {"opencode_cli": {"readiness": {"outcome": "not_ready"}}},
+        "attempts": [
+            {
+                "trackId": "opencode_cli",
+                "attemptKind": "capability",
+                "scenarioId": "tool_search_postcode",
+                "runStatus": "scored",
+                "overallScore": 0.7,
+            }
+        ],
+    }
+
+    aggregate, markdown = unattended_client_eval._summarize_eval_comparison(
+        baseline=baseline,
+        candidate=candidate,
+        comparison_kind="compare-model",
+        baseline_label="old-model",
+        candidate_label="new-model",
+    )
+
+    assert aggregate["regressionCount"] == 2
+    assert aggregate["readinessDeltas"][0]["regression"] is True
+    assert aggregate["attemptDeltas"][0]["scoreDelta"] == -0.2
+    assert "Regressions: 2" in markdown

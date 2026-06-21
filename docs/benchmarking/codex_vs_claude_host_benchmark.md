@@ -144,13 +144,51 @@ The runner temporarily swaps the Codex MCP registry entry for `mcp-geo` to a
 traced stdio proxy, runs the scenario, restores the prior config, generates the
 trace report, and writes benchmark evidence/score artifacts.
 
-## Unattended Four-Client Run
+## Optional AI Client Interop Suite v2
 
-Run the unattended comparison harness across Codex CLI, Gemini CLI, Claude Code
-CLI, and VS Code Agent:
+The unattended harness is now an optional client interop suite rather than a
+normal per-change gate. Use it when MCP-facing behavior changes: tool naming,
+tool metadata, schemas, discovery, STDIO, resources, MCP-Apps UI handoff, or
+client-facing guidance. Routine backend handler changes should normally rely on
+unit tests, server evaluation, and targeted live smoke checks.
+
+Default full-matrix tracks:
+
+- Codex CLI
+- Gemini CLI
+- Claude Code CLI
+- VS Code Agent, which is the current GitHub Copilot/Copilot Chat coverage path
+- OpenCode CLI, using `opencode.jsonc` local MCP server config as documented at
+  <https://opencode.ai/docs/mcp-servers/>
+
+GitHub Copilot standalone CLI / Agent HQ is intentionally not a default track
+until an official non-interactive MCP-capable invocation is pinned. Keep using
+the VS Code Agent track for Copilot-style coverage in v1.
+
+Run readiness only across the default matrix:
 
 ```bash
 ./.venv/bin/python scripts/unattended_client_eval.py \
+  --mode readiness-only \
+  --session-root logs/sessions/client_interop_readiness_$(date +%Y%m%d)
+```
+
+Run one client against the naming-compatibility pack:
+
+```bash
+./.venv/bin/python scripts/unattended_client_eval.py \
+  --mode single-client \
+  --tracks opencode_cli \
+  --scenario-pack naming_compat \
+  --session-root logs/sessions/client_interop_opencode_naming_$(date +%Y%m%d)
+```
+
+Run the full optional matrix and intentionally write a committed report:
+
+```bash
+./.venv/bin/python scripts/unattended_client_eval.py \
+  --mode full-matrix \
+  --scenario-pack full \
   --session-root logs/sessions/client_interop_unattended_eval_$(date +%Y%m%d) \
   --out-prefix docs/reports/client_interop_unattended/client_interop_unattended_eval_$(date +%F)
 ```
@@ -178,14 +216,53 @@ Important behavior:
   config, and Codex `mcp-geo` config. If a higher-priority
   `OS_API_KEY_FILE` is found, it takes precedence over a lower-priority raw
   `OS_API_KEY` fallback.
+- OpenCode CLI creates an ignored benchmark workspace under
+  `logs/benchmark-workspaces/opencode/<session>/`, writes `opencode.jsonc`
+  with a local MCP server entry, and scores OpenCode's server-prefixed tool
+  calls back against MCP-Geo's canonical dotted tool names.
+- Without `--out-prefix`, aggregate reports are written under ignored
+  `logs/client-interop-unattended/`. Use `--out-prefix
+  docs/reports/client_interop_unattended/...` only when you intend to commit a
+  reviewed evidence snapshot.
 
-Current evidence snapshot:
+Available scenario-pack aliases:
+
+- `smoke`: the original eight-scenario host pack
+- `naming_compat`: focused coverage for dotted, sanitized, aliased, and
+  client/server-prefixed tool names plus resource reads
+- `core_capability`: address lookup, resources, maps, UI fallback/runtime, and
+  error recovery
+- `full`: release-grade union of the above
+
+Ask the harness which optional pack is suggested for a set of changed files:
+
+```bash
+./.venv/bin/python scripts/unattended_client_eval.py \
+  --recommend-for-changes server/tool_naming.py server/mcp/tools.py ui/geography_selector.html
+```
+
+Compare two generated reports, for example a `v0.8.1` baseline versus the
+current branch after running the same client and pack in each checkout:
+
+```bash
+./.venv/bin/python scripts/unattended_client_eval.py \
+  --mode compare-server \
+  --baseline-json logs/client-interop-unattended/v0.8.1-naming.json \
+  --candidate-json logs/client-interop-unattended/current-naming.json \
+  --baseline-label v0.8.1 \
+  --candidate-label current
+```
+
+Use `--mode compare-model` with two aggregate reports produced from the same
+MCP-Geo ref when comparing a client update or model change.
+
+Historical evidence snapshot:
 
 - `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12.md`
 - `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12.json`
 - `docs/reports/client_interop_unattended/client_interop_unattended_eval_2026-04-12_analysis.md`
 
-Current interpreted state:
+Historical interpreted state:
 
 - Codex CLI is the strongest unattended host today and provides the best
   baseline for actual tool-quality comparisons.

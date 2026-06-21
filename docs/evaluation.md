@@ -16,6 +16,29 @@ The evaluation framework includes:
 The harness calls `os_mcp.route_query` first (unless disabled) and then executes
 question-specific tool calls to validate outputs.
 
+## Optional AI-client interop evaluation
+
+The standard evaluation harness above exercises MCP-Geo directly through server
+endpoints. It does not run real AI clients.
+
+Use the optional client interop suite when a change could affect how AI hosts
+understand or call MCP-Geo: tool naming, discovery, schemas, resources, STDIO,
+MCP-Apps UI handoff, or client-facing instructions. The suite lives in
+`scripts/unattended_client_eval.py`, is not part of normal CI, and writes to
+ignored `logs/client-interop-unattended/` by default unless `--out-prefix` is
+set deliberately.
+
+Recommended examples:
+
+```bash
+./.venv/bin/python scripts/unattended_client_eval.py --mode readiness-only
+./.venv/bin/python scripts/unattended_client_eval.py --mode single-client --tracks opencode_cli --scenario-pack naming_compat
+./.venv/bin/python scripts/unattended_client_eval.py --recommend-for-changes server/tool_naming.py server/mcp/tools.py
+```
+
+Full runbook:
+- `docs/benchmarking/codex_vs_claude_host_benchmark.md`
+
 ## Requirements
 
 - `OS_API_KEY` is required for OS-backed questions (Places, Names, NGD Features, Linked IDs).
