@@ -221,6 +221,42 @@ Protocol negotiation behavior:
 - High coverage test suite exercising success + failure paths
 - Evaluation harness with question suite and scoring rubric
 
+## OKF + MCP geospatial discovery demonstrator
+
+The meeting-ready demonstrator makes this repository's discovery proposition
+concrete: a deterministic Open Knowledge Format (OKF) pack describes MCP tools,
+stable resources and Ordnance Survey API catalogue entries; optional geospatial
+and MCP-binding extensions connect those records to a shared List/Map discovery
+view and existing read-only tools.
+
+Share the key-free public demonstrator at
+<https://chris-page-gov.github.io/mcp-geo/> or open the discovery workspace
+directly at <https://chris-page-gov.github.io/mcp-geo/discovery/>. GitHub Pages
+serves only the deterministic snapshot, MapLibre application and OpenStreetMap
+context; it has no browser credential prompt and cannot execute live OS calls.
+
+Start the server, then open
+<http://127.0.0.1:8000/okf-discovery>:
+
+```bash
+uvicorn server.main:app --reload
+```
+
+Search, facets, provenance, map filtering and MCP request previews work without
+an OS API key. Live OS calls remain server-side and use the existing credential
+boundary. Check that the generated pack matches the registries with:
+
+```bash
+.venv/bin/python scripts/build_mcp_geo_okf.py --check
+python scripts/build_okf_discovery_pages.py --output-dir _site
+python scripts/build_okf_discovery_pages.py --output-dir _site --check
+```
+
+See the [meeting launch guide](examples/okf_geo_discovery/README.md) and the
+[sendable OS discussion brief](docs/work_packages/ordnance_survey_okf_mcp_demonstrator_overview.md),
+plus the [proposed 4–6 week OS work package](docs/work_packages/os_okf_mcp_discovery.md),
+for the demo script, boundaries, acceptance criteria and follow-up slices.
+
 ## Developer setup
 
 ```bash

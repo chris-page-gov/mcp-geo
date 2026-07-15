@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="A public, key-free demonstration of Ordnance Survey data discovery using Open Knowledge Format and MCP Geo."
+    />
+    <title>Find the data behind the map — OKF + MCP Geo</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./site.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <header class="site-header">
+      <a class="wordmark" href="./" aria-label="OKF and MCP Geo home">
+        <span class="wordmark-symbol" aria-hidden="true">⌖</span>
+        <span>OKF × MCP Geo</span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="./discovery/">Explore the snapshot</a>
+        <a href="./overview.md">Discussion brief</a>
+        <a href="https://github.com/chris-page-gov/mcp-geo">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">Ordnance Survey discussion demonstrator</p>
+          <h1 id="hero-title">Find the data <br />behind the map.</h1>
+          <p class="hero-lede">
+            Open Knowledge Format makes spatial data and capabilities discoverable. MCP turns a
+            selected, understood capability into a governed operation.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="./discovery/">Explore the data</a>
+            <a class="button button-secondary" href="./overview.md">Read the discussion brief</a>
+          </div>
+        </div>
+
+        <div class="spatial-motif" aria-hidden="true">
+          <svg viewBox="0 0 620 500" role="img">
+            <defs>
+              <pattern id="grid" width="52" height="52" patternUnits="userSpaceOnUse">
+                <path d="M 52 0 L 0 0 0 52" fill="none" stroke="currentColor" stroke-width="1" />
+              </pattern>
+            </defs>
+            <rect x="0" y="0" width="620" height="500" fill="url(#grid)" />
+            <path
+              class="contour contour-a"
+              d="M-35 359C42 315 104 325 154 291C208 255 205 195 264 164C331 130 392 165 448 120C492 84 523 22 656 12"
+            />
+            <path
+              class="contour contour-b"
+              d="M-24 424C64 378 124 399 191 348C257 299 246 246 306 214C366 183 428 211 489 164C536 128 569 67 650 47"
+            />
+            <path
+              class="contour contour-c"
+              d="M17 503C89 454 168 463 231 413C287 368 300 312 356 283C419 249 472 273 532 226C575 192 604 146 659 123"
+            />
+            <path
+              class="route"
+              d="M17 113C102 112 135 149 198 192C277 246 352 356 435 365C501 373 542 341 614 385"
+            />
+            <circle class="place-halo" cx="344" cy="304" r="44" />
+            <circle class="place" cx="344" cy="304" r="10" />
+            <path class="building" d="M324 266h55v29h25v61h-80z" />
+            <path class="pointer" d="M344 293v-69" />
+            <circle class="pointer-tip" cx="344" cy="218" r="5" />
+          </svg>
+          <div class="coordinate-label">50.9377° N<br />1.4704° W</div>
+          <div class="place-label">Explorer House<br /><span>Southampton</span></div>
+        </div>
+      </section>
+
+      <section class="snapshot" aria-labelledby="snapshot-title">
+        <div class="snapshot-intro">
+          <p class="eyebrow">A working knowledge snapshot</p>
+          <h2 id="snapshot-title">One index. Two ways in.</h2>
+          <p>
+            People can search by words, facets or place. Software can read the same portable
+            description, select a binding and make a controlled MCP request.
+          </p>
+        </div>
+        <dl class="snapshot-counts">
+          <div>
+            <dt>Discoverable records</dt>
+            <dd>{{RECORD_COUNT}}</dd>
+            <span>tools, resources and OS catalogue entries</span>
+          </div>
+          <div>
+            <dt>Spatial profiles</dt>
+            <dd>{{SPATIAL_COUNT}}</dd>
+            <span>coverage, CRS and geometry meaning</span>
+          </div>
+          <div>
+            <dt>Read-only MCP bindings</dt>
+            <dd>{{BINDING_COUNT}}</dd>
+            <span>inspectable before execution</span>
+          </div>
+        </dl>
+      </section>
+
+      <section class="lifecycle" aria-labelledby="lifecycle-title">
+        <div class="section-heading">
+          <p class="eyebrow">From catalogue to controlled use</p>
+          <h2 id="lifecycle-title">The role of OKF and MCP</h2>
+        </div>
+        <ol>
+          <li>
+            <span class="step-number">01</span>
+            <h3>Publish</h3>
+            <p>Describe authoritative sources, spatial meaning and access routes in a versioned OKF pack.</p>
+          </li>
+          <li>
+            <span class="step-number">02</span>
+            <h3>Discover</h3>
+            <p>Use text, metadata facets and map context over one explainable result set.</p>
+          </li>
+          <li>
+            <span class="step-number">03</span>
+            <h3>Bind</h3>
+            <p>Turn a chosen record into an explicit tool and argument contract.</p>
+          </li>
+          <li>
+            <span class="step-number">04</span>
+            <h3>Execute</h3>
+            <p>Run the read-only operation through MCP, with credentials kept on the server.</p>
+          </li>
+          <li>
+            <span class="step-number">05</span>
+            <h3>Audit</h3>
+            <p>Retain source, identifiers, arguments and outcome without overstating relationships.</p>
+          </li>
+        </ol>
+      </section>
+
+      <section class="boundary" aria-labelledby="boundary-title">
+        <div>
+          <p class="eyebrow">Public by design</p>
+          <h2 id="boundary-title">No API key enters this site.</h2>
+        </div>
+        <p>
+          GitHub Pages serves a deterministic, checked-in snapshot and a key-free map context.
+          It can preview MCP requests but cannot execute OS calls. Live execution belongs on the
+          MCP Geo server, where access, credentials and errors remain governed.
+        </p>
+        <a href="./discovery/">Open the public discovery view <span aria-hidden="true">→</span></a>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Independent discussion prototype · OKF geospatial and MCP-binding profiles are exemplars,
+        not ratified standards.
+      </p>
+      <div>
+        <a href="./overview.md">Sendable overview</a>
+        <a href="./discovery/data/descriptor.json">OKF descriptor</a>
+        <a href="https://github.com/chris-page-gov/mcp-geo">Source on GitHub</a>
+      </div>
+    </footer>
+  </body>
+</html>

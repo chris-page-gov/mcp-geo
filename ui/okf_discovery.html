@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="A static demonstrator for discovering Ordnance Survey data through OKF metadata
+        and using it through MCP."
+    />
+    <title>OS data discovery — OKF + MCP demonstrator</title>
+    <link rel="stylesheet" href="/ui/vendor/maplibre-gl.css" />
+    <link rel="stylesheet" href="/ui/shared/okf_discovery.css" />
+    <script src="/ui/vendor/maplibre-gl.js" defer></script>
+    <script src="/ui/shared/okf_discovery.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#results">Skip to results</a>
+    <header class="masthead">
+      <div class="brand-lockup">
+        <span class="brand-mark" aria-hidden="true">OS</span>
+        <div>
+          <p class="eyebrow">Discovery-to-action demonstrator</p>
+          <p class="product-name">Open Knowledge Format + MCP Geo</p>
+        </div>
+      </div>
+      <p class="snapshot-status" id="snapshot-status" role="status">Loading local OKF snapshot…</p>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <p class="eyebrow">The map is the beginning, not the product</p>
+          <h1 id="page-title">Find the data behind the map.</h1>
+          <p class="lede">
+            Search OS capabilities, understand their spatial coverage and provenance, then bind a
+            selected capability to a safe, read-only MCP request.
+          </p>
+        </div>
+        <form class="search" id="search-form" role="search">
+          <label for="search-input">Search data, identifiers or places</label>
+          <div class="search-row">
+            <input
+              id="search-input"
+              name="query"
+              type="search"
+              autocomplete="off"
+              placeholder="Try Explorer House, buildings or UPRN"
+            />
+            <button class="button button-primary" type="submit">Search</button>
+          </div>
+          <div class="suggestions" aria-label="Suggested searches">
+            <span>Try</span>
+            <button type="button" data-query="Explorer House">Explorer House</button>
+            <button type="button" data-query="buildings">buildings</button>
+            <button type="button" data-query="UPRN">UPRN</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="discovery" aria-label="Data discovery workspace">
+        <aside class="filters" aria-labelledby="filter-heading">
+          <div class="section-heading">
+            <h2 id="filter-heading">Refine</h2>
+            <button class="text-button" id="reset-filters" type="button">Reset</button>
+          </div>
+
+          <label for="family-filter">Capability family</label>
+          <select id="family-filter">
+            <option value="">All families</option>
+          </select>
+
+          <label for="type-filter">Knowledge type</label>
+          <select id="type-filter">
+            <option value="">All types</option>
+          </select>
+
+          <label for="access-filter">Access</label>
+          <select id="access-filter">
+            <option value="">All access modes</option>
+          </select>
+
+          <label for="geography-filter">Geography</label>
+          <select id="geography-filter">
+            <option value="">All geographies</option>
+          </select>
+
+          <div class="filter-note">
+            <strong>Spatial metadata is a search facet.</strong>
+            <span>The same reduced result set drives both the list and the map.</span>
+          </div>
+        </aside>
+
+        <section class="results" id="results" aria-labelledby="results-heading">
+          <div class="results-toolbar">
+            <div>
+              <h2 id="results-heading">Discoverable knowledge</h2>
+              <p id="result-summary" aria-live="polite">Loading records…</p>
+            </div>
+            <div class="tabs" role="tablist" aria-label="Result view">
+              <button
+                id="list-tab"
+                role="tab"
+                aria-controls="list-panel"
+                aria-selected="true"
+                type="button"
+              >
+                List
+              </button>
+              <button
+                id="map-tab"
+                role="tab"
+                aria-controls="map-panel"
+                aria-selected="false"
+                type="button"
+              >
+                Map
+              </button>
+            </div>
+          </div>
+
+          <div id="list-panel" role="tabpanel" aria-labelledby="list-tab">
+            <ol class="record-list" id="record-list"></ol>
+            <p class="empty-state" id="empty-state" hidden>
+              No records match those filters. Reset the filters or broaden the map viewport.
+            </p>
+          </div>
+
+          <div id="map-panel" role="tabpanel" aria-labelledby="map-tab" hidden>
+            <div class="map-toolbar">
+              <label class="check-control" for="viewport-filter">
+                <input id="viewport-filter" type="checkbox" />
+                Filter results to this map view
+              </label>
+              <button class="button button-small" id="explorer-house" type="button">
+                Explorer House
+              </button>
+            </div>
+            <div class="map-frame">
+              <div
+                id="map"
+                role="application"
+                aria-label="Map of spatially described discovery records"
+              ></div>
+              <div class="map-unavailable" id="map-unavailable" hidden>
+                <strong>Interactive map unavailable.</strong>
+                <span>The list and spatial filters still use the OKF geospatial index.</span>
+              </div>
+              <p class="map-status" id="map-status" role="status">
+                Preparing a key-free map…
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <aside class="detail" id="detail-panel" aria-labelledby="detail-heading">
+          <div class="detail-placeholder" id="detail-placeholder">
+            <span class="detail-glyph" aria-hidden="true">⌖</span>
+            <h2 id="detail-heading">Choose a result</h2>
+            <p>Inspect its description, spatial coverage, provenance and MCP binding.</p>
+          </div>
+          <article id="detail-content" hidden></article>
+        </aside>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        Demonstrator: OKF makes knowledge discoverable; MCP makes a selected capability usable.
+        Credentials remain server-side.
+      </p>
+    </footer>
+  </body>
+</html>
