@@ -68,8 +68,10 @@ data/knowledge_base/*
 playground/node_modules/
 playground/test-results/
 test-results/
+.playwright-mcp/
 tmp/stakeholder_benchmark_sources/
 output/playwright/teignmouth-peninsula-*.png
+output/playwright/okf-discovery-*.png
 
 # Translations
 *.mo
@@ -173,6 +175,9 @@ venv.bak/
 
 # mkdocs documentation
 /site
+
+# Deterministic GitHub Pages artifact
+/_site/
 
 # mypy
 .mypy_cache/

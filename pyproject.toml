@@ -92,7 +92,13 @@ disallow_incomplete_defs = true
 include = ["server*", "tools*", "scripts*", "resources*", "ui*"]
 
 [tool.setuptools.package-data]
-"resources" = ["*.json", "*.jpg", "landis/*.md", "prompts/*.json"]
+"resources" = [
+    "*.json",
+    "*.jpg",
+    "landis/*.md",
+    "prompts/*.json",
+    "okf_geo_discovery/*.json",
+]
 "ui" = ["*.html", "shared/*.css", "shared/*.js", "vendor/*"]
 "server.audit" = ["schemas/*.json"]
 "tools" = ["py.typed"]

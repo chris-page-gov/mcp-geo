@@ -1,0 +1,112 @@
+{
+  "counts": {
+    "mcp_bindings": 15,
+    "mcp_resources": 28,
+    "mcp_tools": 103,
+    "os_catalog_entries": 273,
+    "records": 404,
+    "spatial_profiles": 210
+  },
+  "delivery": {
+    "artifacts": {
+      "data_manifest": {
+        "http_path": "/okf-discovery/data/manifest.json",
+        "mcp_resource_uri": "resource://mcp-geo/okf-discovery-manifest",
+        "path": "manifest.json"
+      },
+      "descriptor": {
+        "http_path": "/okf-discovery/data/descriptor.json",
+        "mcp_resource_uri": "resource://mcp-geo/okf-discovery-descriptor",
+        "path": "descriptor.json"
+      },
+      "mcp_bindings": {
+        "http_path": "/okf-discovery/data/mcp-bindings.json",
+        "mcp_resource_uri": "resource://mcp-geo/okf-discovery-mcp-bindings",
+        "path": "mcp-bindings.json"
+      },
+      "overview_index": {
+        "http_path": "/okf-discovery/data/overview.json",
+        "mcp_resource_uri": "resource://mcp-geo/okf-discovery-overview",
+        "path": "overview.json"
+      },
+      "records": {
+        "http_path": "/okf-discovery/data/records.json",
+        "mcp_resource_uri": "resource://mcp-geo/okf-discovery-records",
+        "path": "records.json"
+      },
+      "spatial_index": {
+        "http_path": "/okf-discovery/data/spatial-index.json",
+        "mcp_resource_uri": "resource://mcp-geo/okf-discovery-spatial-index",
+        "path": "spatial-index.json"
+      }
+    },
+    "schema": "okf-delivery-map.v1"
+  },
+  "description": "A deterministic discovery inventory joining MCP Geo tools and resources to the Ordnance Survey API catalogue, with spatial and MCP bindings.",
+  "entrypoint_integrity": {
+    "data_manifest": {
+      "path": "manifest.json",
+      "sha256": "9d57fccdb46e30046b6676f0fa9278eaecf429d124821659c8c96b5cc948c6e4"
+    },
+    "mcp_bindings": {
+      "path": "mcp-bindings.json",
+      "sha256": "5216a6970448906a854d36ba91e3ac2c79d54349b79569a686412aabbc58d565"
+    },
+    "overview_index": {
+      "path": "overview.json",
+      "sha256": "6e4904b64844822b9dfea40c477e70b6b6d41f4e6f5cca8e611e91ed73fa2278"
+    },
+    "records": {
+      "path": "records.json",
+      "sha256": "998029c366584cba96da47b132554422802c29a876ec437b74d0198ff0880cb0"
+    },
+    "spatial_index": {
+      "path": "spatial-index.json",
+      "sha256": "8ebb930acbb55f452663b9b3baa3d9b62139af87289e52079ecfb44b310cd882"
+    }
+  },
+  "entrypoints": {
+    "data_manifest": "manifest.json",
+    "mcp_bindings": "mcp-bindings.json",
+    "overview_index": "overview.json",
+    "records": "records.json",
+    "spatial_index": "spatial-index.json"
+  },
+  "extensions": {
+    "okf-discovery-records.v1": {
+      "container": "array",
+      "entrypoint": "records"
+    },
+    "okf-geospatial.v1": {
+      "entrypoint": "spatial_index",
+      "mode": "external"
+    },
+    "okf-mcp-binding.v1": {
+      "entrypoint": "mcp_bindings",
+      "mode": "external"
+    }
+  },
+  "generated_at": "2026-07-15T00:00:00Z",
+  "kind": "okf-large-corpus",
+  "performance": {
+    "full_record_hydration": "single static file",
+    "search": "deterministic client-side text and facet filtering",
+    "spatial_filtering": "static sidecar joined by record_id",
+    "startup_mode": "overview-first"
+  },
+  "schema": "okf-explorer-large-corpus.v1",
+  "source": {
+    "excluded_self_resource_prefix": "resource://mcp-geo/okf-discovery-",
+    "mode": "checked-in-and-runtime-registry",
+    "network_calls": false,
+    "secret_values_stored": false
+  },
+  "status": "demonstrator",
+  "title": "MCP Geo + OKF discovery demonstrator",
+  "version": "0.1.0",
+  "vocabulary": {
+    "record_plural": "tools, resources and OS API records",
+    "record_singular": "tool, resource or OS API record",
+    "search_placeholder": "Search OS data, identifiers, geography and MCP tools"
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "counts": {
+    "mcp_bindings": 15,
+    "mcp_resources": 28,
+    "mcp_tools": 103,
+    "os_catalog_entries": 273,
+    "records": 404,
+    "spatial_profiles": 210
+  },
+  "featured_families": [
+    "os_places",
+    "os_features",
+    "os_linked_ids"
+  ],
+  "generated_at": "2026-07-15T00:00:00Z",
+  "optional_runtime_resource_families": [
+    "resource://mcp-geo/exports/{filename}",
+    "resource://mcp-geo/map-scenario-packs/{filename}",
+    "resource://mcp-geo/offline-packs/{filename}",
+    "resource://mcp-geo/ons-cache/{filename}",
+    "resource://mcp-geo/ons-exports/{filename}",
+    "resource://mcp-geo/os-cache/{filename}",
+    "resource://mcp-geo/os-exports/{filename}"
+  ],
+  "os_catalog_categories": {
+    "downloads": 58,
+    "features": 186,
+    "maps": 10,
+    "positioning": 5,
+    "search": 14
+  },
+  "record_types": {
+    "mcp-resource": 28,
+    "mcp-tool": 103,
+    "os-api-catalog-entry": 273
+  },
+  "resource_types": {
+    "data": 20,
+    "skills": 1,
+    "ui": 7
+  },
+  "schema": "okf-discovery-overview.v1",
+  "source": {
+    "excluded_self_resource_prefix": "resource://mcp-geo/okf-discovery-",
+    "os_catalog": "resources/os_catalog.json",
+    "os_catalog_source": "https://api.os.uk",
+    "resource_inventory_scope": "packaged-stable",
+    "runtime_resources": "Stable packaged data, skill, UI, and boundary status descriptors from server.mcp.resources._build_resource_list",
+    "runtime_tools": "tools.registry.all_tools after server.mcp.tools registration"
+  },
+  "title": "MCP Geo + OKF discovery demonstrator",
+  "tool_families": {
+    "admin_lookup": 6,
+    "council_tax": 2,
+    "landis_archive": 2,
+    "landis_catalog": 1,
+    "landis_derive": 1,
+    "landis_metadata": 1,
+    "landis_natmap": 3,
+    "landis_nsi": 3,
+    "landis_soilscapes": 2,
+    "nomis": 4,
+    "ons_codes": 2,
+    "ons_data": 7,
+    "ons_geo": 5,
+    "ons_search": 1,
+    "ons_select": 1,
+    "os_apps": 7,
+    "os_downloads": 6,
+    "os_features": 4,
+    "os_landscape": 2,
+    "os_linked_ids": 4,
+    "os_map": 4,
+    "os_maps": 3,
+    "os_mcp": 4,
+    "os_names": 2,
+    "os_net": 3,
+    "os_offline": 2,
+    "os_peat": 2,
+    "os_places": 7,
+    "os_poi": 3,
+    "os_qgis": 2,
+    "os_resources": 1,
+    "os_route": 2,
+    "os_tiles_ota": 3,
+    "os_vector_tiles": 1
+  },
+  "version": "0.1.0"
+}

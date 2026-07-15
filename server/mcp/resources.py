@@ -23,6 +23,8 @@ _UI_SHARED_DIR = (UI_DIR / "shared").resolve()
 _UI_VENDOR_DIR = (UI_DIR / "vendor").resolve()
 _UI_SHARED_COMPACT_CONTRACT_CSS = _UI_SHARED_DIR / "compact_contract.css"
 _UI_SHARED_COMPACT_CONTRACT_JS = _UI_SHARED_DIR / "compact_contract.js"
+_UI_SHARED_OKF_DISCOVERY_CSS = _UI_SHARED_DIR / "okf_discovery.css"
+_UI_SHARED_OKF_DISCOVERY_JS = _UI_SHARED_DIR / "okf_discovery.js"
 _UI_VENDOR_MAPLIBRE_CSS = _UI_VENDOR_DIR / "maplibre-gl.css"
 _UI_VENDOR_MAPLIBRE_JS = _UI_VENDOR_DIR / "maplibre-gl.js"
 _UI_VENDOR_MAPLIBRE_WORKER_JS = _UI_VENDOR_DIR / "maplibre-gl-csp-worker.js"
@@ -30,6 +32,8 @@ _UI_VENDOR_SHP_JS = _UI_VENDOR_DIR / "shp.min.js"
 _UI_STATIC_ASSETS: dict[str, Path] = {
     "shared/compact_contract.css": _UI_SHARED_COMPACT_CONTRACT_CSS,
     "shared/compact_contract.js": _UI_SHARED_COMPACT_CONTRACT_JS,
+    "shared/okf_discovery.css": _UI_SHARED_OKF_DISCOVERY_CSS,
+    "shared/okf_discovery.js": _UI_SHARED_OKF_DISCOVERY_JS,
     "vendor/maplibre-gl.css": _UI_VENDOR_MAPLIBRE_CSS,
     "vendor/maplibre-gl.js": _UI_VENDOR_MAPLIBRE_JS,
     "vendor/maplibre-gl-csp-worker.js": _UI_VENDOR_MAPLIBRE_WORKER_JS,
@@ -307,6 +311,42 @@ def render_ui_shared_compact_contract_js(
     return _static_asset_response(
         "shared/compact_contract.js", response, if_none_match
     )
+
+
+@router.get("/ui/shared/okf_discovery.css")
+def render_ui_shared_okf_discovery_css(
+    request: Request,
+    response: Response,
+    if_none_match: str | None = Header(
+        default=None, alias="If-None-Match", convert_underscores=False
+    ),
+) -> Response:
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    asset_response = _static_asset_response(
+        "shared/okf_discovery.css", response, if_none_match
+    )
+    apply_auth_headers(asset_response, auth_headers)
+    return asset_response
+
+
+@router.get("/ui/shared/okf_discovery.js")
+def render_ui_shared_okf_discovery_js(
+    request: Request,
+    response: Response,
+    if_none_match: str | None = Header(
+        default=None, alias="If-None-Match", convert_underscores=False
+    ),
+) -> Response:
+    auth_headers, auth_error = authorize_http_route(request)
+    if auth_error is not None:
+        return auth_error
+    asset_response = _static_asset_response(
+        "shared/okf_discovery.js", response, if_none_match
+    )
+    apply_auth_headers(asset_response, auth_headers)
+    return asset_response
 
 
 @router.get("/ui/vendor/maplibre-gl.css")

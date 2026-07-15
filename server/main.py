@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 from starlette.responses import Response as StarletteResponse
 
-from server import maps_proxy, observability
+from server import maps_proxy, observability, okf_discovery
 from server.audit import api as audit_api
 from server.logging import configure_logging
 from server.mcp import http_transport, playground, resources, tools
@@ -154,6 +154,7 @@ app.include_router(playground.router)
 app.include_router(http_transport.router)
 app.include_router(maps_proxy.router)
 app.include_router(audit_api.router)
+app.include_router(okf_discovery.router)
 
 
 @app.get("/metrics")

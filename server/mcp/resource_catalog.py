@@ -51,6 +51,21 @@ BOUNDARY_PACKS_INDEX_PATH = ROOT / "resources" / "boundary_packs_index.json"
 CODE_LIST_PACKS_INDEX_PATH = ROOT / "resources" / "code_list_packs_index.json"
 OFFLINE_MAP_CATALOG_PATH = ROOT / "resources" / "offline_map_catalog.json"
 MAP_EMBEDDING_STYLE_PROFILES_PATH = ROOT / "resources" / "map_embedding_style_profiles.json"
+OKF_DISCOVERY_DIR = ROOT / "resources" / "okf_geo_discovery"
+OKF_DISCOVERY_DESCRIPTOR_PATH = OKF_DISCOVERY_DIR / "descriptor.json"
+OKF_DISCOVERY_MANIFEST_PATH = OKF_DISCOVERY_DIR / "manifest.json"
+OKF_DISCOVERY_OVERVIEW_PATH = OKF_DISCOVERY_DIR / "overview.json"
+OKF_DISCOVERY_RECORDS_PATH = OKF_DISCOVERY_DIR / "records.json"
+OKF_DISCOVERY_SPATIAL_INDEX_PATH = OKF_DISCOVERY_DIR / "spatial-index.json"
+OKF_DISCOVERY_MCP_BINDINGS_PATH = OKF_DISCOVERY_DIR / "mcp-bindings.json"
+OKF_DISCOVERY_RESOURCE_PATHS: dict[str, Path] = {
+    "okf-discovery-descriptor": OKF_DISCOVERY_DESCRIPTOR_PATH,
+    "okf-discovery-manifest": OKF_DISCOVERY_MANIFEST_PATH,
+    "okf-discovery-overview": OKF_DISCOVERY_OVERVIEW_PATH,
+    "okf-discovery-records": OKF_DISCOVERY_RECORDS_PATH,
+    "okf-discovery-spatial-index": OKF_DISCOVERY_SPATIAL_INDEX_PATH,
+    "okf-discovery-mcp-bindings": OKF_DISCOVERY_MCP_BINDINGS_PATH,
+}
 EXPORTS_DIR = ROOT / "data" / "exports"
 ONS_EXPORTS_DIR = ROOT / "data" / "ons_exports"
 OFFLINE_PACKS_DIR = ROOT / "data" / "offline_packs"
@@ -92,6 +107,8 @@ _UI_ASSET_PATHS = {
     "vendor/shp.min.js": "/ui/vendor/shp.min.js",
     "shared/compact_contract.css": "/ui/shared/compact_contract.css",
     "shared/compact_contract.js": "/ui/shared/compact_contract.js",
+    "shared/okf_discovery.css": "/ui/shared/okf_discovery.css",
+    "shared/okf_discovery.js": "/ui/shared/okf_discovery.js",
 }
 _UI_ASSET_REF_PATTERN = re.compile(
     r'(?P<attr>\b(?:src|href)=)(?P<quote>["\'])'
@@ -101,7 +118,9 @@ _UI_ASSET_REF_PATTERN = re.compile(
     r'vendor/maplibre-gl-csp-worker\.js|'
     r'vendor/shp\.min\.js|'
     r'shared/compact_contract\.css|'
-    r'shared/compact_contract\.js'
+    r'shared/compact_contract\.js|'
+    r'shared/okf_discovery\.css|'
+    r'shared/okf_discovery\.js'
     r')(?P=quote)'
 )
 
@@ -111,6 +130,38 @@ def data_resource_uri(name: str) -> str:
 
 
 _UI_RESOURCE_BASES: list[dict[str, Any]] = [
+    {
+        "slug": "okf-discovery",
+        "name": "ui_okf_discovery",
+        "title": "OS Data Discovery: OKF + MCP",
+        "description": (
+            "Search and spatially filter an OKF pack, inspect provenance, and prepare "
+            "read-only MCP calls."
+        ),
+        "file": "okf_discovery.html",
+        "annotations": {
+            "audience": ["user"],
+            "priority": 0.95,
+            "capabilities": [
+                "search",
+                "filter",
+                "map",
+                "resource-discovery",
+                "mcp-binding",
+            ],
+        },
+        "csp": {
+            "connectDomains": [
+                "self",
+                "https://tile.openstreetmap.org",
+                "http://localhost:8000",
+                "http://127.0.0.1:8000",
+            ],
+            "resourceDomains": ["self", "https://tile.openstreetmap.org"],
+            "workerDomains": ["self", "blob:"],
+        },
+        "permissions": {"sameOrigin": True},
+    },
     {
         "slug": "geography-selector",
         "name": "ui_geography_selector",
@@ -481,6 +532,64 @@ DATA_RESOURCE_DEFS: list[dict[str, Any]] = [
         "path": STAKEHOLDER_BENCHMARK_LIVE_ALIAS_PATH,
         "mimeType": "application/json",
         "annotations": {"type": "benchmark-live", "domain": "evaluation"},
+    },
+    {
+        "slug": "okf-discovery-descriptor",
+        "name": "data_okf_discovery_descriptor",
+        "title": "MCP Geo OKF Discovery Descriptor",
+        "description": (
+            "Portable OKF descriptor linking the catalog, spatial index, and MCP bindings."
+        ),
+        "path": OKF_DISCOVERY_DESCRIPTOR_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "descriptor", "domain": "discovery"},
+    },
+    {
+        "slug": "okf-discovery-manifest",
+        "name": "data_okf_discovery_manifest",
+        "title": "MCP Geo OKF Discovery Manifest",
+        "description": "Counts, entrypoints, and integrity metadata for the generated OKF pack.",
+        "path": OKF_DISCOVERY_MANIFEST_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "manifest", "domain": "discovery"},
+    },
+    {
+        "slug": "okf-discovery-overview",
+        "name": "data_okf_discovery_overview",
+        "title": "MCP Geo OKF Discovery Overview",
+        "description": "Small startup summary for human and machine discovery clients.",
+        "path": OKF_DISCOVERY_OVERVIEW_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "index", "domain": "discovery"},
+    },
+    {
+        "slug": "okf-discovery-records",
+        "name": "data_okf_discovery_records",
+        "title": "MCP Geo OKF Discovery Records",
+        "description": "Deterministic inventory of MCP tools, resources, and OS catalog records.",
+        "path": OKF_DISCOVERY_RECORDS_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "dataset", "domain": "discovery"},
+    },
+    {
+        "slug": "okf-discovery-spatial-index",
+        "name": "data_okf_discovery_spatial_index",
+        "title": "MCP Geo OKF Spatial Index",
+        "description": (
+            "Geographic coverage, geometry, CRS, and spatial query facets for discovery."
+        ),
+        "path": OKF_DISCOVERY_SPATIAL_INDEX_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "index", "domain": "geospatial"},
+    },
+    {
+        "slug": "okf-discovery-mcp-bindings",
+        "name": "data_okf_discovery_mcp_bindings",
+        "title": "MCP Geo OKF Bindings",
+        "description": "Read-only MCP call bindings for selected discoverable OS capabilities.",
+        "path": OKF_DISCOVERY_MCP_BINDINGS_PATH,
+        "mimeType": "application/json",
+        "annotations": {"type": "binding", "domain": "discovery"},
     },
 ]
 
@@ -1097,6 +1206,18 @@ def _load_benchmark_live_alias(path: Path) -> tuple[str, str, dict[str, Any] | N
 
 def load_data_content(entry: dict[str, Any]) -> tuple[str, str, dict[str, Any] | None]:
     slug = entry.get("slug")
+    if isinstance(slug, str) and slug in OKF_DISCOVERY_RESOURCE_PATHS:
+        okf_path = OKF_DISCOVERY_RESOURCE_PATHS[slug]
+        if not okf_path.exists():
+            content = json.dumps(
+                {
+                    "isError": True,
+                    "code": "NOT_FOUND",
+                    "message": f"OKF discovery resource '{slug}' not found.",
+                }
+            )
+            return content, _etag_from_bytes(b"missing", slug), None
+        return (*_load_json_file(okf_path), None)
     if slug == "boundary-manifest":
         return (*_load_json_file(BOUNDARY_MANIFEST_PATH), None)
     if slug == "ons-catalog":

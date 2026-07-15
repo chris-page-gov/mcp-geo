@@ -1,0 +1,58 @@
+{
+  "chunks": {
+    "datasets": [
+      "records.json"
+    ],
+    "publishers": [],
+    "relationships": [],
+    "resources": []
+  },
+  "counts": {
+    "mcp_bindings": 15,
+    "mcp_resources": 28,
+    "mcp_tools": 103,
+    "os_catalog_entries": 273,
+    "records": 404,
+    "spatial_profiles": 210
+  },
+  "entrypoints": {
+    "data_manifest": "manifest.json",
+    "mcp_bindings": "mcp-bindings.json",
+    "overview_index": "overview.json",
+    "records": "records.json",
+    "spatial_index": "spatial-index.json"
+  },
+  "files": [
+    {
+      "bytes": 19346,
+      "path": "mcp-bindings.json",
+      "sha256": "5216a6970448906a854d36ba91e3ac2c79d54349b79569a686412aabbc58d565"
+    },
+    {
+      "bytes": 2309,
+      "path": "overview.json",
+      "sha256": "6e4904b64844822b9dfea40c477e70b6b6d41f4e6f5cca8e611e91ed73fa2278"
+    },
+    {
+      "bytes": 833202,
+      "path": "records.json",
+      "sha256": "998029c366584cba96da47b132554422802c29a876ec437b74d0198ff0880cb0"
+    },
+    {
+      "bytes": 327115,
+      "path": "spatial-index.json",
+      "sha256": "8ebb930acbb55f452663b9b3baa3d9b62139af87289e52079ecfb44b310cd882"
+    }
+  ],
+  "generated_at": "2026-07-15T00:00:00Z",
+  "indexes": {
+    "overview": "overview.json"
+  },
+  "performance": {
+    "full_record_hydration": "single static file",
+    "startup_mode": "overview-first"
+  },
+  "schema": "okf-discovery-manifest.v1",
+  "title": "MCP Geo + OKF discovery demonstrator",
+  "version": "0.1.0"
+}

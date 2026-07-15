@@ -1,0 +1,746 @@
+{
+  "bindings": [
+    {
+      "credential_mode": "server-managed",
+      "example_arguments": {
+        "q": "building"
+      },
+      "failure_contract": {
+        "error_shape": {
+          "code": "string",
+          "correlationId": "string (optional)",
+          "isError": true,
+          "message": "string"
+        },
+        "missing_os_api_key": {
+          "code": "NO_API_KEY",
+          "http_status": 501
+        }
+      },
+      "family": "os_features",
+      "id": "binding:os_features.collections",
+      "read_only": true,
+      "record_id": "tool:os_features.collections",
+      "request_template": {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {
+          "arguments": {
+            "q": "building"
+          },
+          "name": "os_features.collections"
+        }
+      },
+      "required_arguments": [],
+      "security": {
+        "client_supplies_upstream_key": false,
+        "secret_values_stored": false
+      },
+      "tool_name": "os_features.collections"
+    },
+    {
+      "credential_mode": "server-managed",
+      "example_arguments": {
+        "bbox": [
+          -1.48,
+          50.93,
+          -1.46,
+          50.945
+        ],
+        "collection": "buildings",
+        "includeGeometry": true,
+        "limit": 20
+      },
+      "failure_contract": {
+        "error_shape": {
+          "code": "string",
+          "correlationId": "string (optional)",
+          "isError": true,
+          "message": "string"
+        },
+        "missing_os_api_key": {
+          "code": "NO_API_KEY",
+          "http_status": 501
+        }
+      },
+      "family": "os_features",
+      "id": "binding:os_features.query",
+      "read_only": true,
+      "record_id": "tool:os_features.query",
+      "request_template": {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {
+          "arguments": {
+            "bbox": [
+              -1.48,
+              50.93,
+              -1.46,
+              50.945
+            ],
+            "collection": "buildings",
+            "includeGeometry": true,
+            "limit": 20
+          },
+          "name": "os_features.query"
+        }
+      },
+      "required_arguments": [
+        "collection"
+      ],
+      "security": {
+        "client_supplies_upstream_key": false,
+        "secret_values_stored": false
+      },
+      "tool_name": "os_features.query"
+    },
+    {
+      "credential_mode": "server-managed",
+      "example_arguments": {
+        "version": "2.0.0"
+      },
+      "failure_contract": {
+        "error_shape": {
+          "code": "string",
+          "correlationId": "string (optional)",
+          "isError": true,
+          "message": "string"
+        },
+        "missing_os_api_key": {
+          "code": "NO_API_KEY",
+          "http_status": 501
+        }
+      },
+      "family": "os_features",
+      "id": "binding:os_features.wfs_archive_capabilities",
+      "read_only": true,
+      "record_id": "tool:os_features.wfs_archive_capabilities",
+      "request_template": {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {
+          "arguments": {
+            "version": "2.0.0"
+          },
+          "name": "os_features.wfs_archive_capabilities"
+        }
+      },
+      "required_arguments": [],
+      "security": {
+        "client_supplies_upstream_key": false,
+        "secret_values_stored": false
+      },
+      "tool_name": "os_features.wfs_archive_capabilities"
+    },
+    {
+      "credential_mode": "server-managed",
+      "example_arguments": {
+        "version": "2.0.0"
+      },
+      "failure_contract": {
+        "error_shape": {
+          "code": "string",
+          "correlationId": "string (optional)",
+          "isError": true,
+          "message": "string"
+        },
+        "missing_os_api_key": {
+          "code": "NO_API_KEY",
+          "http_status": 501
+        }
+      },
+      "family": "os_features",
+      "id": "binding:os_features.wfs_capabilities",
+      "read_only": true,
+      "record_id": "tool:os_features.wfs_capabilities",
+      "request_template": {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {
+          "arguments": {
+            "version": "2.0.0"
+          },
+          "name": "os_features.wfs_capabilities"
+        }
+      },
+      "required_arguments": [],
+      "security": {
+        "client_supplies_upstream_key": false,
+        "secret_values_stored": false
+      },
+      "tool_name": "os_features.wfs_capabilities"
+    },
+    {
+      "credential_mode": "server-managed",
+      "example_arguments": {
+        "featureType": "RoadLink",
+        "identifier": "osgb5000005158744708"
+      },
+      "example_context": "Verified RoadLink contract example; not asserted to relate to Explorer House.",
+      "failure_contract": {
+        "error_shape": {
+          "code": "string",
+          "correlationId": "string (optional)",
+          "isError": true,
+          "message": "string"
+        },
+        "missing_os_api_key": {
+          "code": "NO_API_KEY",
+          "http_status": 501
+        }
+      },
+      "family": "os_linked_ids",
+      "id": "binding:os_linked_ids.feature_types",
+      "read_only": true,
+      "record_id": "tool:os_linked_ids.feature_types",
+      "request_template": {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {
+          "arguments": {
+            "featureType": "RoadLink",
+            "identifier": "osgb5000005158744708"
+          },
+          "name": "os_linked_ids.feature_types"
+        }
+      },
+      "required_arguments": [
+        "featureType",
+        "identifier"
+      ],
+      "security": {
+        "client_supplies_upstream_key": false,
+        "secret_values_stored": false
+      },
+      "tool_name": "os_linked_ids.feature_types"
+    },
+    {
+      "argument_flow": {
+        "placeholder": "<UPRN_FROM_PLACES_RESULT>",
+        "source_binding": "binding:os_places.by_postcode",
+        "source_path": "$.uprns[*].uprn"
+      },
+      "credential_mode": "server-managed",
+      "example_arguments": {
+        "identifier": "<UPRN_FROM_PLACES_RESULT>",
+        "identifierType": "uprn"
+      },
+      "failure_contract": {
+        "error_shape": {
+          "code": "string",
+          "correlationId": "string (optional)",
+          "isError": true,
+          "message": "string"
+        },
+        "missing_os_api_key": {
+          "code": "NO_API_KEY",
+          "http_status": 501
+        }
+      },
+      "family": "os_linked_ids",
+      "id": "binding:os_linked_ids.get",
+      "read_only": true,
+      "record_id": "tool:os_linked_ids.get",
+      "request_template": {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {
+          "arguments": {
+            "identifier": "<UPRN_FROM_PLACES_RESULT>",
+            "identifierType": "uprn"
+          },
+          "name": "os_linked_ids.get"
+        }
+      },
+      "required_arguments": [
+        "identifier"
+      ],
+      "security": {
+        "client_supplies_upstream_key": false,
+        "secret_values_stored": false
+      },
+      "tool_name": "os_linked_ids.get"
+    },
+    {
+      "argument_flow": {
+        "placeholder": "<UPRN_FROM_PLACES_RESULT>",
+        "source_binding": "binding:os_places.by_postcode",
+        "source_path": "$.uprns[*].uprn"
+      },
+      "credential_mode": "server-managed",
+      "example_arguments": {
+        "identifier": "<UPRN_FROM_PLACES_RESULT>"
+      },
+      "failure_contract": {
+        "error_shape": {
+          "code": "string",
+          "correlationId": "string (optional)",
+          "isError": true,
+          "message": "string"
+        },
+        "missing_os_api_key": {
+          "code": "NO_API_KEY",
+          "http_status": 501
+        }
+      },
+      "family": "os_linked_ids",
+      "id": "binding:os_linked_ids.identifiers",
+      "read_only": true,
+      "record_id": "tool:os_linked_ids.identifiers",
+      "request_template": {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {
+          "arguments": {
+            "identifier": "<UPRN_FROM_PLACES_RESULT>"
+          },
+          "name": "os_linked_ids.identifiers"
+        }
+      },
+      "required_arguments": [
+        "identifier"
+      ],
+      "security": {
+        "client_supplies_upstream_key": false,
+        "secret_values_stored": false
+      },
+      "tool_name": "os_linked_ids.identifiers"
+    },
+    {
+      "credential_mode": "server-managed",
+      "example_arguments": {
+        "correlationMethod": "BLPU_UPRN_RoadLink_TOID_9"
+      },
+      "failure_contract": {
+        "error_shape": {
+          "code": "string",
+          "correlationId": "string (optional)",
+          "isError": true,
+          "message": "string"
+        },
+        "missing_os_api_key": {
+          "code": "NO_API_KEY",
+          "http_status": 501
+        }
+      },
+      "family": "os_linked_ids",
+      "id": "binding:os_linked_ids.product_version_info",
+      "read_only": true,
+      "record_id": "tool:os_linked_ids.product_version_info",
+      "request_template": {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {
+          "arguments": {
+            "correlationMethod": "BLPU_UPRN_RoadLink_TOID_9"
+          },
+          "name": "os_linked_ids.product_version_info"
+        }
+      },
+      "required_arguments": [
+        "correlationMethod"
+      ],
+      "security": {
+        "client_supplies_upstream_key": false,
+        "secret_values_stored": false
+      },
+      "tool_name": "os_linked_ids.product_version_info"
+    },
+    {
+      "credential_mode": "server-managed",
+      "example_arguments": {
+        "postcode": "SO16 0AS"
+      },
+      "failure_contract": {
+        "error_shape": {
+          "code": "string",
+          "correlationId": "string (optional)",
+          "isError": true,
+          "message": "string"
+        },
+        "missing_os_api_key": {
+          "code": "NO_API_KEY",
+          "http_status": 501
+        }
+      },
+      "family": "os_places",
+      "id": "binding:os_places.by_postcode",
+      "read_only": true,
+      "record_id": "tool:os_places.by_postcode",
+      "request_template": {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {
+          "arguments": {
+            "postcode": "SO16 0AS"
+          },
+          "name": "os_places.by_postcode"
+        }
+      },
+      "required_arguments": [
+        "postcode"
+      ],
+      "security": {
+        "client_supplies_upstream_key": false,
+        "secret_values_stored": false
+      },
+      "tool_name": "os_places.by_postcode"
+    },
+    {
+      "argument_flow": {
+        "placeholder": "<UPRN_FROM_PLACES_RESULT>",
+        "source_binding": "binding:os_places.by_postcode",
+        "source_path": "$.uprns[*].uprn"
+      },
+      "credential_mode": "server-managed",
+      "example_arguments": {
+        "uprn": "<UPRN_FROM_PLACES_RESULT>"
+      },
+      "failure_contract": {
+        "error_shape": {
+          "code": "string",
+          "correlationId": "string (optional)",
+          "isError": true,
+          "message": "string"
+        },
+        "missing_os_api_key": {
+          "code": "NO_API_KEY",
+          "http_status": 501
+        }
+      },
+      "family": "os_places",
+      "id": "binding:os_places.by_uprn",
+      "read_only": true,
+      "record_id": "tool:os_places.by_uprn",
+      "request_template": {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {
+          "arguments": {
+            "uprn": "<UPRN_FROM_PLACES_RESULT>"
+          },
+          "name": "os_places.by_uprn"
+        }
+      },
+      "required_arguments": [
+        "uprn"
+      ],
+      "security": {
+        "client_supplies_upstream_key": false,
+        "secret_values_stored": false
+      },
+      "tool_name": "os_places.by_uprn"
+    },
+    {
+      "credential_mode": "server-managed",
+      "example_arguments": {
+        "lat": 50.937708,
+        "lon": -1.470433
+      },
+      "failure_contract": {
+        "error_shape": {
+          "code": "string",
+          "correlationId": "string (optional)",
+          "isError": true,
+          "message": "string"
+        },
+        "missing_os_api_key": {
+          "code": "NO_API_KEY",
+          "http_status": 501
+        }
+      },
+      "family": "os_places",
+      "id": "binding:os_places.nearest",
+      "read_only": true,
+      "record_id": "tool:os_places.nearest",
+      "request_template": {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {
+          "arguments": {
+            "lat": 50.937708,
+            "lon": -1.470433
+          },
+          "name": "os_places.nearest"
+        }
+      },
+      "required_arguments": [
+        "lat",
+        "lon"
+      ],
+      "security": {
+        "client_supplies_upstream_key": false,
+        "secret_values_stored": false
+      },
+      "tool_name": "os_places.nearest"
+    },
+    {
+      "credential_mode": "server-managed",
+      "example_arguments": {
+        "limit": 20,
+        "polygon": {
+          "coordinates": [
+            [
+              [
+                -1.48,
+                50.93
+              ],
+              [
+                -1.46,
+                50.93
+              ],
+              [
+                -1.46,
+                50.945
+              ],
+              [
+                -1.48,
+                50.945
+              ],
+              [
+                -1.48,
+                50.93
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        }
+      },
+      "failure_contract": {
+        "error_shape": {
+          "code": "string",
+          "correlationId": "string (optional)",
+          "isError": true,
+          "message": "string"
+        },
+        "missing_os_api_key": {
+          "code": "NO_API_KEY",
+          "http_status": 501
+        }
+      },
+      "family": "os_places",
+      "id": "binding:os_places.polygon",
+      "read_only": true,
+      "record_id": "tool:os_places.polygon",
+      "request_template": {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {
+          "arguments": {
+            "limit": 20,
+            "polygon": {
+              "coordinates": [
+                [
+                  [
+                    -1.48,
+                    50.93
+                  ],
+                  [
+                    -1.46,
+                    50.93
+                  ],
+                  [
+                    -1.46,
+                    50.945
+                  ],
+                  [
+                    -1.48,
+                    50.945
+                  ],
+                  [
+                    -1.48,
+                    50.93
+                  ]
+                ]
+              ],
+              "type": "Polygon"
+            }
+          },
+          "name": "os_places.polygon"
+        }
+      },
+      "required_arguments": [
+        "polygon"
+      ],
+      "security": {
+        "client_supplies_upstream_key": false,
+        "secret_values_stored": false
+      },
+      "tool_name": "os_places.polygon"
+    },
+    {
+      "credential_mode": "server-managed",
+      "example_arguments": {
+        "lat": 50.937708,
+        "limit": 20,
+        "lon": -1.470433,
+        "radiusMeters": 500
+      },
+      "failure_contract": {
+        "error_shape": {
+          "code": "string",
+          "correlationId": "string (optional)",
+          "isError": true,
+          "message": "string"
+        },
+        "missing_os_api_key": {
+          "code": "NO_API_KEY",
+          "http_status": 501
+        }
+      },
+      "family": "os_places",
+      "id": "binding:os_places.radius",
+      "read_only": true,
+      "record_id": "tool:os_places.radius",
+      "request_template": {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {
+          "arguments": {
+            "lat": 50.937708,
+            "limit": 20,
+            "lon": -1.470433,
+            "radiusMeters": 500
+          },
+          "name": "os_places.radius"
+        }
+      },
+      "required_arguments": [
+        "lat",
+        "lon",
+        "radiusMeters"
+      ],
+      "security": {
+        "client_supplies_upstream_key": false,
+        "secret_values_stored": false
+      },
+      "tool_name": "os_places.radius"
+    },
+    {
+      "credential_mode": "server-managed",
+      "example_arguments": {
+        "limit": 20,
+        "text": "Explorer House Southampton"
+      },
+      "failure_contract": {
+        "error_shape": {
+          "code": "string",
+          "correlationId": "string (optional)",
+          "isError": true,
+          "message": "string"
+        },
+        "missing_os_api_key": {
+          "code": "NO_API_KEY",
+          "http_status": 501
+        }
+      },
+      "family": "os_places",
+      "id": "binding:os_places.search",
+      "read_only": true,
+      "record_id": "tool:os_places.search",
+      "request_template": {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {
+          "arguments": {
+            "limit": 20,
+            "text": "Explorer House Southampton"
+          },
+          "name": "os_places.search"
+        }
+      },
+      "required_arguments": [
+        "text"
+      ],
+      "security": {
+        "client_supplies_upstream_key": false,
+        "secret_values_stored": false
+      },
+      "tool_name": "os_places.search"
+    },
+    {
+      "credential_mode": "server-managed",
+      "example_arguments": {
+        "bbox": [
+          -1.48,
+          50.93,
+          -1.46,
+          50.945
+        ]
+      },
+      "failure_contract": {
+        "error_shape": {
+          "code": "string",
+          "correlationId": "string (optional)",
+          "isError": true,
+          "message": "string"
+        },
+        "missing_os_api_key": {
+          "code": "NO_API_KEY",
+          "http_status": 501
+        }
+      },
+      "family": "os_places",
+      "id": "binding:os_places.within",
+      "read_only": true,
+      "record_id": "tool:os_places.within",
+      "request_template": {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "method": "tools/call",
+        "params": {
+          "arguments": {
+            "bbox": [
+              -1.48,
+              50.93,
+              -1.46,
+              50.945
+            ]
+          },
+          "name": "os_places.within"
+        }
+      },
+      "required_arguments": [
+        "bbox"
+      ],
+      "security": {
+        "client_supplies_upstream_key": false,
+        "secret_values_stored": false
+      },
+      "tool_name": "os_places.within"
+    }
+  ],
+  "credential_policy": {
+    "missing_os_api_key": {
+      "code": "NO_API_KEY",
+      "http_status": 501
+    },
+    "secret_values_stored": false,
+    "upstream_credentials": "server-managed"
+  },
+  "description": "Read-only discovery-to-action bindings for OS Places, OS NGD Features and OS Linked Identifiers.",
+  "schema": "okf-mcp-binding.v1",
+  "transport": {
+    "call_tool": "tools/call",
+    "discover_resources": "resources/list",
+    "discover_tools": "tools/list",
+    "http_path": "/mcp",
+    "protocol": "MCP",
+    "stdio_entrypoint": "server/stdio_adapter.py"
+  },
+  "version": "1.0.0"
+}
