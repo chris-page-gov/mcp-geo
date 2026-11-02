@@ -5,3 +5,6 @@
   browser through `PLAYWRIGHT_CHANNEL`.
 - Emit standard MCP text content alongside structured fixture output so the
   SDK's response validation remains enabled during full browser tests.
+- Pin the frontend CI runner to Ubuntu 24.04, which the existing pinned
+  Playwright browser supports; the moving runner alias selected unsupported
+  Ubuntu 26.04 before the suite could start.
