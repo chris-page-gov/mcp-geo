@@ -25,7 +25,7 @@ Production attestations and their historical dates remain unchanged.
   alerts and structured log delivery. Synthetic rate-limit/metrics tests verify
   the implementation; no external monitoring service was contacted.
 
-The focused command passed 73 tests:
+The focused command passed 74 tests:
 
 ```sh
 .venv/bin/python -B -m pytest tests/test_mcp_http.py \
@@ -49,6 +49,6 @@ No live scraping, external delivery, production authentication or production
 readiness is asserted here.
 
 The accompanying `environment: reference` attestation binds this document and
-the reviewed files by SHA-256. A changed or missing reviewed file invalidates
+the reviewed files by algorithm-tagged SHA-256 digests. A changed or missing reviewed file invalidates
 the reference assessment. This evidence cannot satisfy `prod-strict`; that
 profile continues to report the expired production claims separately.

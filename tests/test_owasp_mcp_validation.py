@@ -444,7 +444,7 @@ def _write_reference_evidence(repo_root: Path) -> Path:
         "expires_at": "2026-12-03T00:00:00Z",
         "evidence_uri": relative,
         "artifact_hashes": {
-            name: sha256_file(repo_root / name)
+            name: "sha256:" + sha256_file(repo_root / name)
             for name in (relative, *validator.REFERENCE_ARTIFACTS)
         },
     }
@@ -469,7 +469,8 @@ def test_reference_assessment_does_not_renew_or_satisfy_production_evidence(tmp_
 
 
 @pytest.mark.parametrize(
-    "mutation", ["changed", "empty", "invalid", "escape", "unbound", "future", "omitted_source"]
+    "mutation",
+    ["changed", "empty", "invalid", "escape", "unbound", "future", "omitted_source", "untagged"],
 )
 def test_reference_assessment_rejects_unbound_or_stale_evidence(tmp_path: Path, mutation: str):
     root, tools = _make_fixture_repo(tmp_path)
@@ -488,8 +489,11 @@ def test_reference_assessment_rejects_unbound_or_stale_evidence(tmp_path: Path, 
         payload["evidence_uri"] = "unreviewed.md"
     elif mutation == "future":
         payload["verified_at"] = "2026-11-04T00:00:00Z"
-    else:
+    elif mutation == "omitted_source":
         payload["artifact_hashes"].pop("server/mcp/http_transport.py")
+    else:
+        uri = payload["evidence_uri"]
+        payload["artifact_hashes"][uri] = payload["artifact_hashes"][uri].removeprefix("sha256:")
     _write(path, pretty_json(payload))
     report, _ = validate_repo(root, profile="reference", now=REFERENCE_NOW, registered_tools=tools)
     assert should_fail(report, "required")

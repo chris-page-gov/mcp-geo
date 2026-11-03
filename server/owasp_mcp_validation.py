@@ -595,15 +595,20 @@ def reference_artifact_errors(attestation: dict[str, Any], repo_root: Path) -> l
     root = repo_root.resolve()
     for relative, expected in hashes.items():
         path = Path(relative)
+        digest = expected.removeprefix("sha256:")
         if path.is_absolute() or ".." in path.parts:
             errors.append(f"unsafe reference artifact path: {relative}")
             continue
         candidate = root / path
         if not candidate.resolve().is_relative_to(root) or not candidate.is_file():
             errors.append(f"missing or escaped reference artifact: {relative}")
-        elif len(expected) != 64 or any(char not in "0123456789abcdef" for char in expected):
+        elif (
+            not expected.startswith("sha256:")
+            or len(digest) != 64
+            or any(char not in "0123456789abcdef" for char in digest)
+        ):
             errors.append(f"invalid reference artifact SHA-256: {relative}")
-        elif sha256_file(candidate) != expected:
+        elif sha256_file(candidate) != digest:
             errors.append(f"reference artifact changed since assessment: {relative}")
     return errors
 

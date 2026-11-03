@@ -60,6 +60,6 @@ That is intentional for the `prod-strict` profile.
 
 Preserve the historical production baseline and attestations. A new reference
 assessment requires a fresh review of configuration and relevant tests, a dated
-evidence document, matching SHA-256 entries including that document, and an
+evidence document, algorithm-tagged `sha256:...` entries including that document, and an
 `environment` of `reference`. Do not renew production dates from reference tests.
 The CI artefact retains both assessments with separate scopes.
