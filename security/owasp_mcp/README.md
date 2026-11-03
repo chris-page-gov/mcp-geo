@@ -6,14 +6,27 @@ Secure MCP Server Development_, Version 1.0 (February 2026).
 
 ## Local command
 
-Run the strict validator with the repo-local wrapper:
+The owner confirmed on 3 November 2026 that there is no production deployment.
+CI assesses the reviewed repository reference profile, with a separate production
+evidence report. Run the reference assessment explicitly:
 
 ```bash
-./scripts/validate-owasp-mcp-local
+./scripts/validate-owasp-mcp-local --profile reference --format both \
+  --output-dir output/owasp-mcp-reference --fail-on required
 ```
 
-The default wrapper run writes artifacts to `output/owasp-mcp-validation/` and
-fails when any `minimum_bar` or `required` control fails.
+The default wrapper and CLI still select `prod-strict`, write to
+`output/owasp-mcp-validation/` and fail when a required or minimum-bar control
+fails. Production evidence remains stale; a passing reference report cannot
+satisfy that profile or establish production readiness.
+
+Reference reports use the verdict `reference_configuration_verified`, identify
+their scope in JSON and Markdown, and require fresh, reference-only attestations
+whose reviewed artefact hashes still match. Unknown profiles, changed or missing
+artefacts, future verification dates and unbound evidence documents fail closed.
+Existing manifest, applicability and minimum-bar checks remain active. See the
+[current assessment](evidence/reference_profile_2026-11-03.md) for tested controls
+and pre-deployment work.
 
 ## Tool contract maintenance
 
@@ -45,4 +58,8 @@ If these files drift from the registered tool set, `OMCP-TOOL-001`,
 Controls backed by attestations fail when evidence is missing, invalid, or stale.
 That is intentional for the `prod-strict` profile.
 
-Refresh the committed baseline after control changes with `./scripts/validate-owasp-mcp-local` and copy the resulting artifacts into `security/owasp_mcp/baseline/`.
+Preserve the historical production baseline and attestations. A new reference
+assessment requires a fresh review of configuration and relevant tests, a dated
+evidence document, matching SHA-256 entries including that document, and an
+`environment` of `reference`. Do not renew production dates from reference tests.
+The CI artefact retains both assessments with separate scopes.

@@ -74,6 +74,14 @@ Strict OWASP MCP validation:
 This emits JSON/Markdown validator outputs plus a JSON remediation backlog under
 `output/owasp-mcp-validation/`.
 
+The owner confirmed on 3 November 2026 that this is an undeployed reference
+profile. CI gates `--profile reference` and retains a separate production-gap
+report. The default command above remains production-strict. To run the scoped
+reference assessment, supply `--profile reference --format both --output-dir
+output/owasp-mcp-reference --fail-on required`. See
+[the evidence model](../security/owasp_mcp/README.md); reference verification
+does not assert live authentication, monitoring or deployment readiness.
+
 ## Environment variables
 
 - `OS_API_KEY`: required for Ordnance Survey tools (Places, Names, NGD Features).

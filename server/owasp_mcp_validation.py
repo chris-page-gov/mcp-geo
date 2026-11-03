@@ -11,6 +11,31 @@ from pathlib import Path
 from typing import Any
 
 VALID_STATUSES = {"pass", "fail", "not_applicable"}
+VALID_PROFILES = {"prod-strict", "reference"}
+REFERENCE_TITLES = {
+    "OMCP-ARCH-002": "Reference authenticated ingress configuration",
+    "OMCP-ARCH-005": "Reference per-session quotas",
+    "OMCP-TOOL-003": "Reference tool-change ownership and review procedure",
+    "OMCP-PI-002": "Reference session compartmentalisation",
+    "OMCP-AUTH-001": "Reference JWT authentication configuration",
+    "OMCP-AUTH-003": "Reference token lifetime, scope and subject checks",
+    "OMCP-DEPLOY-001": "Reference runtime hardening and network boundaries",
+    "OMCP-DEPLOY-002": "Reference secret-file delivery",
+    "OMCP-GOV-002": "Reference security change-review procedure",
+    "OMCP-GOV-003": "Reference monitoring and alerting configuration",
+}
+REFERENCE_ARTIFACTS = {
+    "README.md", "docs/Build.md", ".github/CODEOWNERS", ".github/workflows/ci.yml",
+    "Dockerfile", "ops/deployment/README.md", "ops/deployment/docker-compose.prod.yml",
+    "ops/deployment/Caddyfile.example", "ops/monitoring/README.md",
+    "ops/monitoring/prometheus.yml", "ops/monitoring/prometheus-alert-rules.yml",
+    "ops/monitoring/vector.toml", "server/config.py", "server/main.py", "server/security.py",
+    "server/mcp/http_transport.py", "server/owasp_mcp_validation.py",
+    "scripts/validate_owasp_mcp_server.py", "tests/test_mcp_http.py",
+    "tests/test_config_secret_file.py", "tests/test_rate_limit_metrics.py",
+    "tests/test_owasp_mcp_validation.py", "security/owasp_mcp/control_catalog.json",
+    "security/owasp_mcp/attestations/schema.json", "security/owasp_mcp/tool_risk_inventory.json",
+}
 REQUIREMENT_WEIGHTS = {"minimum_bar": 5, "required": 3, "recommended": 1}
 SEVERITY_RANK = {"critical": 4, "high": 3, "medium": 2, "low": 1}
 SAFE_BY_DESIGN_CROSS_LINKS = {
@@ -386,10 +411,14 @@ def load_attestations(
             issues.extend(errors)
             continue
         environment = str(payload.get("environment", "")).strip()
+        if profile == "reference" and environment != "reference":
+            continue
         if environment not in {profile, "all"}:
             continue
         verified_at = parse_datetime(str(payload["verified_at"]))
         stale_reasons: list[str] = []
+        if profile == "reference" and verified_at > now:
+            stale_reasons.append("verified_at is in the future")
         if "expires_at" in payload:
             expires_at = parse_datetime(str(payload["expires_at"]))
             if expires_at < now:
@@ -552,6 +581,33 @@ def _attestation_outcome(
     return "pass", "Valid attestation evidence present.", evidence
 
 
+def reference_artifact_errors(attestation: dict[str, Any], repo_root: Path) -> list[str]:
+    """Bind a reference assessment to local reviewed bytes without executing evidence."""
+    hashes = attestation.get("artifact_hashes", {})
+    if not hashes:
+        return ["reference evidence must bind at least one repository artifact"]
+    if attestation.get("evidence_uri") not in hashes:
+        return ["reference evidence document must be included in artifact_hashes"]
+    missing = REFERENCE_ARTIFACTS - hashes.keys()
+    if missing:
+        return ["reference evidence omits required artefacts: " + ", ".join(sorted(missing))]
+    errors: list[str] = []
+    root = repo_root.resolve()
+    for relative, expected in hashes.items():
+        path = Path(relative)
+        if path.is_absolute() or ".." in path.parts:
+            errors.append(f"unsafe reference artifact path: {relative}")
+            continue
+        candidate = root / path
+        if not candidate.resolve().is_relative_to(root) or not candidate.is_file():
+            errors.append(f"missing or escaped reference artifact: {relative}")
+        elif len(expected) != 64 or any(char not in "0123456789abcdef" for char in expected):
+            errors.append(f"invalid reference artifact SHA-256: {relative}")
+        elif sha256_file(candidate) != expected:
+            errors.append(f"reference artifact changed since assessment: {relative}")
+    return errors
+
+
 def evaluate_control(
     control: dict[str, Any],
     *,
@@ -599,6 +655,25 @@ def evaluate_control(
         "OMCP-AUTH-004",
     }:
         status, rationale, evidence = _attestation_outcome(control, attestations_by_control)
+        if profile == "reference":
+            control = {
+                **control,
+                "title": REFERENCE_TITLES.get(control_id, f"Reference evidence for {control_id}"),
+                "check_type": "reference_attestation",
+                "production_pass_criteria": control["pass_criteria"],
+                "pass_criteria": "Current hash-bound reference configuration and test evidence.",
+            }
+            if status == "pass":
+                errors = [
+                    error
+                    for item in attestations_by_control.get(control_id, [])
+                    for error in reference_artifact_errors(item, Path(facts["repo_root"]))
+                ]
+                status = "fail" if errors else "pass"
+                rationale = "; ".join(errors) if errors else (
+                    "Reviewed reference configuration and tests match their recorded hashes; "
+                    "production deployment is not assessed."
+                )
     elif control_id == "OMCP-ARCH-003":
         status = "pass" if facts["jsonrpc_validation"] else "fail"
         rationale = (
@@ -857,6 +932,7 @@ def render_markdown_report(report: dict[str, Any], backlog: dict[str, Any]) -> s
         "",
         f"- Project: `{meta['project']}`",
         f"- Profile: `{meta['profile']}`",
+        f"- Assessment scope: `{meta.get('assessment_scope', 'production_evidence')}`",
         f"- Verdict: `{summary['verdict']}`",
         f"- Score: `{summary['score']}`",
         f"- Source baseline: `{meta['source']['title']}` `{meta['source']['version']}`",
@@ -963,6 +1039,8 @@ def validate_repo(
     paths: ValidatorPaths | None = None,
     registered_tools: list[ToolSnapshot] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
+    if profile not in VALID_PROFILES:
+        raise ValidationDataError(f"Unsupported profile '{profile}'")
     resolved_paths = paths or default_validator_paths(repo_root)
     evaluation_time = now or utc_now()
     control_catalog = load_control_catalog(resolved_paths.control_catalog)
@@ -977,6 +1055,7 @@ def validate_repo(
         resolved_paths.tool_manifest_public_key,
     )
     facts = collect_repo_facts(resolved_paths, inventory, tools)
+    facts["repo_root"] = str(resolved_paths.repo_root)
     controls = control_catalog["controls"]
     attestations_by_control, attestation_issues = load_attestations(
         resolved_paths.attestation_dir,
@@ -1001,6 +1080,12 @@ def validate_repo(
         results.append(result)
         previous_results[str(result["id"])] = result
     summary = summarize_results(results)
+    if profile == "reference":
+        summary["verdict"] = (
+            "reference_configuration_verified"
+            if not summary["required_failures"]
+            else "reference_configuration_incomplete"
+        )
     backlog = build_backlog(
         results,
         safe_by_design_ids=load_safe_by_design_ids(resolved_paths.safe_by_design_log),
@@ -1009,6 +1094,10 @@ def validate_repo(
         "meta": {
             "project": "mcp-geo",
             "profile": profile,
+            "assessment_scope": (
+                "reference_configuration_only" if profile == "reference" else "production_evidence"
+            ),
+            "production_deployment_assessed": profile != "reference",
             "run_at": isoformat_utc(evaluation_time),
             "validator": "owasp_mcp_validation",
             "source": control_catalog["meta"]["source"],

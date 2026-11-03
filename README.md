@@ -991,6 +991,14 @@ This writes JSON/Markdown report artifacts plus a remediation backlog under
 `output/owasp-mcp-validation/` and fails when any `minimum_bar` or `required`
 control is unmet.
 
+There is no production deployment, as confirmed by the owner on 3 November
+2026. CI gates the explicit `reference` profile and also records production
+evidence gaps. Use `--profile reference --format both --output-dir
+output/owasp-mcp-reference --fail-on required` with the wrapper to assess reviewed
+reference configuration. A passing reference report is bound to current artefact
+hashes and synthetic tests; it cannot renew production attestations or establish
+live readiness. See [the evidence model](security/owasp_mcp/README.md).
+
 ## MCP HTTP Hardening
 
 Remote MCP HTTP deployments should enable authenticated access and bounded
