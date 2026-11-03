@@ -15,6 +15,7 @@ export default defineConfig({
   outputDir: "test-results/full",
   use: {
     ...devices["Desktop Chrome"],
+    ...(process.env.PLAYWRIGHT_CHANNEL ? { channel: process.env.PLAYWRIGHT_CHANNEL } : {}),
     baseURL: `http://127.0.0.1:${frontendPort}`,
     screenshot: "only-on-failure",
     trace: "retain-on-failure",

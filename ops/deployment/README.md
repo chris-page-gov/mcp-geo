@@ -1,7 +1,9 @@
-# Hardened Production Deployment
+# Hardened reference deployment
 
-This profile is the repo-backed reference deployment for the strict OWASP MCP
-validation run.
+This is an undeployed reference configuration. The owner confirmed on
+3 November 2026 that there is no production deployment. Reference assessment
+checks repository configuration and synthetic controls; it does not establish
+live authentication, secret delivery, monitoring or production readiness.
 
 ## Security posture
 
@@ -41,3 +43,7 @@ docker compose -f ops/deployment/docker-compose.prod.yml up -d
   for the target environment.
 - The reference profile keeps `/metrics` off the public edge and relies on the
   internal Docker network for scraping.
+- Before deployment, configure Prometheus bearer credentials for the protected
+  metrics route, verify SIEM egress from the monitoring network, replace example
+  endpoints and supply real secrets through the approved delivery mechanism.
+  Exercise those operator-dependent paths before issuing production attestations.

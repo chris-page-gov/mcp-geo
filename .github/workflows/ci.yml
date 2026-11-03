@@ -54,7 +54,7 @@ jobs:
         run: pytest -q -m "not integration"
 
   frontend:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Check out repository
@@ -175,15 +175,24 @@ jobs:
             -r artifacts/owasp-mcp/pip-audit-requirements.txt \
             > artifacts/owasp-mcp/pip-audit.json
 
-      - name: Run OWASP MCP validator
+      - name: Run OWASP MCP reference validator
         id: owasp_validate
         continue-on-error: true
         run: |
           python scripts/validate_owasp_mcp_server.py \
-            --profile prod-strict \
+            --profile reference \
             --format both \
             --output-dir artifacts/owasp-mcp \
             --fail-on required
+
+      - name: Record separate production evidence gaps
+        if: always()
+        run: |
+          python scripts/validate_owasp_mcp_server.py \
+            --profile prod-strict \
+            --format both \
+            --output-dir artifacts/owasp-mcp/production-unverified \
+            --fail-on none
 
       - name: Upload OWASP MCP artifacts
         if: always()

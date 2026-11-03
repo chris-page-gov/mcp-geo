@@ -7,6 +7,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from server import owasp_mcp_validation as validator
 from server.owasp_mcp_validation import (
     ToolSnapshot,
@@ -46,6 +48,7 @@ ATT_CONTROL_IDS = [
 ]
 
 FIXTURE_VALIDATION_NOW = datetime(2026, 3, 14, tzinfo=UTC)
+REFERENCE_NOW = datetime(2026, 11, 3, tzinfo=UTC)
 
 
 def _repo_root() -> Path:
@@ -160,7 +163,9 @@ def _sign_manifest(repo_root: Path) -> None:
             "-sign",
             validator.openssl_path_arg(private_key),
             "-out",
-            validator.openssl_path_arg(repo_root / "security/owasp_mcp/tool_manifest.lock.json.sig"),
+            validator.openssl_path_arg(
+                repo_root / "security/owasp_mcp/tool_manifest.lock.json.sig"
+            ),
             validator.openssl_path_arg(repo_root / "security/owasp_mcp/tool_manifest.lock.json"),
         ],
         check=True,
@@ -421,6 +426,100 @@ def test_current_repo_snapshot_matches_committed_compliant_baseline(tmp_path: Pa
     assert report["summary"]["score"] == 100.0
     assert report["summary"]["required_failures"] == []
     assert backlog["items"] == []
+
+
+def _write_reference_evidence(repo_root: Path) -> Path:
+    relative = "security/owasp_mcp/evidence/reference-fixture.md"
+    _write(repo_root / relative, "Reviewed reference configuration; no production deployment.\n")
+    for name in validator.REFERENCE_ARTIFACTS:
+        if not (repo_root / name).exists():
+            _write(repo_root / name, "reference configuration fixture\n")
+    payload = {
+        "attestation_id": "reference-fixture",
+        "title": "Reviewed repository reference profile",
+        "control_ids": list(validator.REFERENCE_TITLES),
+        "environment": "reference",
+        "verifier": "fixture-suite",
+        "verified_at": "2026-11-03T00:00:00Z",
+        "expires_at": "2026-12-03T00:00:00Z",
+        "evidence_uri": relative,
+        "artifact_hashes": {
+            name: "sha256:" + sha256_file(repo_root / name)
+            for name in (relative, *validator.REFERENCE_ARTIFACTS)
+        },
+    }
+    path = repo_root / "security/owasp_mcp/attestations/reference-fixture.json"
+    _write(path, pretty_json(payload))
+    return path
+
+
+def test_reference_assessment_does_not_renew_or_satisfy_production_evidence(tmp_path: Path):
+    root, tools = _make_fixture_repo(tmp_path)
+    _write_reference_evidence(root)
+    reference, _ = validate_repo(
+        root, profile="reference", now=REFERENCE_NOW, registered_tools=tools
+    )
+    production, _ = validate_repo(root, now=REFERENCE_NOW, registered_tools=tools)
+    assert not should_fail(reference, "required")
+    assert reference["summary"]["verdict"] == "reference_configuration_verified"
+    assert reference["meta"]["assessment_scope"] == "reference_configuration_only"
+    assert reference["meta"]["production_deployment_assessed"] is False
+    assert should_fail(production, "required")
+    assert _control_status(production, "OMCP-AUTH-001") == "fail"
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["changed", "empty", "invalid", "escape", "unbound", "future", "omitted_source", "untagged"],
+)
+def test_reference_assessment_rejects_unbound_or_stale_evidence(tmp_path: Path, mutation: str):
+    root, tools = _make_fixture_repo(tmp_path)
+    path = _write_reference_evidence(root)
+    payload = json.loads(path.read_text())
+    if mutation == "changed":
+        transport = root / "server/mcp/http_transport.py"
+        _write(transport, transport.read_text() + "# changed after review\n")
+    elif mutation == "empty":
+        payload["artifact_hashes"] = {}
+    elif mutation == "invalid":
+        payload["artifact_hashes"][payload["evidence_uri"]] = "not-a-sha256"
+    elif mutation == "escape":
+        payload["artifact_hashes"]["../outside.txt"] = "0" * 64
+    elif mutation == "unbound":
+        payload["evidence_uri"] = "unreviewed.md"
+    elif mutation == "future":
+        payload["verified_at"] = "2026-11-04T00:00:00Z"
+    elif mutation == "omitted_source":
+        payload["artifact_hashes"].pop("server/mcp/http_transport.py")
+    else:
+        uri = payload["evidence_uri"]
+        payload["artifact_hashes"][uri] = payload["artifact_hashes"][uri].removeprefix("sha256:")
+    _write(path, pretty_json(payload))
+    report, _ = validate_repo(root, profile="reference", now=REFERENCE_NOW, registered_tools=tools)
+    assert should_fail(report, "required")
+    assert _control_status(report, "OMCP-AUTH-001") == "fail"
+
+
+def test_reference_profile_cannot_reuse_production_or_all_environment_evidence(tmp_path: Path):
+    root, tools = _make_fixture_repo(tmp_path)
+    path = _write_reference_evidence(root)
+    payload = json.loads(path.read_text())
+    payload["environment"] = "all"
+    _write(path, pretty_json(payload))
+    report, _ = validate_repo(root, profile="reference", now=REFERENCE_NOW, registered_tools=tools)
+    assert _control_status(report, "OMCP-AUTH-001") == "fail"
+
+
+def test_reference_profile_keeps_high_risk_approval_requirements(tmp_path: Path):
+    root, tools = _make_fixture_repo(tmp_path, high_risk_tools={"os_places.search"})
+    _write_reference_evidence(root)
+    report, _ = validate_repo(root, profile="reference", now=REFERENCE_NOW, registered_tools=tools)
+    assert _control_status(report, "OMCP-PI-001") == "fail"
+
+
+def test_unknown_assessment_profile_fails_closed(tmp_path: Path):
+    with pytest.raises(ValidationDataError, match="Unsupported profile"):
+        validate_repo(tmp_path, profile="reference-typo")
 
 
 def test_helper_functions_and_safe_by_design_loading(tmp_path: Path):

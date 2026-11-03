@@ -1,7 +1,9 @@
 # Monitoring and Alerting
 
-This directory contains the repo-backed monitoring profile used by the OWASP MCP
-strict validation evidence.
+This directory contains undeployed monitoring configuration reviewed by the
+OWASP MCP reference assessment. No live scraping or SIEM delivery is claimed.
+The protected metrics route needs operator-supplied bearer credentials, and
+external SIEM delivery needs verified egress and runtime credentials before use.
 
 ## Components
 

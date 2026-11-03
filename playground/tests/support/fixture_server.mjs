@@ -294,7 +294,7 @@ function toolPayload(payload, meta = undefined) {
   return {
     data: payload,
     structuredContent: payload,
-    content: [{ type: "json", json: payload }],
+    content: [{ type: "text", text: JSON.stringify(payload) }],
     ...(meta ? { _meta: meta } : {}),
   };
 }

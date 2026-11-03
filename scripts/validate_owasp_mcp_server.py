@@ -33,7 +33,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Validate MCP-Geo against the OWASP MCP server hardening baseline."
     )
-    parser.add_argument("--profile", default="prod-strict")
+    parser.add_argument("--profile", default="prod-strict", choices=["prod-strict", "reference"])
     parser.add_argument(
         "--format",
         default="both",
